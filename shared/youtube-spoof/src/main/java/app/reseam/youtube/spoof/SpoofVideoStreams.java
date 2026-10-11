@@ -87,8 +87,8 @@ public final class SpoofVideoStreams {
     }
 
     public static byte[] removeVideoPlaybackPostBody(Uri uri, int method, byte[] postData) {
-        if (method == 2 && uri != null && InstalledStreams.owns(uri)) {
-            Logger.debug(() -> "Removed Android video playback POST body for installed spoofed stream");
+        if (method == 2 && uri != null && ClientType.issuedDirectUrl(uri)) {
+            Logger.debug(() -> "Removed Android video playback POST body for a direct stream URL");
             return null;
         }
         return postData;
@@ -96,7 +96,7 @@ public final class SpoofVideoStreams {
 
     /** Direct media URLs use GET; keep the native method for every other stream. */
     public static int rewriteVideoPlaybackMethod(Uri uri, int method) {
-        return method == 2 && uri != null && InstalledStreams.owns(uri) ? 1 : method;
+        return method == 2 && uri != null && ClientType.issuedDirectUrl(uri) ? 1 : method;
     }
 
     public static String appendSpoofedClient(String original) {

@@ -49,7 +49,7 @@ import app.reseam.youtube.web.WebPlayer;
  */
 final class StreamingDataRequest {
     private static final String PLAYER_URL = "https://youtubei.googleapis.com/youtubei/v1/player?fields=playabilityStatus,streamingData&alt=proto";
-    private static final String SABR_PLAYER_URL = "https://youtubei.googleapis.com/youtubei/v1/player?alt=proto";
+    private static final String FULL_PLAYER_URL = "https://youtubei.googleapis.com/youtubei/v1/player?alt=proto";
     private static final String VISITOR_ID_HEADER = "X-Goog-Visitor-Id";
     private static final int HTTP_TIMEOUT_MILLISECONDS = 10_000;
     private static final int REQUEST_TIMEOUT_MILLISECONDS = 30_000;
@@ -65,6 +65,8 @@ final class StreamingDataRequest {
     private static final Map<String, Request> REQUESTS = new LinkedHashMap<>();
     private static Configuration configuration = new Configuration(Arrays.asList(ClientType.values()), false, null);
     private static Map<String, String> requestHeaders = Collections.emptyMap();
+    /** A download's own player request headers, kept apart so they never reset playback requests. */
+    private static Map<String, String> offlineHeaders = Collections.emptyMap();
     private static long generation;
     /** The app account's current authorization, or null while signed out. */
     static volatile String authorization;
@@ -102,7 +104,6 @@ final class StreamingDataRequest {
     }
 
     static synchronized void fetchRequest(String videoId, Map<String, String> playerHeaders, byte[] playerBody) {
-        if (isOfflineRequest(playerBody)) return;
         // HTTP field names are case-insensitive. Do not forward native authorization or cookies.
         Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         if (playerHeaders != null) playerHeaders.forEach((key, value) -> {
@@ -112,6 +113,10 @@ final class StreamingDataRequest {
         String visitor = headers.get(VISITOR_ID_HEADER);
         // Percent escapes occur in native requests; '+' is part of base64 and must stay intact.
         if (visitor != null) headers.put(VISITOR_ID_HEADER, Uri.decode(visitor));
+        if (isOfflineRequest(playerBody)) {
+            offlineHeaders = headers;
+            return;
+        }
         if (!requestHeaders.equals(headers)) {
             clearRequests();
             requestHeaders = headers;
@@ -142,7 +147,7 @@ final class StreamingDataRequest {
             Request oldest = REQUESTS.remove(REQUESTS.keySet().iterator().next());
             oldest.cancel();
         }
-        Request request = new Request(videoId, headers, configuration, generation, reloadToken);
+        Request request = new Request(videoId, headers, configuration, generation, reloadToken, false);
         REQUESTS.put(videoId, request);
         request.timeout = DEADLINES.schedule(request::cancel, REQUEST_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS);
         try {
@@ -187,6 +192,29 @@ final class StreamingDataRequest {
             REQUESTS.remove(videoId, request);
         }
         request.cancel();
+        return null;
+    }
+
+    /** Runs the configured clients for a download on the calling thread, outside the playback cache. */
+    static StreamingData fetchOffline(String videoId) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            Logger.error(() -> "Cannot fetch offline streams on the main thread");
+            return null;
+        }
+        Request request;
+        synchronized (StreamingDataRequest.class) {
+            request = new Request(videoId, offlineHeaders.isEmpty() ? requestHeaders : offlineHeaders, configuration, generation,
+                    null, true);
+        }
+        request.timeout = DEADLINES.schedule(request::cancel, REQUEST_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS);
+        request.task.run();
+        try {
+            return request.task.get();
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+        } catch (Exception exception) {
+            Logger.error(() -> "Offline stream request failed for " + videoId + ": " + exception);
+        }
         return null;
     }
 
@@ -236,6 +264,8 @@ final class StreamingDataRequest {
         final long generation;
         final Locale locale;
         final String reloadToken;
+        /** A download keeps each client's whole response for the offline player response. */
+        final boolean offline;
         final long deadline = SystemClock.elapsedRealtime() + REQUEST_TIMEOUT_MILLISECONDS;
         final FutureTask<StreamingData> task;
         /** Published before task completion; failed or cancelled tasks never expose it to callers. */
@@ -243,9 +273,11 @@ final class StreamingDataRequest {
         volatile HttpURLConnection connection;
         volatile ScheduledFuture<?> timeout;
 
-        Request(String videoId, Map<String, String> headers, Configuration config, long generation, String reloadToken) {
+        Request(String videoId, Map<String, String> headers, Configuration config, long generation, String reloadToken,
+                boolean offline) {
             this.videoId = videoId;
             this.reloadToken = reloadToken;
+            this.offline = offline;
             this.headers = headers;
             this.config = config;
             this.generation = generation;
@@ -281,6 +313,7 @@ final class StreamingDataRequest {
             String visitor = headers.get(VISITOR_ID_HEADER);
             for (int index = 0; index < config.clients.size(); index++) {
                 ClientType client = config.clients.get(index);
+                if (offline && client.sabr) continue;
                 if (client == ClientType.TV_SIMPLY && (visitor == null || visitor.isEmpty())) continue;
                 if (client == ClientType.TV && authorization == null) {
                     Logger.info(() -> "Skipping TV without a signed-in account");
@@ -307,10 +340,10 @@ final class StreamingDataRequest {
                                 + parsed.status + (parsed.reason == null ? "" : ": " + parsed.reason));
                         continue;
                     }
-                    if (client == ClientType.WEB || client == ClientType.TV) {
+                    if (client.sabr) {
                         SabrData sabr = SabrData.resolve(videoId, client, parsed, web, attestation);
                         remaining(attemptDeadline);
-                        return new StreamingData(sabr);
+                        return new StreamingData(sabr, offline ? response : null);
                     }
                     byte[] streams = resolveStreams(parsed.streamingData, visitor, web);
                     if (config.preferAvc) streams = PlayerResponse.preferMultipleAvcQualities(streams);
@@ -320,7 +353,7 @@ final class StreamingDataRequest {
                         continue;
                     }
                     Logger.debug(() -> "Built stream response for " + videoId + " using " + client.friendlyName);
-                    return new StreamingData(streams, client);
+                    return new StreamingData(streams, client, offline ? response : null);
                 } catch (InterruptedException exception) {
                     Thread.currentThread().interrupt();
                     throw exception;
@@ -341,7 +374,7 @@ final class StreamingDataRequest {
                 return response;
             }
             byte[] body = json.getBytes(StandardCharsets.UTF_8);
-            HttpURLConnection active = (HttpURLConnection) new URL(client == ClientType.TV ? SABR_PLAYER_URL : PLAYER_URL)
+            HttpURLConnection active = (HttpURLConnection) new URL(client == ClientType.TV || offline ? FULL_PLAYER_URL : PLAYER_URL)
                     .openConnection();
             connection = active;
             ScheduledFuture<?> attemptTimeout = null;

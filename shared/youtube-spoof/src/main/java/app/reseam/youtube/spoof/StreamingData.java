@@ -7,8 +7,6 @@ import android.net.Uri;
 import android.os.SystemClock;
 
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import app.reseam.youtube.core.Proto;
 
@@ -16,25 +14,27 @@ import app.reseam.youtube.core.Proto;
 public final class StreamingData {
     final byte[] response;
     final ClientType client;
-    final List<Uri> urls;
     final long expiresAt;
     final SabrData sabr;
+    /** The client's whole player response, kept only for downloads. */
+    final byte[] playerResponse;
 
-    StreamingData(byte[] streamingData, ClientType client) {
+    StreamingData(byte[] streamingData, ClientType client, byte[] playerResponse) {
         // Direct responses must not advertise a competing SABR transport.
         response = PlayerResponse.withStreamingData(Proto.replace(streamingData,
                 Collections.singletonMap(15, null)));
         this.client = client;
+        this.playerResponse = playerResponse;
         sabr = null;
-        urls = PlayerResponse.streamUrls(streamingData).stream().map(url -> Uri.parse(url.url())).collect(Collectors.toList());
-        expiresAt = urls.stream().mapToLong(StreamUrl::expiresAt).min().orElse(0);
+        expiresAt = PlayerResponse.streamUrls(streamingData).stream()
+                .mapToLong(url -> StreamUrl.expiresAt(Uri.parse(url.url()))).min().orElse(0);
     }
 
-    StreamingData(SabrData sabr) {
+    StreamingData(SabrData sabr, byte[] playerResponse) {
         this.sabr = sabr;
+        this.playerResponse = playerResponse;
         response = PlayerResponse.withStreamingData(sabr.streams());
         client = sabr.client();
-        urls = List.of();
         expiresAt = StreamUrl.expiresAt(sabr.uri());
     }
 

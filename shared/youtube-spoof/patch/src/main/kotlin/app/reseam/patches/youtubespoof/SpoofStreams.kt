@@ -3,10 +3,12 @@
 
 package app.reseam.patches.youtubespoof
 
+import app.reseam.patch.CodeScope
 import app.reseam.patch.ExtClass
 import app.reseam.patch.MethodTarget
 import app.reseam.patch.PatchRuntime
 import app.reseam.patch.Type
+import app.reseam.patch.ValueRef
 import app.reseam.patch.after
 import app.reseam.patch.before
 import app.reseam.patch.classTarget
@@ -86,12 +88,7 @@ fun PatchRuntime.spoofStreams(activityOnCreate: MethodTarget) {
         }
         val bytes = call(SpoofVideoStreams.getStreamingDataBytes, streams)
 
-        val parser = call(
-            protobufParseByteBuffer,
-            staticField(playerResponseDefaultInstance),
-            callStatic(BYTE_BUFFER, "wrap", "([B)Ljava/nio/ByteBuffer;", bytes),
-        )
-        val playerResponse = parser.cast(playerResponseClass.descriptor)
+        val playerResponse = parsePlayerResponse(bytes)
         val replacement = playerResponse.field(streamInputField)
         whenNull(replacement) {
             call(SpoofVideoStreams.onNativeStreamingDataInstalled, videoId)
@@ -141,7 +138,7 @@ private val buildRequest = method("Cronet request builder") {
     param(1, Type.Map)
 }
 
-private val createStreamingData = method("player response streaming data wrapper") {
+internal val createStreamingData = method("player response streaming data wrapper") {
     calls(klass(STREAMING_DATA).method("getDefaultInstance"))
     flags(AccessFlags.CONSTRUCTOR)
     paramCount(1)
@@ -155,6 +152,12 @@ private val buildMediaDataSource = method("video playback media data source") {
 }
 
 // The generated message base class keeps its static parsers' names.
+internal fun CodeScope.parsePlayerResponse(bytes: ValueRef) = call(
+    protobufParseByteBuffer,
+    staticField(playerResponseDefaultInstance),
+    callStatic(BYTE_BUFFER, "wrap", "([B)Ljava/nio/ByteBuffer;", bytes),
+).cast(playerResponseClass.descriptor)
+
 private val protobufParseByteBuffer = method("protobuf byte-buffer parser") {
     inClass(playerResponseClass, inherited = true)
     name("parseFrom")
@@ -171,17 +174,17 @@ private val streamResponseField = createStreamingData.point("streaming data resp
     field { type(STREAMING_DATA) }
 }.field("streaming data response field")
 
-private val streamInputField = createStreamingData.point("player response streaming data field") {
+internal val streamInputField = createStreamingData.point("player response streaming data field") {
     opcode(Opcode.IGET_OBJECT)
     field { type(STREAMING_DATA) }
 }.field("player response streaming data field")
 
-private val playerResponseClass = classTarget("player response protobuf class") {
+internal val playerResponseClass = classTarget("player response protobuf class") {
     bytecode.findClass(streamInputField.owner) ?: error("player response protobuf class is missing")
 }
 
 // Follow the app's video-ID getter instead of guessing which protobuf string is the ID.
-private val playerResponseModel = klass("player response model") {
+internal val playerResponseModel = klass("player response model") {
     hasInstanceField(playerResponseClass.descriptor)
     implements(videoIdGetter.owner)
 }
@@ -200,31 +203,6 @@ private val videoIdField = videoDetailsRead.next {
     opcode(Opcode.IGET_OBJECT)
     field { owner(videoDetailsField.type); type(Type.String) }
 }.field("video ID field")
-
-private val offlineAction = klass("offline state action") { strings("REFRESH_AD", "DELETE_AD") }
-private val offlineActionForNumber = method("offline state action lookup") {
-    inClass(offlineAction)
-    flags(AccessFlags.STATIC)
-    params(Type.Int)
-}
-private val offlineActionCheck = method("offline state action check") {
-    flags(AccessFlags.STATIC)
-    returns(Type.Boolean)
-    params(videoIdGetter.owner)
-    calls(offlineActionForNumber)
-}
-private val offlineStateGetter = offlineActionCheck.point("offline state getter call") {
-    invokeInterface { params() }
-}.callee("offline state getter")
-private val responseOfflineState = method("player response offline state") {
-    inClass(playerResponseModel)
-    name(offlineStateGetter.name)
-    params()
-}
-private val offlineStateField = responseOfflineState.point("offline state read") {
-    opcode(Opcode.IGET_OBJECT)
-    field { owner(playerResponseClass.descriptor) }
-}.field("player response offline state field")
 
 private val playerResponseDefaultInstance = playerResponseClass
     .method("<clinit>", inherited = false) {

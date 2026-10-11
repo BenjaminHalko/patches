@@ -1103,6 +1103,7 @@ object YouTubeSettings {
     val externalDownloader by toggle("External downloader button", summary = "Adds a player button that sends the video URL to an external downloader.", default = false)
     val externalDownloaderActionButton by toggle("External downloader action", summary = "Uses the external downloader for YouTube's in-app Download action.", default = false)
     val unlockQueue by toggle("Unlock queue", summary = "Unlocks the video queue.", default = true)
+    val unlockDownloads by toggle("Unlock downloads", summary = "Unlocks downloads in every quality.", default = true)
     val externalDownloaderPackageName by text("External downloader package", summary = "Android package name of the external downloader app.", default = "com.deniscerri.ytdl")
     val loopVideo by toggle("Loop video", summary = "Starts the video again when it reaches the end.", default = false)
     val loopVideoButton by toggle("Loop video button", summary = "Adds a player button for toggling video looping.", default = false)
