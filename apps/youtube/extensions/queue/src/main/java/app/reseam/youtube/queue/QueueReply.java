@@ -26,11 +26,11 @@ public final class QueueReply {
     private static final int RESPONSE_COMMAND = 4;
     private static final int BROWSE_ENDPOINT = 48687626;
     private static final int WATCH_ENDPOINT = 48687757;
-    private static final int PLAYER_STATE_COMMAND = 469942096;
+    static final int PLAYER_STATE_COMMAND = 469942096;
     private static final int QUEUE_INSERT = 465666947;
     private static final int WATCH_MINIMIZED = 339694216;
     private static final int QUEUE_TOKEN = 71;
-    private static final long POSITION_NEXT = 1;
+    static final long POSITION_NEXT = 1;
     private static final long POSITION_LAST = 2;
     private static final String QUEUE_WATCH_PARAMS = "yAQB";
 
@@ -52,18 +52,22 @@ public final class QueueReply {
             if (queue == null) return null;
             String videoId = Proto.string(Proto.bytes(Proto.bytes(queue, REQUEST_TARGET), 1), 1);
             long position = Proto.number(queue, REQUEST_OPERATION, 0) == OPERATION_PLAY_NEXT ? POSITION_NEXT : POSITION_LAST;
-            return new Proto.Writer().message(PLAYER_STATE_COMMAND, new Proto.Writer()
-                    .message(1, new Proto.Writer().message(QUEUE_INSERT, new Proto.Writer()
-                            .string(1, token(videoId, position))))
-                    .message(2, new Proto.Writer().message(WATCH_MINIMIZED, new Proto.Writer()
-                            .message(2, new Proto.Writer().message(WATCH_ENDPOINT, new Proto.Writer()
-                                    .string(1, videoId)
-                                    .string(5, QUEUE_WATCH_PARAMS))))))
-                    .toByteArray();
+            return new Proto.Writer().bytes(PLAYER_STATE_COMMAND, playerStateCommand(videoId, position)).toByteArray();
         } catch (IllegalArgumentException | NullPointerException exception) {
             Logger.debug(() -> "Active-devices parameters are not a queue request");
             return null;
         }
+    }
+
+    static byte[] playerStateCommand(String videoId, long position) {
+        return new Proto.Writer()
+                .message(1, new Proto.Writer().message(QUEUE_INSERT, new Proto.Writer()
+                        .string(1, token(videoId, position))))
+                .message(2, new Proto.Writer().message(WATCH_MINIMIZED, new Proto.Writer()
+                        .message(2, new Proto.Writer().message(WATCH_ENDPOINT, new Proto.Writer()
+                                .string(1, videoId)
+                                .string(5, QUEUE_WATCH_PARAMS)))))
+                .toByteArray();
     }
 
     private static String token(String videoId, long position) {

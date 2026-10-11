@@ -25,6 +25,7 @@ import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.videoInformationHook
 import app.reseam.patches.youtubecommon.parseProtobuf
+import app.reseam.patches.youtubecommon.protobufBytes
 import app.reseam.patches.youtubecommon.protobufByteString
 import app.reseam.patches.youtubecommon.protobufByteStringBytes
 
@@ -35,6 +36,10 @@ private const val MESSAGE_LITE = "com.google.protobuf.MessageLite"
 object QueueReply : ExtClass("app.reseam.youtube.queue.QueueReply") {
     val wrap by static(LISTENABLE_FUTURE, Type.String, returns = LISTENABLE_FUTURE)
     val parse by static("[B", returns = Type.Object)
+}
+
+object QueueMenu : ExtClass("app.reseam.youtube.queue.QueueMenu") {
+    val unlock by static("[B", returns = "[B")
 }
 
 object QueueContext : ExtClass("app.reseam.youtube.queue.QueueContext") {
@@ -63,6 +68,16 @@ private val activeDevicesResponseClass = classTarget("active devices response") 
         .previous { opcode(Opcode.SGET_OBJECT) }
         .field("active devices default response")
     bytecode.findClass(defaultResponse.type) ?: error("The active devices response class is missing")
+}
+
+private val menuCommandResolver = method("menu command resolver") {
+    strings("VIDEO_QUALITY_DETAIL_TEXT", "menu_as_bottom_sheet")
+    hasParam("java.util.Map")
+    returns(Type.Void)
+}
+
+private val commandClass = classTarget("command") {
+    bytecode.findClass(menuCommandResolver.parameterTypes.first()) ?: error("The command class is missing")
 }
 
 private val queueState = klass("queue state") { strings("QP") }
@@ -122,6 +137,13 @@ val unlockQueue = patch("Unlock queue") {
         activeDevicesResponse.after {
             whenEnabled(YouTubeSettings.unlockQueue) {
                 capture("response").assign(call(QueueReply.wrap, capture("response"), local(params)))
+            }
+        }
+
+        menuCommandResolver.before {
+            whenEnabled(YouTubeSettings.unlockQueue) {
+                val unlocked = call(QueueMenu.unlock, protobufBytes(param(0)))
+                whenNotNull(unlocked) { param(0).assign(parseProtobuf(commandClass, "command", unlocked)) }
             }
         }
 
