@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import app.reseam.youtube.core.Logger;
+import app.reseam.youtube.core.Proto;
 import app.reseam.youtube.web.WebPlayer;
 
 /**

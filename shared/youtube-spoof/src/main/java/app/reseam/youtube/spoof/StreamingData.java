@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import app.reseam.youtube.core.Proto;
+
 /** A validated replacement and its provenance, kept together through the native installation hook. */
 public final class StreamingData {
     final byte[] response;

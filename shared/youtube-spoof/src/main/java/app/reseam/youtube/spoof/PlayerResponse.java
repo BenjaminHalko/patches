@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-import app.reseam.youtube.spoof.Proto.Field;
+import app.reseam.youtube.core.Proto.Field;
 
-import static app.reseam.youtube.spoof.Proto.WIRE_LENGTH;
-import static app.reseam.youtube.spoof.Proto.WIRE_VARINT;
-import static app.reseam.youtube.spoof.Proto.bytes;
-import static app.reseam.youtube.spoof.Proto.fields;
-import static app.reseam.youtube.spoof.Proto.writeBytes;
+import static app.reseam.youtube.core.Proto.WIRE_LENGTH;
+import static app.reseam.youtube.core.Proto.WIRE_VARINT;
+import static app.reseam.youtube.core.Proto.bytes;
+import static app.reseam.youtube.core.Proto.fields;
+import static app.reseam.youtube.core.Proto.writeBytes;
 
 /**
  * The parts of an InnerTube player response the spoof request reads, decoded from protobuf

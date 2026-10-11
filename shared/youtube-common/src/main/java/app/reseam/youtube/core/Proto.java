@@ -1,24 +1,25 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package app.reseam.youtube.spoof;
+package app.reseam.youtube.core;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.LongUnaryOperator;
 
 /** Bounded protobuf wire operations. Unknown fields are preserved byte-for-byte when replacing fields. */
-final class Proto {
-    static final int WIRE_VARINT = 0;
-    static final int WIRE_FIXED64 = 1;
-    static final int WIRE_LENGTH = 2;
-    static final int WIRE_FIXED32 = 5;
+public final class Proto {
+    public static final int WIRE_VARINT = 0;
+    public static final int WIRE_FIXED64 = 1;
+    public static final int WIRE_LENGTH = 2;
+    public static final int WIRE_FIXED32 = 5;
 
     private Proto() {}
 
-    static byte[] bytes(byte[] message, int number) {
+    public static byte[] bytes(byte[] message, int number) {
         byte[] value = null;
         for (Field field : fields(message)) {
             if (field.number == number && field.wireType == WIRE_LENGTH) value = field.bytes;
@@ -26,7 +27,12 @@ final class Proto {
         return value;
     }
 
-    static long number(byte[] message, int number, long fallback) {
+    public static String string(byte[] message, int number) {
+        byte[] value = bytes(message, number);
+        return value == null ? null : new String(value, StandardCharsets.UTF_8);
+    }
+
+    public static long number(byte[] message, int number, long fallback) {
         long value = fallback;
         for (Field field : fields(message)) {
             if (field.number == number && field.wireType == WIRE_VARINT) value = field.varint;
@@ -34,7 +40,7 @@ final class Proto {
         return value;
     }
 
-    static byte[] replace(byte[] message, Map<Integer, byte[]> replacements) {
+    public static byte[] replace(byte[] message, Map<Integer, byte[]> replacements) {
         ByteArrayOutputStream output = new ByteArrayOutputStream(message.length);
         for (Field field : fields(message)) {
             if (!replacements.containsKey(field.number)) output.write(message, field.start, field.end - field.start);
@@ -45,19 +51,84 @@ final class Proto {
         return output.toByteArray();
     }
 
-    static void writeNumber(ByteArrayOutputStream output, int number, long value) {
+    public interface LengthRewrite {
+        byte[] apply(int number, byte[] value);
+    }
+
+    public static byte[] rewriteLength(byte[] message, LengthRewrite rewrite) {
+        List<Field> fields = fields(message);
+        ByteArrayOutputStream output = null;
+        for (int index = 0; index < fields.size(); index++) {
+            Field field = fields.get(index);
+            byte[] value = field.wireType == WIRE_LENGTH ? rewrite.apply(field.number, field.bytes) : field.bytes;
+            if (output == null && value != field.bytes) {
+                output = new ByteArrayOutputStream(message.length);
+                output.write(message, 0, field.start);
+            }
+            if (output == null) continue;
+            if (value == field.bytes) output.write(message, field.start, field.end - field.start);
+            else if (value != null) writeBytes(output, field.number, value);
+        }
+        return output == null ? message : output.toByteArray();
+    }
+
+    public static byte[] rewriteNumber(byte[] message, int number, LongUnaryOperator rewrite) {
+        List<Field> fields = fields(message);
+        ByteArrayOutputStream output = null;
+        for (Field field : fields) {
+            long value = field.number == number && field.wireType == WIRE_VARINT
+                    ? rewrite.applyAsLong(field.varint) : field.varint;
+            if (output == null && value != field.varint) {
+                output = new ByteArrayOutputStream(message.length);
+                output.write(message, 0, field.start);
+            }
+            if (output == null) continue;
+            if (value != field.varint) writeNumber(output, field.number, value);
+            else output.write(message, field.start, field.end - field.start);
+        }
+        return output == null ? message : output.toByteArray();
+    }
+
+    /** Builds a message field by field, in the order written. */
+    public static final class Writer {
+        private final ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        public Writer number(int number, long value) {
+            writeNumber(output, number, value);
+            return this;
+        }
+
+        public Writer bytes(int number, byte[] value) {
+            writeBytes(output, number, value);
+            return this;
+        }
+
+        public Writer string(int number, String value) {
+            return bytes(number, value.getBytes(StandardCharsets.UTF_8));
+        }
+
+        public Writer message(int number, Writer message) {
+            return bytes(number, message.toByteArray());
+        }
+
+        public byte[] toByteArray() {
+            return output.toByteArray();
+        }
+    }
+
+    public static void writeNumber(ByteArrayOutputStream output, int number, long value) {
         writeVarint(output, (long) number << 3);
         writeVarint(output, value);
     }
 
-    static final class Field {
-        final int number;
-        final int wireType;
-        final long varint;
-        final byte[] bytes;
+    public static final class Field {
+        public final int number;
+        public final int wireType;
+        public final long varint;
+        public final byte[] bytes;
         /** The field's encoded span in its message, tag included. */
-        final int start;
-        final int end;
+        public final int start;
+        public final int end;
 
         Field(int number, int wireType, long varint, byte[] bytes, int start, int end) {
             this.number = number;
@@ -68,12 +139,12 @@ final class Proto {
             this.end = end;
         }
 
-        String string() {
+        public String string() {
             return new String(bytes, StandardCharsets.UTF_8);
         }
     }
 
-    static List<Field> fields(byte[] message) {
+    public static List<Field> fields(byte[] message) {
         List<Field> fields = new ArrayList<>();
         int[] position = {0};
         while (position[0] < message.length) {
@@ -115,7 +186,7 @@ final class Proto {
         return fields;
     }
 
-    static long readVarint(byte[] message, int[] position) {
+    public static long readVarint(byte[] message, int[] position) {
         long value = 0;
         for (int shift = 0; shift < 64; shift += 7) {
             if (position[0] >= message.length) throw new IllegalArgumentException("Truncated protobuf varint");
@@ -127,13 +198,13 @@ final class Proto {
         throw new IllegalArgumentException("Malformed protobuf varint");
     }
 
-    static void writeBytes(ByteArrayOutputStream output, int number, byte[] bytes) {
+    public static void writeBytes(ByteArrayOutputStream output, int number, byte[] bytes) {
         writeVarint(output, ((long) number << 3) | WIRE_LENGTH);
         writeVarint(output, bytes.length);
         output.write(bytes, 0, bytes.length);
     }
 
-    static void writeVarint(ByteArrayOutputStream output, long value) {
+    public static void writeVarint(ByteArrayOutputStream output, long value) {
         while ((value & ~0x7FL) != 0) {
             output.write((int) ((value & 0x7F) | 0x80));
             value >>>= 7;

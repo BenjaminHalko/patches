@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 
+import app.reseam.youtube.core.Proto;
 import app.reseam.youtube.web.WebPlayer;
 
 /** One validated SABR response: native formats, solved SABR URL, decoder configuration and attestation. */

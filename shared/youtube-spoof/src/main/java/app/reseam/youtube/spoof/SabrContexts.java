@@ -9,6 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import app.reseam.youtube.core.Proto;
+
 /**
  * Opaque web contexts for one native playback. Android owns PLAYBACK contexts; this store supplies
  * CONTENT_ADS contexts, which its parser ignores. Values and server sending policies are preserved.
