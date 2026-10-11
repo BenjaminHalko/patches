@@ -72,6 +72,7 @@ fun PatchRuntime.spoofStreams(activityOnCreate: MethodTarget) {
 
     createStreamingData.after {
         whenFalse(call(SpoofVideoStreams.isSpoofingEnabled)) { returnVoid() }
+        whenNotNull(param(0).field(offlineStateField)) { returnVoid() }
 
         val videoDetails = param(0).field(videoDetailsField)
         whenNull(videoDetails) { returnVoid() }
@@ -199,6 +200,31 @@ private val videoIdField = videoDetailsRead.next {
     opcode(Opcode.IGET_OBJECT)
     field { owner(videoDetailsField.type); type(Type.String) }
 }.field("video ID field")
+
+private val offlineAction = klass("offline state action") { strings("REFRESH_AD", "DELETE_AD") }
+private val offlineActionForNumber = method("offline state action lookup") {
+    inClass(offlineAction)
+    flags(AccessFlags.STATIC)
+    params(Type.Int)
+}
+private val offlineActionCheck = method("offline state action check") {
+    flags(AccessFlags.STATIC)
+    returns(Type.Boolean)
+    params(videoIdGetter.owner)
+    calls(offlineActionForNumber)
+}
+private val offlineStateGetter = offlineActionCheck.point("offline state getter call") {
+    invokeInterface { params() }
+}.callee("offline state getter")
+private val responseOfflineState = method("player response offline state") {
+    inClass(playerResponseModel)
+    name(offlineStateGetter.name)
+    params()
+}
+private val offlineStateField = responseOfflineState.point("offline state read") {
+    opcode(Opcode.IGET_OBJECT)
+    field { owner(playerResponseClass.descriptor) }
+}.field("player response offline state field")
 
 private val playerResponseDefaultInstance = playerResponseClass
     .method("<clinit>", inherited = false) {

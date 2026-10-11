@@ -101,6 +101,7 @@ final class StreamingDataRequest {
     }
 
     static synchronized void fetchRequest(String videoId, Map<String, String> playerHeaders, byte[] playerBody) {
+        if (isOfflineRequest(playerBody)) return;
         // HTTP field names are case-insensitive. Do not forward native authorization or cookies.
         Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         if (playerHeaders != null) playerHeaders.forEach((key, value) -> {
@@ -186,6 +187,15 @@ final class StreamingDataRequest {
         }
         request.cancel();
         return null;
+    }
+
+    private static boolean isOfflineRequest(byte[] request) {
+        if (request == null || request.length == 0) return false;
+        try {
+            return Proto.number(request, 8, 0) != 0;
+        } catch (IllegalArgumentException exception) {
+            return false;
+        }
     }
 
     /** Native PlayerRequest.playbackContext(4).reloadPlaybackContext(7).reloadPlaybackParams(1).token(1). */
