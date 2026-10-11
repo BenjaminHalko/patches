@@ -22,8 +22,8 @@ object SpoofSettings {
         choices = listOf(
             Choice("tv", "TV (SABR)"),
             Choice("web", "Web (SABR)"),
-            Choice("tv_simply", "TV Simply"),
             Choice("visionos", "visionOS"),
+            Choice("tv_simply", "TV Simply"),
         ),
         key = "you_tube_settings.spoof_video_streams_client",
     )
