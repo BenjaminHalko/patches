@@ -7,6 +7,7 @@ import app.reseam.patch.settings.toggle
 import app.reseam.patches.bundle.lucide
 
 object DiscordSettings {
+    val betterStreamQuality by toggle("Better stream quality", summary = "Stream your screen at the resolutions and frame rates Nitro unlocks.", default = true, icon = lucide("monitor-up"))
     val betterVideoQuality by toggle("Better video quality", summary = "Use a higher video quality when preparing uploads. Upload limits stay the same.", default = true, icon = lucide("video"))
     val blockAnalytics by toggle("Block analytics", summary = "Stop Discord from logging usage events.", default = true, icon = lucide("eye-off"))
     val blockCrashReports by toggle("Block crash reports", summary = "Stop Discord from initializing its native crash reporter.", default = true, icon = lucide("bug-off"))
