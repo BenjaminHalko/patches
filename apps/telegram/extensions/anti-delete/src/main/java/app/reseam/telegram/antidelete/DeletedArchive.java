@@ -184,19 +184,27 @@ public final class DeletedArchive {
         }
     }
 
+    // Telegram records the ID range a loaded page covers as having no gaps, so a page only takes
+    // archived messages inside its own range; anything outside it would hide the messages between.
     public static void injectDeleted(TLRPC.messages_Messages res, long dialogId) {
         try {
-            if (store == null || res == null || res.messages == null) return;
+            if (store == null || res == null || res.messages == null || res.messages.isEmpty()) return;
 
             java.util.HashMap<Integer, Integer> midToIndex = new java.util.HashMap<>();
+            int minId = Integer.MAX_VALUE;
+            int maxId = Integer.MIN_VALUE;
             for (int i = 0; i < res.messages.size(); i++) {
                 TLRPC.Message m = res.messages.get(i);
-                if (m != null) midToIndex.put(m.id, i);
+                if (m == null) continue;
+                midToIndex.put(m.id, i);
+                minId = Math.min(minId, m.id);
+                maxId = Math.max(maxId, m.id);
             }
+            if (midToIndex.isEmpty()) return;
 
             Cursor c = store.rawQuery(
-                    "SELECT mid, data FROM deleted WHERE uid = ?",
-                    new String[]{String.valueOf(dialogId)});
+                    "SELECT mid, data FROM deleted WHERE uid = ? AND mid BETWEEN ? AND ?",
+                    new String[]{String.valueOf(dialogId), String.valueOf(minId), String.valueOf(maxId)});
             int n = 0;
             try {
                 while (c.moveToNext()) {
