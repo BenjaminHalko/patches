@@ -22,7 +22,7 @@ import app.reseam.youtube.core.Settings;
 import app.reseam.youtube.core.YouTubeContext;
 import app.reseam.youtube.video.VideoInformation;
 
-public final class Downloads {
+public final class ExternalDownloader {
     private enum Downloader {
         YTDLNIS("YTDLnis", "com.deniscerri.ytdl", "https://ytdlnis.org"),
         SEAL("Seal", "com.junkfood.seal", "https://github.com/JunkFood02/Seal/releases/latest"),
@@ -52,18 +52,18 @@ public final class Downloads {
 
     private static WeakReference<Activity> activity = new WeakReference<>(null);
 
-    private Downloads() {}
+    private ExternalDownloader() {}
 
     public static void setMainActivity(Activity mainActivity) {
         activity = new WeakReference<>(mainActivity);
-        Logger.debug(() -> "Downloads main activity captured");
+        Logger.debug(() -> "External downloader main activity captured");
     }
 
     public static void initialize(View root) {
         try {
             new PlayerControlButton(root, "reseam_external_download_button",
                     () -> Settings.getBoolean("external_downloader", false),
-                    Downloads::onClick, null);
+                    ExternalDownloader::onClick, null);
             Logger.debug(() -> "External downloader button initialized");
         } catch (Exception exception) {
             Logger.error(() -> "External downloader button initialization failure: " + exception);

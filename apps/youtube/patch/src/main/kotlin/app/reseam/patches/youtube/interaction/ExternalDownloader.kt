@@ -20,7 +20,7 @@ import app.reseam.patches.youtube.internal.registerPlayerControlInitializer
 import app.reseam.patches.youtube.internal.registerPlayerControlLayout
 import app.reseam.patches.youtube.internal.videoPlaybackStateHook
 
-object Downloads : ExtClass("app.reseam.youtube.buttons.Downloads") {
+object ExternalDownloader : ExtClass("app.reseam.youtube.buttons.ExternalDownloader") {
     val setMainActivity by static(Type.Activity)
     val initialize by static(Type.View)
     val inAppDownloadButtonOnClick by static(Type.String, returns = Type.Boolean)
@@ -33,8 +33,8 @@ private val offlineVideoEndpoint = method("offline video endpoint") {
     strings("Object is not an offlineable video: %s")
 }
 
-val downloads = patch("Downloads") {
-    description("Adds an optional external-downloader player button and intercepts YouTube's download action.")
+val externalDownloader = patch("External downloader") {
+    description("Sends videos to an external downloader app from a player button or YouTube's Download action.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings, videoPlaybackStateHook, playerControls)
     settings(
@@ -45,16 +45,16 @@ val downloads = patch("Downloads") {
     execute {
         resources.addId("reseam_external_download_button")
         resources.addFile("drawable", "reseam_download", "res/drawable/reseam_download.xml",
-            Downloads::class.java.getResourceAsStream("/buttons/reseam_download.xml")!!.readBytes())
+            ExternalDownloader::class.java.getResourceAsStream("/buttons/reseam_download.xml")!!.readBytes())
         registerPlayerControlLayout("/buttons/download.xml", "reseam_external_download_button", position = 2)
-        registerPlayerControlInitializer(Downloads.initialize)
+        registerPlayerControlInitializer(ExternalDownloader.initialize)
 
-        mainActivityOnCreate.before { call(Downloads.setMainActivity, thisObject) }
+        mainActivityOnCreate.before { call(ExternalDownloader.setMainActivity, thisObject) }
 
         // This target is the four-parameter offline endpoint; parameter 2 is the video id
         // (the app's p3 register because p0 is `this`).
         offlineVideoEndpoint.before {
-            whenTrue(call(Downloads.inAppDownloadButtonOnClick, param(2))) { returnVoid() }
+            whenTrue(call(ExternalDownloader.inAppDownloadButtonOnClick, param(2))) { returnVoid() }
         }
     }
 }
