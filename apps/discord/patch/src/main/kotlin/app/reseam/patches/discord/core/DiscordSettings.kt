@@ -13,6 +13,7 @@ object DiscordSettings {
     val blockCrashReports by toggle("Block crash reports", summary = "Stop Discord from initializing its native crash reporter.", default = true, icon = lucide("bug-off"))
     val chatAnimationSwitch by toggle("Chat animation switch", summary = "Use the GIF autoplay switch to also turn off chat emoji animation.", default = true, icon = lucide("sparkles"))
     val cleanOutgoingLinks by toggle("Clean outgoing links", summary = "Remove tracking parameters from supported links when you send them.", default = true, icon = lucide("link"))
+    val coloredNames by toggle("Colored names", summary = "Color members' names with their role color in mentions, the typing indicator, voice channels and member list headers.", default = true, icon = lucide("at-sign"))
     val developerMenu by toggle("Developer menu", summary = "Show Discord's existing developer tools in Settings.", default = true, icon = lucide("square-terminal"))
     val disableMessageSwipes by toggle("Disable message swipes", summary = "Stop swipes from starting replies or edits.", default = true, icon = lucide("move-horizontal"))
     val freemoji by toggle("Freemoji", summary = "Send locked custom emoji as image links.", default = true, icon = lucide("smile"))

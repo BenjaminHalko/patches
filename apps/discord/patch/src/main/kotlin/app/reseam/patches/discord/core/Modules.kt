@@ -19,3 +19,43 @@ internal val permissionHelpers: MetroModule = function {
     strings("excludeGuildPermissions", "isViewingRoles")
     paramCount(1)
 }.module
+
+/** GuildMemberStore; its default export is the store. Named by the store's raw member table. */
+internal val guildMemberStore: MetroModule = function {
+    name("getMutableAllGuildsAndMembers")
+    paramCount(0)
+}.module
+
+/** React, for building and cloning elements such as `cloneElement(element, props)`. */
+internal val react: MetroModule = function {
+    name("isValidElement")
+    strings("\$\$typeof")
+    paramCount(1)
+}.module
+
+/** UserStore; its default export is the store. Named by the store's version counter. */
+internal val userStore: MetroModule = function {
+    name("getUserStoreVersion")
+    paramCount(0)
+}.module
+
+/** GuildRoleStore; its default export is the store. */
+internal val guildRoleStore: MetroModule = function {
+    name("getNumRoles")
+    strings("partitionLength")
+    paramCount(1)
+}.module
+
+/** React Native's components, such as `Text` and `View`. */
+internal val reactNative: MetroModule = function {
+    name("")
+    strings("unstable_NativeText", "unstable_batchedUpdates")
+    paramCount(7)
+}.module
+
+/** ChannelMemberStore; its default export is the store and `EVERYONE_CHANNEL_ID` the all-members list. */
+internal val channelMemberStore: MetroModule = function {
+    name("rebuildGroup")
+    strings("findIndex", "OFFLINE", "ONLINE")
+    paramCount(1)
+}.module
