@@ -44,6 +44,7 @@ object DiscordSettings {
     val quietSuperReactions by toggle("Quiet Super Reactions", summary = "Remove looping Super Reaction decorations.", default = true, icon = lucide("party-popper"))
     val repliesWithoutPings by toggle("Replies without pings", summary = "Start replies with mentions turned off. You can still turn them on.", default = true, icon = lucide("bell-off"))
     val revealSpoilers by toggle("Reveal spoilers", summary = "Show spoiler text and media without tapping to reveal them.", default = true, icon = lucide("eye"))
+    val serverDetails by toggle("Server details", summary = "Show a server's owner, creation date, members, boosts and more in its options.", default = true, icon = lucide("info"))
     val showBlockedMessages by toggle("Show blocked messages", summary = "Expand received messages from blocked users without unblocking them.", default = true, icon = lucide("user-x"))
     val skipMaskedLinkWarnings by toggle("Skip masked link warnings", summary = "Open masked links without the destination warning.", default = true, icon = lucide("external-link"))
     val staticChatEmoji by toggle("Static chat emoji", summary = "Stop custom emoji from animating in chat.", default = true, icon = lucide("circle-pause"))

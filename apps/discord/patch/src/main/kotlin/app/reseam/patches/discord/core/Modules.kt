@@ -53,10 +53,30 @@ internal val draftStore: MetroModule = function {
     paramCount(1)
 }.module
 
+/** Discord's design system components, such as `ActionSheetRow` and `TableRow`. */
+internal val designSystem: MetroModule = function {
+    name("")
+    strings("design/native.tsx")
+    paramCount(7)
+}.module
+
+/** GuildMemberCountStore; its default export is the store. */
+internal val guildMemberCountStore: MetroModule = function {
+    name("getMemberCounts")
+    paramCount(0)
+}.module
+
 /** GuildRoleStore; its default export is the store. */
 internal val guildRoleStore: MetroModule = function {
     name("getNumRoles")
     strings("partitionLength")
+    paramCount(1)
+}.module
+
+/** GuildChannelStore; its default export is the store. */
+internal val guildChannelStore: MetroModule = function {
+    name("getSelectableChannelIds")
+    strings("getChannels")
     paramCount(1)
 }.module
 
