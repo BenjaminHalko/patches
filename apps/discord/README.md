@@ -14,4 +14,5 @@ Tested on Discord 347.12 Stable, Android 16. Other versions are untested.
 - Freemoji and Sticker links turn only Nitro locks into links. Role, permission and server boost locks stay.
 - Hide link cards keeps Discord's own emoji and sticker image previews.
 - Clean outgoing links leaves signed URLs unchanged.
-- The Reseam settings row uses Discord's Advanced icon. Extension JavaScript has no handle on Discord's React to render its own.
+- The Reseam settings row uses Discord's Advanced icon.
+- Extensions reach Discord's stores, actions, React and design system as Metro modules bound to a wrap (`core/Modules.kt`), each named by one fingerprinted function in it. UI is built from Discord's own components, so it follows its theme.
