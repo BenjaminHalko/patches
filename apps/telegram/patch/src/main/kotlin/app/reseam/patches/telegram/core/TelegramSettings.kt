@@ -32,7 +32,7 @@ object TelegramSettings {
     val recoverDeleted by toggle(
         "Recover deleted messages",
         summary = "Keep messages others delete; they stay in the chat with a 🗑️ marker.",
-        default = true,
+        default = false,
         icon = lucide("message-square-x"),
     )
     val allowScreenshots by toggle(

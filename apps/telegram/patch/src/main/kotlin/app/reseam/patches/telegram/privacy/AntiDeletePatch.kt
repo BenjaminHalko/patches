@@ -25,14 +25,11 @@ import app.reseam.patches.telegram.core.telegramSettings
 val antiDelete = patch("Recover deleted messages") {
     description("Keeps messages others delete, archived locally and shown back in the chat.")
     compatibleWith(TELEGRAM)
+    enabledByDefault(false)
     dependsOn(antiDeleteRuntime)
     settings(telegramSettings, section("Privacy", TelegramSettings.recoverDeleted))
 
     execute {
-        deleteMessages.before {
-            call(DeletedArchive.markLocalDelete, param(3), param(0))
-        }
-
         // R8 renames RecyclerView; the chat adapter's own refresh is what ChatActivity calls.
         DeletedArchive.notifyDataSetChanged.implement {
             param(0).cast(chatAdapterRefresh.owner).call(chatAdapterRefresh, bool(false))
@@ -40,6 +37,10 @@ val antiDelete = patch("Recover deleted messages") {
         }
 
         gate(TelegramSettings.recoverDeleted) {
+            deleteMessages.before {
+                call(DeletedArchive.markLocalDelete, param(3), param(0))
+            }
+
             markMessagesAsDeleted.before {
                 call(DeletedArchive.onMarkDeleted, thisObject, param(0), param(1))
             }
