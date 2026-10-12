@@ -38,10 +38,18 @@ object DeletedArchive : ExtClass("app.reseam.telegram.antidelete.DeletedArchive"
     val init by static(Type.Context)
     val markLocalDelete by static(Type.Long, Type.ArrayList)
     val onMarkDeleted by static("org.telegram.messenger.MessagesStorage", Type.Long, Type.ArrayList)
-    val filterDeletedMessages by static(Type.ArrayList, SPARSE_ARRAYS, Type.Object)
-    val reapplyMarkers by static(SPARSE_ARRAYS, Type.Object)
+    val filterDeletedMessages by static(
+        Type.ArrayList, Type.Long, Type.Long, SPARSE_ARRAYS, Type.Object,
+        returns = Type.ArrayList,
+    )
+    val reapplyMarkers by static(SPARSE_ARRAYS, Type.Object, Type.Long)
     val injectDeleted by static(TL_MESSAGES, Type.Long, Type.Int, Type.Int)
     val notifyDataSetChanged by static(Type.Object)
+}
+
+object RecoveredChats : ExtClass("app.reseam.telegram.antidelete.RecoveredChats") {
+    val menuLabel by static(Type.Long, returns = Type.String)
+    val toggle by static(Type.Long, returns = Type.String)
 }
 
 object TelegramForwardBridge : ExtClass("app.reseam.telegram.forward.TelegramForwardBridge") {

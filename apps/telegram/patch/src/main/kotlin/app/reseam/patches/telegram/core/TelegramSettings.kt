@@ -3,6 +3,8 @@
 
 package app.reseam.patches.telegram.core
 
+import app.reseam.patch.settings.Choice
+import app.reseam.patch.settings.choice
 import app.reseam.patch.settings.toggle
 import app.reseam.patches.bundle.lucide
 
@@ -31,9 +33,16 @@ object TelegramSettings {
     )
     val recoverDeleted by toggle(
         "Recover deleted messages",
-        summary = "Keep messages others delete; they stay in the chat with a 🗑️ marker.",
+        summary = "Keeps messages others delete, marked 🗑️.",
         default = false,
         icon = lucide("message-square-x"),
+    )
+    val recoverDeletedChats by choice(
+        "Turned on for",
+        summary = "Turn it on or off for a chat from the chat's ⋮ menu.",
+        default = "chosen",
+        choices = listOf(Choice("chosen", "Chats I turn it on for"), Choice("all", "All chats, unless I turn it off")),
+        icon = lucide("messages-square"),
     )
     val allowScreenshots by toggle(
         "Allow screenshots in secret viewers",

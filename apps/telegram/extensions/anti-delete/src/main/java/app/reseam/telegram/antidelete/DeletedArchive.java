@@ -12,7 +12,6 @@ import android.util.Log;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,7 +33,6 @@ public final class DeletedArchive {
 
     private static volatile android.database.sqlite.SQLiteDatabase store;
     private static final Set<Integer> localDeleteMids = ConcurrentHashMap.newKeySet();
-    private static final Set<Integer> archivedMids = ConcurrentHashMap.newKeySet();
 
     private DeletedArchive() {}
 
@@ -70,10 +68,8 @@ public final class DeletedArchive {
             db.execSQL("CREATE TABLE IF NOT EXISTS deleted ("
                     + "uid INTEGER NOT NULL, mid INTEGER NOT NULL, "
                     + "data BLOB NOT NULL, date INTEGER, PRIMARY KEY(uid, mid))");
+            RecoveredChats.load(db);
             store = db;
-            Cursor c = db.rawQuery("SELECT mid FROM deleted", null);
-            try { while (c.moveToNext()) archivedMids.add(c.getInt(0)); }
-            finally { c.close(); }
             backupTo(app != null ? app : ctx);
         } catch (Throwable t) {
             Log.w(TAG, "init failed", t);
@@ -123,18 +119,16 @@ public final class DeletedArchive {
                     } finally { data.reuse(); }
                     if (bytes.length == 0) continue;
 
-                    int mid = cursor.intValue(1);
+                    long uid = cursor.longValue(0);
+                    if (!RecoveredChats.covers(uid)) continue;
                     ContentValues cv = new ContentValues(4);
-                    cv.put("uid", cursor.longValue(0));
-                    cv.put("mid", mid);
+                    cv.put("uid", uid);
+                    cv.put("mid", cursor.intValue(1));
                     cv.put("data", bytes);
                     cv.put("date", cursor.intValue(3));
                     long row = store.insertWithOnConflict("deleted", null, cv,
                             android.database.sqlite.SQLiteDatabase.CONFLICT_IGNORE);
-                    if (row >= 0) {
-                        archivedMids.add(mid);
-                        n++;
-                    }
+                    if (row >= 0) n++;
                 }
             } finally { cursor.dispose(); }
             if (n > 0) Log.i(TAG, "archived " + n + " message(s)");
@@ -143,45 +137,49 @@ public final class DeletedArchive {
         }
     }
 
-    @SuppressWarnings("rawtypes")
-    public static void filterDeletedMessages(
-            ArrayList list, SparseArray[] dict, Object adapter) {
-        if (list == null || list.isEmpty()) return;
+    // Telegram hands every open chat the same list, and a deletion in a channel only concerns that
+    // channel's chat, so this chat gets its own copy without the messages it keeps.
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static ArrayList filterDeletedMessages(
+            ArrayList list, long channelId, long dialogId, SparseArray[] dict, Object adapter) {
+        if (list == null || list.isEmpty() || channelId != 0 && channelId != -dialogId
+                || !RecoveredChats.covers(dialogId)) return list;
 
         ArrayList<Integer> kept = new ArrayList<>();
-        Iterator it = list.iterator();
-        while (it.hasNext()) {
-            Object o = it.next();
-            if (!(o instanceof Integer)) continue;
-            if (!localDeleteMids.contains((Integer) o)) {
-                kept.add((Integer) o);
-                it.remove();
-            }
+        ArrayList toRemove = new ArrayList(list.size());
+        for (Object o : list) {
+            if (o instanceof Integer && !localDeleteMids.contains(o)) kept.add((Integer) o);
+            else toRemove.add(o);
         }
         if (!kept.isEmpty()) MAIN.post(() -> applyMarkers(dict, adapter, kept));
+        return toRemove;
     }
 
-    public static void reapplyMarkers(SparseArray[] dict, Object adapter) {
-        reapplyMarkers(dict, adapter, 0);
+    public static void reapplyMarkers(SparseArray[] dict, Object adapter, long dialogId) {
+        reapplyMarkers(dict, adapter, dialogId, 0);
     }
 
-    private static void reapplyMarkers(SparseArray[] dict, Object adapter, int attempt) {
+    private static void reapplyMarkers(SparseArray[] dict, Object adapter, long dialogId, int attempt) {
         try {
-            if (archivedMids.isEmpty()) return;
+            if (store == null || !RecoveredChats.covers(dialogId)) return;
             if (dict == null || dict.length == 0 || dict[0] == null || dict[0].size() == 0) {
                 if (attempt < 5)
-                    MAIN.postDelayed(() -> reapplyMarkers(dict, adapter, attempt + 1), 300);
+                    MAIN.postDelayed(() -> reapplyMarkers(dict, adapter, dialogId, attempt + 1), 300);
                 return;
             }
 
             ArrayList<Integer> toMark = new ArrayList<>();
-            for (int mid : archivedMids) {
-                Object obj = dict[0].get(mid);
-                if (!(obj instanceof MessageObject)) continue;
-                MessageObject mo = (MessageObject) obj;
-                if (mo.messageOwner == null) continue;
-                if (mo.messageOwner.message != null && mo.messageOwner.message.endsWith(MARKER)) continue;
-                toMark.add(mid);
+            try (Cursor c = store.rawQuery("SELECT mid FROM deleted WHERE uid = ?",
+                    new String[]{String.valueOf(dialogId)})) {
+                while (c.moveToNext()) {
+                    int mid = c.getInt(0);
+                    Object obj = dict[0].get(mid);
+                    if (!(obj instanceof MessageObject)) continue;
+                    MessageObject mo = (MessageObject) obj;
+                    if (mo.messageOwner == null) continue;
+                    if (mo.messageOwner.message != null && mo.messageOwner.message.endsWith(MARKER)) continue;
+                    toMark.add(mid);
+                }
             }
             if (!toMark.isEmpty()) applyMarkers(dict, adapter, toMark);
         } catch (Throwable t) {
@@ -194,7 +192,7 @@ public final class DeletedArchive {
     // page only takes archived messages inside that range, slotted in by ID so its ends stay put.
     public static void injectDeleted(TLRPC.messages_Messages res, long dialogId, int maxId, int loadType) {
         try {
-            if (store == null || res == null || res.messages == null) return;
+            if (store == null || res == null || res.messages == null || !RecoveredChats.covers(dialogId)) return;
 
             java.util.HashMap<Integer, Integer> midToIndex = new java.util.HashMap<>();
             int oldest = Integer.MAX_VALUE;
