@@ -16,6 +16,7 @@ object DiscordSettings {
     val coloredNames by toggle("Colored names", summary = "Color members' names with their role color in mentions, the typing indicator, voice channels and member list headers.", default = true, icon = lucide("at-sign"))
     val developerMenu by toggle("Developer menu", summary = "Show Discord's existing developer tools in Settings.", default = true, icon = lucide("square-terminal"))
     val disableMessageSwipes by toggle("Disable message swipes", summary = "Stop swipes from starting replies or edits.", default = true, icon = lucide("move-horizontal"))
+    val draftPreview by toggle("Draft preview", summary = "Long press the send button to see your message in the chat before sending it.", default = true, icon = lucide("message-square"))
     val freemoji by toggle("Freemoji", summary = "Send locked custom emoji as image links.", default = true, icon = lucide("smile"))
     val hideActivityInvites by toggle("Hide activity invites", summary = "Hide activity invite cards in messages.", default = true, icon = lucide("gamepad-2"))
     val hideContactSyncPrompt by toggle("Hide contact sync prompt", summary = "Remove the contact sync promotion from the friends screen.", default = true, icon = lucide("contact"))

@@ -46,6 +46,13 @@ internal val userStore: MetroModule = function {
     paramCount(0)
 }.module
 
+/** DraftStore; its default export is the store. Named by its recent edits list. */
+internal val draftStore: MetroModule = function {
+    name("getRecentlyEditedDrafts")
+    strings("pickBy", "sortBy")
+    paramCount(1)
+}.module
+
 /** GuildRoleStore; its default export is the store. */
 internal val guildRoleStore: MetroModule = function {
     name("getNumRoles")
