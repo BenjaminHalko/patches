@@ -80,6 +80,10 @@ public final class NavigationButtons {
         hideToolbarButton("search", button, view, Settings.getBoolean("hide_toolbar_search_button", false));
     }
 
+    public static void hideMessagesButton(Enum<?> button, View view) {
+        hideToolbarButton("messages", button, view, Settings.getBoolean("hide_toolbar_messages_button", true));
+    }
+
     private static void hideToolbarButton(String kind, Enum<?> button, View view, boolean enabled) {
         boolean matches = button != null && matches(kind, button.name());
         boolean hidden = enabled && matches;
@@ -98,6 +102,8 @@ public final class NavigationButtons {
                 return "SEARCH".equals(name)
                         || "SEARCH_CAIRO".equals(name)
                         || "SEARCH_BOLD".equals(name);
+            case "messages":
+                return "MESSAGE_BUBBLE_OVERLAP".equals(name);
             default:
                 return false;
         }

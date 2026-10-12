@@ -65,6 +65,7 @@ val navigationButtons = patch("Navigation bar") {
             YouTubeSettings.hideToolbarCreateButton,
             YouTubeSettings.hideToolbarNotificationButton,
             YouTubeSettings.hideToolbarSearchButton,
+            YouTubeSettings.hideToolbarMessagesButton,
         ),
     )
 
@@ -107,6 +108,11 @@ val navigationButtons = patch("Navigation bar") {
             )
             call(
                 NavigationButtons.hideSearchButton,
+                capture("toolbarButton"),
+                thisObject.field(toolbarButtonIcon),
+            )
+            call(
+                NavigationButtons.hideMessagesButton,
                 capture("toolbarButton"),
                 thisObject.field(toolbarButtonIcon),
             )
@@ -175,4 +181,5 @@ object NavigationButtons : ExtClass("app.reseam.youtube.navbuttons.NavigationBut
     val hideCreateButton by static("java.lang.Enum", Type.View)
     val hideNotificationButton by static("java.lang.Enum", Type.View)
     val hideSearchButton by static("java.lang.Enum", Type.View)
+    val hideMessagesButton by static("java.lang.Enum", Type.View)
 }

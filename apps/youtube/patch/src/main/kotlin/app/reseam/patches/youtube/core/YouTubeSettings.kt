@@ -970,6 +970,12 @@ object YouTubeSettings {
         default = false,
     )
 
+    val hideToolbarMessagesButton by toggle(
+        "Hide toolbar messages button",
+        summary = "Hides the Messages inbox button in the top toolbar.",
+        default = true,
+    )
+
     val hideMiniplayerOverlayButtons by toggle(
         "Hide miniplayer overlay buttons",
         summary = "Hides the miniplayer expand, close and action buttons.",
