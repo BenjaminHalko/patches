@@ -16,3 +16,4 @@ Tested on Discord 347.12 Stable, Android 16. Other versions are untested.
 - Clean outgoing links leaves signed URLs unchanged.
 - The Reseam settings row uses Discord's Advanced icon.
 - Extensions reach Discord's stores, actions, React and design system as Metro modules bound to a wrap (`core/Modules.kt`), each named by one fingerprinted function in it. UI is built from Discord's own components, so it follows its theme.
+- Custom themes stay on this phone and never change Discord's synced appearance settings. A theme compiles to a semantic color variant that Discord's resolver selects through the theme context's experiments. Views Discord draws natively, such as the shared theme card's button, keep Discord's colors.

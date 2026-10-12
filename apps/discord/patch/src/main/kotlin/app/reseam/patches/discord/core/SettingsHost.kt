@@ -31,7 +31,7 @@ private object SettingsRow : ExtJsModule("discord-settings-row") {
 }
 
 /** The module that defines every row in Discord's settings, keyed by setting. */
-private val settingRows = function {
+internal val settingRows = function {
     name("")
     strings("MobileUserSettings", "SETTING_RENDERER_CONFIG")
     paramCount(7)
@@ -44,6 +44,6 @@ private val settingsList = function {
     paramCount(0)
 }
 
-private val getPackages = klass("com.discord.bridge.DCDPackageList").method("getPackages") {
+internal val getPackages = klass("com.discord.bridge.DCDPackageList").method("getPackages") {
     returns(Type.ArrayList)
 }

@@ -14,6 +14,7 @@ object DiscordSettings {
     val chatAnimationSwitch by toggle("Chat animation switch", summary = "Use the GIF autoplay switch to also turn off chat emoji animation.", default = true, icon = lucide("sparkles"))
     val cleanOutgoingLinks by toggle("Clean outgoing links", summary = "Remove tracking parameters from supported links when you send them.", default = true, icon = lucide("link"))
     val coloredNames by toggle("Colored names", summary = "Color members' names with their role color in mentions, the typing indicator, voice channels and member list headers.", default = true, icon = lucide("at-sign"))
+    val customThemes by toggle("Custom themes", summary = "Create, edit, share and use full themes, the Reseam theme included.", default = true, icon = lucide("swatch-book"))
     val developerMenu by toggle("Developer menu", summary = "Show Discord's existing developer tools in Settings.", default = true, icon = lucide("square-terminal"))
     val disableMessageSwipes by toggle("Disable message swipes", summary = "Stop swipes from starting replies or edits.", default = true, icon = lucide("move-horizontal"))
     val draftPreview by toggle("Draft preview", summary = "Long press the send button to see your message in the chat before sending it.", default = true, icon = lucide("message-square"))
