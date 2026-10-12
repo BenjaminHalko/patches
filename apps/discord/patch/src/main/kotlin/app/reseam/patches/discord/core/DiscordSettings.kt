@@ -35,6 +35,7 @@ object DiscordSettings {
     val localEditHistory by toggle("Local edit history", summary = "Show up to three previously displayed text versions of edited messages.", default = true, icon = lucide("history"))
     val localReadState by toggle("Local read state", summary = "Mark messages as read on this phone without updating your other devices.", default = true, icon = lucide("check-check"))
     val localThemes by toggle("Local themes", summary = "Use bundled Nitro themes and save your choice on this phone.", default = true, icon = lucide("paintbrush"))
+    val moderatorBadges by toggle("Moderator badges", summary = "Tag the server owner, admins, managers and moderators next to their names in chat.", default = true, icon = lucide("shield"))
     val preciseTimestamps by toggle("Precise timestamps", summary = "Show seconds in chat timestamps.", default = true, icon = lucide("clock"))
     val premiumAppIcons by toggle("Premium app icons", summary = "Use the premium launcher icons included in Discord.", default = true, icon = lucide("shapes"))
     val quietSuperReactions by toggle("Quiet Super Reactions", summary = "Remove looping Super Reaction decorations.", default = true, icon = lucide("party-popper"))
