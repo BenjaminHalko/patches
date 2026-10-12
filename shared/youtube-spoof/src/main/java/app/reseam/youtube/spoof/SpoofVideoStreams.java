@@ -38,8 +38,9 @@ public final class SpoofVideoStreams {
         return original;
     }
 
+    /** Downloads keep their request identity even with spoofing off, so a refused download can still be answered. */
     public static void fetchStreams(String url, Map<String, String> requestHeaders, byte[] requestBody) {
-        if (!isSpoofingEnabled() || url == null) return;
+        if (url == null) return;
         try {
             Uri uri = Uri.parse(url);
             // Every signed-in youtubei request carries the account; signed out or incognito carries none.
@@ -51,7 +52,8 @@ public final class SpoofVideoStreams {
             if (path.contains("get_drm_license") || path.contains("heartbeat") || path.contains("ad_break")) return;
             String videoId = uri.getQueryParameter("id");
             if (videoId == null || videoId.isEmpty()) return;
-            StreamingDataRequest.fetchRequest(videoId, requestHeaders, requestBody);
+            if (StreamingDataRequest.isOfflineRequest(requestBody)) StreamingDataRequest.setOfflineHeaders(requestHeaders);
+            else if (isSpoofingEnabled()) StreamingDataRequest.fetchRequest(videoId, requestHeaders, requestBody);
         } catch (Exception exception) {
             Logger.error(() -> "Spoof stream URL failure: " + exception);
         }

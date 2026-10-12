@@ -43,7 +43,6 @@ public final class OfflineStreams {
     private OfflineStreams() {}
 
     public static byte[] replaceRefused(byte[] playerResponse) {
-        if (!SpoofVideoStreams.isSpoofingEnabled()) return null;
         byte[] details = Proto.bytes(playerResponse, VIDEO_DETAILS);
         String videoId = details == null ? null : Proto.string(details, VIDEO_ID);
         byte[] refusal = Proto.bytes(playerResponse, OFFLINE_STATE);

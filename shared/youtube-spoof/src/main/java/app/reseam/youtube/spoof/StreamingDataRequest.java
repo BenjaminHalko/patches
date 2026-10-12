@@ -103,20 +103,12 @@ final class StreamingDataRequest {
         return configuration.clients.get(0).osName;
     }
 
+    static synchronized void setOfflineHeaders(Map<String, String> playerHeaders) {
+        offlineHeaders = forwardedHeaders(playerHeaders);
+    }
+
     static synchronized void fetchRequest(String videoId, Map<String, String> playerHeaders, byte[] playerBody) {
-        // HTTP field names are case-insensitive. Do not forward native authorization or cookies.
-        Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        if (playerHeaders != null) playerHeaders.forEach((key, value) -> {
-            if (key != null && value != null && (key.equalsIgnoreCase(VISITOR_ID_HEADER)
-                    || key.equalsIgnoreCase("X-GOOG-API-FORMAT-VERSION"))) headers.put(key, value);
-        });
-        String visitor = headers.get(VISITOR_ID_HEADER);
-        // Percent escapes occur in native requests; '+' is part of base64 and must stay intact.
-        if (visitor != null) headers.put(VISITOR_ID_HEADER, Uri.decode(visitor));
-        if (isOfflineRequest(playerBody)) {
-            offlineHeaders = headers;
-            return;
-        }
+        Map<String, String> headers = forwardedHeaders(playerHeaders);
         if (!requestHeaders.equals(headers)) {
             clearRequests();
             requestHeaders = headers;
@@ -218,7 +210,20 @@ final class StreamingDataRequest {
         return null;
     }
 
-    private static boolean isOfflineRequest(byte[] request) {
+    private static Map<String, String> forwardedHeaders(Map<String, String> playerHeaders) {
+        // HTTP field names are case-insensitive. Do not forward native authorization or cookies.
+        Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        if (playerHeaders != null) playerHeaders.forEach((key, value) -> {
+            if (key != null && value != null && (key.equalsIgnoreCase(VISITOR_ID_HEADER)
+                    || key.equalsIgnoreCase("X-GOOG-API-FORMAT-VERSION"))) headers.put(key, value);
+        });
+        String visitor = headers.get(VISITOR_ID_HEADER);
+        // Percent escapes occur in native requests; '+' is part of base64 and must stay intact.
+        if (visitor != null) headers.put(VISITOR_ID_HEADER, Uri.decode(visitor));
+        return headers;
+    }
+
+    static boolean isOfflineRequest(byte[] request) {
         if (request == null || request.length == 0) return false;
         try {
             return Proto.number(request, 8, 0) != 0;
