@@ -50,7 +50,7 @@ val antiDelete = patch("Recover deleted messages") {
             }
 
             processLoadedMessages.before {
-                call(DeletedArchive.injectDeleted, param(0), param(2))
+                call(DeletedArchive.injectDeleted, param(0), param(2), param(5), param(13))
             }
 
             chatOnResume.before {
@@ -90,8 +90,11 @@ val chatAdapter = processDeletedMessages
     .point { opcode(Opcode.IGET_OBJECT); field { owner(chatActivity.descriptor); type(chatAdapterRefresh.owner) } }
     .field("chatAdapter")
 
+// Params 5 and 13 are max_id and load_type, the range the page was requested for.
 val processLoadedMessages = messagesController.method("processLoadedMessages") {
     param(0, TL_MESSAGES)
+    param(5, Type.Int)
+    param(13, Type.Int)
 }
 
 val chatOnResume = chatActivity.method("onResume") { params() }

@@ -40,7 +40,7 @@ object DeletedArchive : ExtClass("app.reseam.telegram.antidelete.DeletedArchive"
     val onMarkDeleted by static("org.telegram.messenger.MessagesStorage", Type.Long, Type.ArrayList)
     val filterDeletedMessages by static(Type.ArrayList, SPARSE_ARRAYS, Type.Object)
     val reapplyMarkers by static(SPARSE_ARRAYS, Type.Object)
-    val injectDeleted by static(TL_MESSAGES, Type.Long)
+    val injectDeleted by static(TL_MESSAGES, Type.Long, Type.Int, Type.Int)
     val notifyDataSetChanged by static(Type.Object)
 }
 

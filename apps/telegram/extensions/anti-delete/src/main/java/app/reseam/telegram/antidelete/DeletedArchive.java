@@ -27,6 +27,11 @@ public final class DeletedArchive {
     private static final String MARKER = " 🗑️";
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
+    // MessagesController.LOAD_* passed to processLoadedMessages.
+    private static final int LOAD_BACKWARD = 0;
+    private static final int LOAD_FORWARD = 1;
+    private static final int LOAD_AROUND_DATE = 4;
+
     private static volatile android.database.sqlite.SQLiteDatabase store;
     private static final Set<Integer> localDeleteMids = ConcurrentHashMap.newKeySet();
     private static final Set<Integer> archivedMids = ConcurrentHashMap.newKeySet();
@@ -184,31 +189,38 @@ public final class DeletedArchive {
         }
     }
 
-    // Telegram records the ID range a loaded page covers as having no gaps, so a page only takes
-    // archived messages inside its own range; anything outside it would hide the messages between.
-    public static void injectDeleted(TLRPC.messages_Messages res, long dialogId) {
+    // Telegram records the ID range a loaded page was requested for as having no gaps
+    // (MessagesStorage.putMessages closes its holes from the page's first and last message), so a
+    // page only takes archived messages inside that range, slotted in by ID so its ends stay put.
+    public static void injectDeleted(TLRPC.messages_Messages res, long dialogId, int maxId, int loadType) {
         try {
-            if (store == null || res == null || res.messages == null || res.messages.isEmpty()) return;
+            if (store == null || res == null || res.messages == null) return;
 
             java.util.HashMap<Integer, Integer> midToIndex = new java.util.HashMap<>();
-            int minId = Integer.MAX_VALUE;
-            int maxId = Integer.MIN_VALUE;
+            int oldest = Integer.MAX_VALUE;
+            int newest = 0;
             for (int i = 0; i < res.messages.size(); i++) {
                 TLRPC.Message m = res.messages.get(i);
-                if (m == null) continue;
+                if (m == null || m.id <= 0) continue;
                 midToIndex.put(m.id, i);
-                minId = Math.min(minId, m.id);
-                maxId = Math.max(maxId, m.id);
+                oldest = Math.min(oldest, m.id);
+                newest = Math.max(newest, m.id);
             }
             if (midToIndex.isEmpty()) return;
 
+            int from = loadType == LOAD_FORWARD ? maxId + 1 : oldest;
+            int to;
+            if (loadType == LOAD_BACKWARD) to = maxId == 0 ? Integer.MAX_VALUE : maxId - 1;
+            else if (loadType == LOAD_FORWARD) to = newest;
+            else to = maxId == 0 && loadType != LOAD_AROUND_DATE ? Integer.MAX_VALUE : newest;
+
             Cursor c = store.rawQuery(
                     "SELECT mid, data FROM deleted WHERE uid = ? AND mid BETWEEN ? AND ?",
-                    new String[]{String.valueOf(dialogId), String.valueOf(minId), String.valueOf(maxId)});
+                    new String[]{String.valueOf(dialogId), String.valueOf(from), String.valueOf(to)});
+            ArrayList<TLRPC.Message> added = new ArrayList<>();
             int n = 0;
             try {
                 while (c.moveToNext()) {
-                    int mid = c.getInt(0);
                     byte[] bytes = c.getBlob(1);
                     if (bytes == null || bytes.length == 0) continue;
 
@@ -216,22 +228,26 @@ public final class DeletedArchive {
                     if (m == null) continue;
                     if (m.message == null) m.message = MARKER.trim();
                     else if (!m.message.endsWith(MARKER)) m.message = m.message + MARKER;
-                    Integer existingIndex = midToIndex.get(mid);
+                    Integer existingIndex = midToIndex.get(c.getInt(0));
                     if (existingIndex != null) res.messages.set(existingIndex, m);
-                    else res.messages.add(m);
+                    else added.add(m);
                     n++;
                 }
             } finally { c.close(); }
-            if (n > 0) {
-                java.util.Collections.sort(res.messages, (a, b) -> {
-                    if (a.date != b.date) return Integer.compare(b.date, a.date);
-                    return Integer.compare(b.id, a.id);
-                });
-                Log.i(TAG, "injected " + n + " archived message(s) for dialog " + dialogId);
-            }
+            for (TLRPC.Message m : added) res.messages.add(indexById(res.messages, m.id), m);
+            if (n > 0) Log.i(TAG, "injected " + n + " archived message(s) for dialog " + dialogId + " in " + from + ".." + to);
         } catch (Throwable t) {
             Log.w(TAG, "injectDeleted failed", t);
         }
+    }
+
+    // Pages are ordered newest first; local unsent messages carry negative IDs and stay where they are.
+    private static int indexById(ArrayList<TLRPC.Message> messages, int mid) {
+        for (int i = 0; i < messages.size(); i++) {
+            TLRPC.Message m = messages.get(i);
+            if (m != null && m.id > 0 && m.id < mid) return i;
+        }
+        return messages.size();
     }
 
     private static TLRPC.Message deserialize(byte[] bytes) {
