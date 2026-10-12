@@ -33,6 +33,13 @@ internal val react: MetroModule = function {
     paramCount(1)
 }.module
 
+/** Discord's message actions; its default export holds `jumpToMessage`, `receiveMessage` and the like. */
+internal val messageActions: MetroModule = function {
+    name("jumpToMessage")
+    strings("trackJump", "pauseAllMediaPlayers")
+    paramCount(1)
+}.module
+
 /** UserStore; its default export is the store. Named by the store's version counter. */
 internal val userStore: MetroModule = function {
     name("getUserStoreVersion")

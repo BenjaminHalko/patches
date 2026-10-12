@@ -32,6 +32,7 @@ object DiscordSettings {
     val hideThemeActivityPreviews by toggle("Hide theme activity previews", summary = "Remove activity cards from the Appearance preview.", default = true, icon = lucide("palette"))
     val hideTypingIndicator by toggle("Hide typing indicator", summary = "Stop others from seeing when you are typing.", default = true, icon = lucide("keyboard-off"))
     val instantChatJumps by toggle("Instant chat jumps", summary = "Jump to messages without animated scrolling.", default = true, icon = lucide("chevrons-down"))
+    val jumpToFirstMessage by toggle("Jump to first message", summary = "Add a button above Jump to present that jumps to the first message.", default = true, icon = lucide("chevrons-up"))
     val keepDeletedMessages by toggle("Keep deleted messages", summary = "Keep loaded messages after deletion and mark them as deleted.", default = true, icon = lucide("message-square-x"))
     val localEditHistory by toggle("Local edit history", summary = "Show up to three previously displayed text versions of edited messages.", default = true, icon = lucide("history"))
     val localReadState by toggle("Local read state", summary = "Mark messages as read on this phone without updating your other devices.", default = true, icon = lucide("check-check"))
