@@ -81,6 +81,8 @@ public final class ShortsFilter extends Filter {
                 "hide_shorts_info_panel", true, "shorts_info_panel_overview");
         final StringFilterGroup stickers = new StringFilterGroup(
                 "hide_shorts_stickers", true, "stickers_layer.e");
+        final StringFilterGroup productSticker = new StringFilterGroup(
+                "hide_shorts_tagged_products", true, "product_sticker.e");
         final StringFilterGroup likeButton = new StringFilterGroup(
                 "hide_shorts_like_button", false,
                 "shorts_like_button.e", "reel_like_button.e", "reel_like_toggled_button.e");
@@ -145,7 +147,7 @@ public final class ShortsFilter extends Filter {
                 shortsCompactFeedVideo, shelfHeaderPath, joinButton, subscribeButton,
                 paidPromotionLabel, livePreview, suggestedAction, pausedOverlayButtons, channelBar,
                 infoPanel, previewComment, autoDubbedLabel, fullVideoLinkLabel, videoTitle,
-                useSoundButton, useTemplateButton, soundButton, stickers, reelCarousel, soundMetadata,
+                useSoundButton, useTemplateButton, soundButton, stickers, productSticker, reelCarousel, soundMetadata,
                 likeFountain, likeButton, dislikeButton, commentsButton);
     }
 
