@@ -4,7 +4,7 @@
 
 package app.reseam.instagram.follows;
 
-import app.reseam.runtime.settings.ReseamSettings;
+import app.reseam.bundle.ReseamPatches;
 
 public final class FollowsYouIndicator {
     private static final String LABEL = "Follows you";
@@ -18,7 +18,7 @@ public final class FollowsYouIndicator {
     }
 
     public static String maybeAppend(String subtitle, Boolean followedBy) {
-        if (!ReseamSettings.getBoolean(SETTING_KEY, true)) return subtitle;
+        if (!ReseamPatches.bundle().settings().getBoolean(SETTING_KEY, true)) return subtitle;
         if (followedBy == null || !followedBy.booleanValue()) return subtitle;
         if (subtitle == null || subtitle.isEmpty()) return LABEL;
         if (subtitle.endsWith(SUFFIX) || subtitle.equals(LABEL)) return subtitle;

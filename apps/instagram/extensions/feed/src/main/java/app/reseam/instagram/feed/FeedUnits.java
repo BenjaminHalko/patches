@@ -6,7 +6,7 @@ package app.reseam.instagram.feed;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import app.reseam.runtime.settings.ReseamSettings;
+import app.reseam.bundle.ReseamPatches;
 
 /** Feed-unit JSON keys hidden by a Reseam toggle; each match checks the toggle, so changes apply to the next feed load. */
 public final class FeedUnits {
@@ -31,6 +31,6 @@ public final class FeedUnits {
     public static boolean matches(String field, Object unitKey) {
         if (!field.equals(unitKey)) return false;
         Toggle toggle = HIDDEN.get(field);
-        return toggle == null || !ReseamSettings.getBoolean(toggle.key, toggle.fallback);
+        return toggle == null || !ReseamPatches.bundle().settings().getBoolean(toggle.key, toggle.fallback);
     }
 }

@@ -7,7 +7,6 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.SpannableString;
@@ -20,23 +19,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.lang.ref.WeakReference;
+import app.reseam.bundle.ReseamPatches;
 import app.reseam.youtube.core.Settings;
 import app.reseam.youtube.core.YouTubeContext;
 import app.reseam.youtube.video.VideoInformation;
-import app.reseam.runtime.settings.ReseamSettings;
 
 /** Paired count labels mounted by Litho inside YouTube's existing voting buttons. */
 public final class DislikeLabel extends Drawable {
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static final Set<DislikeLabel> labels = Collections.newSetFromMap(new WeakHashMap<>());
     private static volatile String regularVideoId = "";
-    private static final SharedPreferences.OnSharedPreferenceChangeListener SETTINGS = (prefs, key) -> {
-        if (key == null || key.startsWith("you_tube_settings.ryd_")) refresh(null);
-    };
     static {
         ReturnYouTubeDislike.onChange.add(DislikeLabel::refresh);
-        SharedPreferences prefs = ReseamSettings.prefs();
-        if (prefs != null) prefs.registerOnSharedPreferenceChangeListener(SETTINGS);
+        ReseamPatches.bundle().settings().addOnChangeListener(key -> {
+            if (key == null || key.startsWith("you_tube_settings.ryd_")) refresh(null);
+        });
     }
     private static void refresh(String id) {
         MAIN.post(() -> {

@@ -9,20 +9,18 @@ import app.reseam.patch.appEntry
 import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.settings.settingsHost
+import app.reseam.patches.bundle.reseamBrand
 
 private const val ARRAY_LIST_ADD = "(Ljava/lang/Object;)Z"
 
 val telegramSettings = settingsHost("telegram") {
     compatibleWith(TELEGRAM)
+    brand(reseamBrand)
 
     install {
         val logo = Resources::class.java.getResourceAsStream("/reseam-logo.png")?.use { it.readBytes() }
             ?: error("reseam-logo.png missing from patch jar resources")
-        files.write("assets/reseam/logo.png", logo)
-
-        appEntry {
-            call(TelegramSettingsEntry.init, application)
-        }
+        files.write("assets/reseam-patches/logo.png", logo)
 
         // R8 renames TextCell and UItem, so the row is built here from the resolved classes.
         TelegramSettingsEntry.reseamItem.implement {

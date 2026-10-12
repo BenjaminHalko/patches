@@ -8,9 +8,8 @@ import app.reseam.patch.after
 import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.patch
-import app.reseam.patch.settings.ReseamSettings
-import app.reseam.patch.settings.ToggleSetting
 import app.reseam.patch.settings.section
+import app.reseam.patch.settings.valueOf
 import app.reseam.patches.instagram.core.AppearanceSettings
 import app.reseam.patches.instagram.core.INSTAGRAM
 import app.reseam.patches.instagram.core.NavigationTabs
@@ -26,8 +25,7 @@ val hideNavigationTabs = patch("Hide navigation tabs") {
 
     execute {
         tabListBuilder.after {
-            fun enabled(setting: ToggleSetting) = call(ReseamSettings.getBoolean, string(setting.key), bool(setting.default))
-            returnValue(call(NavigationTabs.filter, capture("result"), enabled(AppearanceSettings.hideReelsTab), enabled(AppearanceSettings.hideCreateTab)))
+            returnValue(call(NavigationTabs.filter, capture("result"), valueOf(AppearanceSettings.hideReelsTab), valueOf(AppearanceSettings.hideCreateTab)))
         }
     }
 }

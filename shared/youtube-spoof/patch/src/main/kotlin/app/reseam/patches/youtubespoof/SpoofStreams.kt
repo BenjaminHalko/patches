@@ -24,7 +24,7 @@ internal const val BYTE_BUFFER = "java.nio.ByteBuffer"
 private const val CRONET_ENGINE = "org.chromium.net.CronetEngine"
 private const val SPOOFED_STREAMS = "app.reseam.youtube.spoof.StreamingData"
 
-// Served to the extension's web runtime from assets/reseam/web.
+// Served to the extension's web runtime from assets/reseam-patches/web.
 private val WEB_ASSETS = listOf(
     "index.html", "host.js", "page.js", "botguard.js", "player.js",
     "ejs/yt.solver.lib.min.js", "ejs/yt.solver.core.min.js",
@@ -61,7 +61,7 @@ fun PatchRuntime.spoofStreams(activityOnCreate: MethodTarget) {
     WEB_ASSETS.forEach { name ->
         val asset = WebAssets::class.java.getResourceAsStream("/web/$name")?.use { it.readBytes() }
             ?: error("web/$name is missing from the patch jar")
-        files.write("assets/reseam/web/$name", asset)
+        files.write("assets/reseam-patches/web/$name", asset)
     }
 
     hookSabrPlayback()

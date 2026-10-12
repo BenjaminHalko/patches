@@ -9,7 +9,7 @@ import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.gate
-import app.reseam.patch.settings.ReseamSettings
+import app.reseam.patch.settings.valueOf
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
 import app.reseam.patches.youtube.core.YouTubeSettings
@@ -28,7 +28,7 @@ val spoofAppVersion = patch("Spoof app version") {
         val target = YouTubeSettings.spoofAppVersionTarget
         gate(YouTubeSettings.spoofAppVersion) {
             appVersionName.after {
-                capture("appVersionName").assign(call(ReseamSettings.getString, string(target.key), string(target.default)))
+                capture("appVersionName").assign(valueOf(target))
             }
         }
     }

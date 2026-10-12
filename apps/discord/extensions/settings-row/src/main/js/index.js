@@ -4,7 +4,7 @@
 const RESEAM_SETTINGS = "RESEAM_SETTINGS";
 
 function openReseamSettings() {
-    globalThis.nativeModuleProxy.ReseamSettings.openSettings();
+    globalThis.nativeModuleProxy.ReseamSettings.openSettings("reseam-patches");
 }
 
 // Discord reads rows from this frozen map on every lookup, so a copy with the Reseam row replaces it.

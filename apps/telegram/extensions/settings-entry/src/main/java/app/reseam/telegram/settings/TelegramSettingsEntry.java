@@ -13,17 +13,12 @@ import android.view.View;
 
 import java.io.InputStream;
 
-import app.reseam.runtime.settings.ReseamSettings;
-import app.reseam.runtime.settings.ReseamSettingsScreen;
+import app.reseam.bundle.ReseamPatches;
 
 public final class TelegramSettingsEntry {
     private static volatile Drawable cachedLogo;
 
     private TelegramSettingsEntry() {}
-
-    public static void init(Context ctx) {
-        ReseamSettings.init(ctx);
-    }
 
     // Built from Telegram's own cell and list item, so the body is emitted by the settings host.
     public static Object reseamItem(Activity activity) {
@@ -31,13 +26,13 @@ public final class TelegramSettingsEntry {
     }
 
     public static View.OnClickListener opener() {
-        return v -> ReseamSettingsScreen.open();
+        return v -> ReseamPatches.bundle().openSettings();
     }
 
     public static Drawable logo(Context ctx) {
         Drawable cached = cachedLogo;
         if (cached != null) return cached;
-        try (InputStream in = ctx.getAssets().open("reseam/logo.png")) {
+        try (InputStream in = ctx.getAssets().open("reseam-patches/logo.png")) {
             Bitmap bmp = BitmapFactory.decodeStream(in);
             if (bmp != null) {
                 BitmapDrawable d = new BitmapDrawable(ctx.getResources(), bmp);

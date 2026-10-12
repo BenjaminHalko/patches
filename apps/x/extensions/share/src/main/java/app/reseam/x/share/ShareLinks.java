@@ -7,7 +7,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 
-import app.reseam.runtime.settings.ReseamSettings;
+import app.reseam.bundle.ReseamPatches;
 
 /**
  * Moves post links in outgoing shares to the embed-friendly host chosen in settings. Only links to
@@ -26,7 +26,7 @@ public final class ShareLinks {
     public static String rewrite(String link) {
         String key = providerKey;
         if (key == null || link == null) return link;
-        String provider = ReseamSettings.getChoice(key);
+        String provider = ReseamPatches.bundle().settings().getChoice(key);
         if (OFF.equals(provider)) return link;
         URI uri;
         try {

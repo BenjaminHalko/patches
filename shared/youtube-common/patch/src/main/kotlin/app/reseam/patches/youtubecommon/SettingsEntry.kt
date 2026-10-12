@@ -9,15 +9,15 @@ import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.point
 import app.reseam.patch.redirectTo
-import app.reseam.patch.settings.ReseamSettingsScreen
+import app.reseam.patch.settings.Reseam
 
 /**
- * Makes a `<Preference>` row whose `<intent>` has the action
- * [app.reseam.patch.settings.SETTINGS_OPEN_ACTION] open the Reseam settings when tapped.
+ * Makes a `<Preference>` row whose `<intent>` was set up by
+ * [app.reseam.patch.settings.opensSettings] open the bundle's settings when tapped.
  */
 fun PatchRuntime.openSettingsFromPreferenceIntents() {
     preferencePerformClick.point { invokeVirtual { name("startActivity") } }
-        .redirectTo(ReseamSettingsScreen.startActivity)
+        .redirectTo(Reseam.startActivity)
 }
 
 // androidx keeps the class name, but R8 renames performClick.

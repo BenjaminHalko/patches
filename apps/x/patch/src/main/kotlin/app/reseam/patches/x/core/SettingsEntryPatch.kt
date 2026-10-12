@@ -13,7 +13,7 @@ import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.point
-import app.reseam.patch.settings.ReseamSettingsScreen
+import app.reseam.patch.settings.openSettings
 
 private const val FUNCTION0 = "kotlin.jvm.functions.Function0"
 private const val LOGO_PATH = "res/drawable/reseam_logo.png"
@@ -36,7 +36,7 @@ val settingsEntry = patch("Reseam entry in X settings") {
 
         // R8 renames kotlin.Unit.INSTANCE, so the Function0 body is emitted here.
         OpenReseamSettings.invoke.implement {
-            call(ReseamSettingsScreen.open)
+            openSettings()
             returnValue(staticField(unitInstance))
         }
 

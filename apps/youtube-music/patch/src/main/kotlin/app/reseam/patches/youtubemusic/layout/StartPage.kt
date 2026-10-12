@@ -3,12 +3,12 @@
 
 package app.reseam.patches.youtubemusic.layout
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.settings.section
+import app.reseam.patch.settings.valueOf
 import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
 import app.reseam.patches.youtubemusic.core.YouTubeMusicSettings
 import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
@@ -21,7 +21,7 @@ val startPage = patch("Start page") {
 
     execute {
         defaultBrowseId.after {
-            val page = call(Settings.getChoice, string(YouTubeMusicSettings.startPage.key))
+            val page = valueOf(YouTubeMusicSettings.startPage)
             whenFalse(page.callVirtual("java.lang.String", "isEmpty", "()Z")) { returnValue(page) }
         }
     }
@@ -33,8 +33,4 @@ private val defaultBrowseId = method("defaultBrowseId") {
     strings("FEmusic_library_sideloaded_tracks", "FEmusic_home")
     params()
     returns(Type.String)
-}
-
-private object Settings : ExtClass("app.reseam.runtime.settings.ReseamSettings") {
-    val getChoice by static(Type.String, returns = Type.String)
 }

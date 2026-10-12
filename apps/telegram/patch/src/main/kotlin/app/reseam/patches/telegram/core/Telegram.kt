@@ -29,7 +29,6 @@ val sendMessagesHelper = klass("org.telegram.messenger.SendMessagesHelper")
 val chatActivity = klass("chatActivity") { strings("PinnedMessagesCount") }
 
 object TelegramSettingsEntry : ExtClass("app.reseam.telegram.settings.TelegramSettingsEntry") {
-    val init by static(Type.Context)
     val reseamItem by static(ACTIVITY, returns = Type.Object)
     val logo by static(Type.Context, returns = DRAWABLE)
     val opener by static(returns = CLICK_LISTENER)

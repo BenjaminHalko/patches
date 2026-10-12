@@ -14,10 +14,6 @@ const val X_PACKAGE = "com.twitter.android"
 // targets were anchored on), so targets are read against one release at a time.
 val X: CompatiblePackage = X_PACKAGE("12.29.1-prod.01")
 
-object XSettingsEntry : ExtClass("app.reseam.x.settings.XSettingsEntry") {
-    val init by static(Type.Context)
-}
-
 object OpenReseamSettings : ExtClass("app.reseam.x.settings.OpenReseamSettings") {
     val invoke by method(returns = "kotlin.Unit")
 }

@@ -23,7 +23,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import app.reseam.runtime.settings.ReseamSettings;
 import app.reseam.youtube.core.Logger;
 import app.reseam.youtube.core.Settings;
 import app.reseam.youtube.core.YouTubeContext;
@@ -100,11 +99,11 @@ final class SponsorBlockApi {
     }
 
     static synchronized String userId() {
-        String key = "you_tube_settings.sb_private_user_id";
-        String id = ReseamSettings.getString(key, "");
+        String key = "sb_private_user_id";
+        String id = Settings.getString(key, "");
         if (id.isEmpty()) {
             id = UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", "");
-            ReseamSettings.setString(key, id);
+            Settings.setString(key, id);
         }
         return id;
     }

@@ -5,15 +5,19 @@ package app.reseam.youtubemusic.core;
 
 import java.util.function.BooleanSupplier;
 
-import app.reseam.runtime.settings.ReseamSettings;
+import app.reseam.bundle.ReseamPatches;
 
-/** Reads the toggles declared by {@code object YouTubeMusicSettings} in the patches. */
+/** Reads the settings declared by {@code object YouTubeMusicSettings} in the patches. */
 public final class MusicSettings {
     private static final String PREFIX = "you_tube_music_settings.";
 
     private MusicSettings() {}
 
     public static BooleanSupplier toggle(String key, boolean defaultValue) {
-        return () -> ReseamSettings.getBoolean(PREFIX + key, defaultValue);
+        return () -> ReseamPatches.bundle().settings().getBoolean(PREFIX + key, defaultValue);
+    }
+
+    public static String getChoice(String key) {
+        return ReseamPatches.bundle().settings().getChoice(PREFIX + key);
     }
 }

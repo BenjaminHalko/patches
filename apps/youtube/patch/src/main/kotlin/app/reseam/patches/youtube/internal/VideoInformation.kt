@@ -13,6 +13,7 @@ import app.reseam.patch.classTarget
 import app.reseam.patch.dex.AccessFlags
 import app.reseam.patch.dex.DexClass
 import app.reseam.patch.dex.Opcode
+import app.reseam.patch.enumConstant
 import app.reseam.patch.dex.opcode
 import app.reseam.patch.dex.parameterTypes
 import app.reseam.patch.dex.ref
@@ -124,7 +125,7 @@ private val mdxPlayerConstructor = mdxPlayerDirectorClass.methods("mdxPlayerCons
     custom { !isStatic }
 }.single { true }
 
-private val seekSourceEnum = klass("seekSource") { strings("SEEK_SOURCE_UNKNOWN") }
+private val seekSourceEnum = klass("seekSource") { enumConstants("SEEK_SOURCE_UNKNOWN") }
 
 private val playerSeekRelativeMethod = method("playerRelativeSeek") {
     inClass(playerParameterBuilderVideoClass)
@@ -152,14 +153,7 @@ private val mdxSeekMethod = method("mdxSeek") {
     returns(Type.Boolean)
 }
 
-private val playerSeekSource = fieldTarget("playerSeekSource") {
-    seekSourceEnum.method("<clinit>").point {
-        string("SEEK_SOURCE_UNKNOWN")
-    }.next {
-        opcode(Opcode.SPUT_OBJECT)
-        field { type(seekSourceEnum.descriptor) }
-    }.field().ref
-}
+private val playerSeekSource = seekSourceEnum.enumConstant("SEEK_SOURCE_UNKNOWN")
 
 /** The player status callback used by later patches. */
 val playerStatus = method("playerStatus") {

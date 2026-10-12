@@ -2,4 +2,5 @@
 name = "reseam-patches"
 author = "Reseam"
 description = "Patches for Android apps"
+license = "AGPL-3.0"
 format_version = 1

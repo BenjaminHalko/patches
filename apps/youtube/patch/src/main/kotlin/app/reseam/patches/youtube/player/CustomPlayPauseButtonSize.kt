@@ -10,7 +10,7 @@ import app.reseam.patch.dex.literal
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.point
-import app.reseam.patch.settings.ReseamSettings
+import app.reseam.patch.settings.valueOf
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
 import app.reseam.patches.youtube.core.YouTubeSettings
@@ -33,7 +33,7 @@ val customPlayPauseButtonSize = patch("Custom play and pause button size") {
             invokeVirtual { name("findViewById"); params(Type.Int); returns(Type.View) }
             argument(1) { literal(button) }
         }.next { resultOf(Type.View) }.captureAs("button", Type.View).after {
-            call(PlayPauseButtonSize.resize, capture("button"), call(ReseamSettings.getString, string(size.key), string(size.default)))
+            call(PlayPauseButtonSize.resize, capture("button"), valueOf(size))
         }
     }
 }

@@ -4,7 +4,7 @@
 package app.reseam.patches.youtubemusic.core
 
 import app.reseam.patch.patch
-import app.reseam.patch.settings.SETTINGS_OPEN_ACTION
+import app.reseam.patch.settings.opensSettings
 import app.reseam.patches.youtubecommon.openSettingsFromPreferenceIntents
 
 val settingsEntry = patch("Reseam entry in YouTube Music settings") {
@@ -21,9 +21,7 @@ val settingsEntry = patch("Reseam entry in YouTube Music settings") {
                 this["android:title"] = "Reseam Settings"
                 this["android:persistent"] = "false"
                 appendChild(
-                    createElement("intent").apply {
-                        this["android:action"] = SETTINGS_OPEN_ACTION
-                    },
+                    createElement("intent").apply { opensSettings() },
                 )
             }
             val about = root.children.firstOrNull { it["android:key"] == "settings_header_about_youtube_music" }

@@ -407,14 +407,14 @@ public class ReturnYouTubeDislikeAPI {
     private static String getUserID() {
         RuntimeUtils.verifyOffMainThread();
 
-        String userID = app.reseam.runtime.settings.ReseamSettings.getString("you_tube_settings.ryd_user_id", "");
+        String userID = Settings.getString("ryd_user_id", "");
         if (!userID.isEmpty()) {
             return userID;
         }
 
         userID = registerAsNewUser();
         if (userID != null) {
-            app.reseam.runtime.settings.ReseamSettings.setString("you_tube_settings.ryd_user_id", userID);
+            Settings.setString("ryd_user_id", userID);
         }
         return userID;
     }

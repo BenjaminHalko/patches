@@ -3,15 +3,10 @@
 
 package app.reseam.patches.x.core
 
-import app.reseam.patch.appEntry
 import app.reseam.patch.settings.settingsHost
+import app.reseam.patches.bundle.reseamBrand
 
 val xSettings = settingsHost("x") {
     compatibleWith(X)
-
-    install {
-        appEntry {
-            call(XSettingsEntry.init, application)
-        }
-    }
+    brand(reseamBrand)
 }

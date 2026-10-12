@@ -4,5 +4,4 @@
 dependencies {
     compileOnly(project(":shared:youtube-common"))
     compileOnly(project(":apps:youtube-music:extensions:core"))
-    compileOnly(project(":shared:settings-runtime"))
 }

@@ -6,7 +6,6 @@ package app.reseam.youtube.buttons;
 
 import android.view.View;
 
-import app.reseam.runtime.settings.ReseamSettings;
 import app.reseam.youtube.controls.PlayerControlButton;
 import app.reseam.youtube.core.Logger;
 import app.reseam.youtube.core.Settings;
@@ -28,7 +27,7 @@ public final class LoopVideo {
 
     private static void toggle(View ignored) {
         final boolean enabled = !Settings.getBoolean("loop_video", false);
-        ReseamSettings.setBoolean("you_tube_settings.loop_video", enabled);
+        Settings.setBoolean("loop_video", enabled);
         Logger.debug(() -> "Loop video " + (enabled ? "enabled" : "disabled"));
     }
 

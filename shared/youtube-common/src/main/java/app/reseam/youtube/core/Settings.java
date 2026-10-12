@@ -3,11 +3,11 @@
 
 package app.reseam.youtube.core;
 
-import app.reseam.runtime.settings.ReseamSettings;
+import app.reseam.bundle.ReseamPatches;
 
 /**
- * Reads the toggles declared by {@code object YouTubeSettings} in the patches. Extension code that
- * branches at runtime goes through here; hooks emitted by the settings DSL call the shared runtime directly.
+ * Reads and stores the settings declared by {@code object YouTubeSettings} in the patches. Extension code that
+ * branches at runtime goes through here; hooks emitted by the settings DSL call the app runtime directly.
  */
 public final class Settings {
     /** The bundle derives a key from the settings object and property name: {@code YouTubeSettings.debugLogging}. */
@@ -16,14 +16,22 @@ public final class Settings {
     private Settings() {}
 
     public static boolean getBoolean(String key, boolean defaultValue) {
-        return ReseamSettings.getBoolean(PREFIX + key, defaultValue);
+        return ReseamPatches.bundle().settings().getBoolean(PREFIX + key, defaultValue);
     }
 
     public static String getString(String key, String defaultValue) {
-        return ReseamSettings.getString(PREFIX + key, defaultValue);
+        return ReseamPatches.bundle().settings().getString(PREFIX + key, defaultValue);
     }
 
     public static String getChoice(String key) {
-        return ReseamSettings.getChoice(PREFIX + key);
+        return ReseamPatches.bundle().settings().getChoice(PREFIX + key);
+    }
+
+    public static void setBoolean(String key, boolean value) {
+        ReseamPatches.bundle().settings().setBoolean(PREFIX + key, value);
+    }
+
+    public static void setString(String key, String value) {
+        ReseamPatches.bundle().settings().setString(PREFIX + key, value);
     }
 }

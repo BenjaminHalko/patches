@@ -17,7 +17,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.concurrent.TimeoutException;
 
-import app.reseam.runtime.settings.ReseamSettings;
 import app.reseam.youtube.core.Settings;
 import app.reseam.youtube.core.YouTubeContext;
 
@@ -28,7 +27,7 @@ import app.reseam.youtube.core.YouTubeContext;
  */
 final class TokenServer {
     private static final String API = "https://mint.reseam.app/v1/";
-    private static final String CREDENTIAL_KEY = "you_tube_settings.token_server_credential";
+    private static final String CREDENTIAL_KEY = "token_server_credential";
     private static final int HTTP_TIMEOUT_MILLISECONDS = 10_000;
     private static final int MAX_RESPONSE_BYTES = 64 * 1024;
 
@@ -46,7 +45,7 @@ final class TokenServer {
         String body = new JSONObject().put("videoId", videoId).toString();
         Response response = post("tokens", body, credential(deadline), deadline);
         if (response.status == HttpURLConnection.HTTP_UNAUTHORIZED) {
-            ReseamSettings.setString(CREDENTIAL_KEY, "");
+            Settings.setString(CREDENTIAL_KEY, "");
             response = post("tokens", body, credential(deadline), deadline);
         }
         JSONObject token = success(response);
@@ -55,11 +54,11 @@ final class TokenServer {
     }
 
     private static synchronized String credential(long deadline) throws Exception {
-        String credential = ReseamSettings.getString(CREDENTIAL_KEY, "");
+        String credential = Settings.getString(CREDENTIAL_KEY, "");
         if (!credential.isEmpty()) return credential;
         String body = new JSONObject().put("packageName", YouTubeContext.get().getPackageName()).toString();
         credential = success(post("installations", body, null, deadline)).getString("credential");
-        ReseamSettings.setString(CREDENTIAL_KEY, credential);
+        Settings.setString(CREDENTIAL_KEY, credential);
         return credential;
     }
 

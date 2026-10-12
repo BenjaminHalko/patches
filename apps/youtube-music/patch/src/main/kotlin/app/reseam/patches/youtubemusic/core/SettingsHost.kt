@@ -6,11 +6,13 @@ package app.reseam.patches.youtubemusic.core
 import app.reseam.patch.appEntry
 import app.reseam.patch.settings.section
 import app.reseam.patch.settings.settingsHost
+import app.reseam.patches.bundle.reseamBrand
 import app.reseam.patches.youtubecommon.YouTubeCommonSettings
 import app.reseam.patches.youtubecommon.YouTubeContext
 
 val youTubeMusicSettings = settingsHost("youtube-music") {
     compatibleWith(YOUTUBE_MUSIC)
+    brand(reseamBrand)
 
     settings(section(YouTubeMusicSettingsPages.Advanced, "Diagnostics", YouTubeCommonSettings.debugLogging))
 

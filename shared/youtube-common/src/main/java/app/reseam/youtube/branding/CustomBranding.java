@@ -11,7 +11,8 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 
-import app.reseam.runtime.settings.ReseamSettings;
+import app.reseam.bundle.ReseamPatches;
+import app.reseam.runtime.Settings;
 import app.reseam.youtube.core.Logger;
 import app.reseam.youtube.core.YouTubeContext;
 
@@ -24,8 +25,9 @@ public final class CustomBranding {
             Context context = YouTubeContext.get();
             PackageManager manager = context.getPackageManager();
             String packageName = context.getPackageName();
-            String name = ReseamSettings.getChoice(nameKey);
-            String icon = ReseamSettings.getChoice(iconKey);
+            Settings settings = ReseamPatches.bundle().settings();
+            String name = settings.getChoice(nameKey);
+            String icon = settings.getChoice(iconKey);
             String aliasPrefix = packageName + ".reseam_";
             String selectedAlias = aliasPrefix + icon + "_" + name;
             // Enable the destination first so switching presets always leaves a launcher entry.
@@ -53,7 +55,7 @@ public final class CustomBranding {
     /** The Reseam glyph only matches the Reseam icon; a custom icon keeps YouTube's notification icon. */
     public static void setNotificationIcon(Notification.Builder builder, String iconKey) {
         try {
-            if (!"reseam".equals(ReseamSettings.getChoice(iconKey))) return;
+            if (!"reseam".equals(ReseamPatches.bundle().settings().getChoice(iconKey))) return;
             Context context = YouTubeContext.get();
             int id = context.getResources().getIdentifier(
                     "reseam_notification_icon", "drawable", context.getPackageName());

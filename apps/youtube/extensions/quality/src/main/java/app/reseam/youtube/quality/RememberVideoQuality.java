@@ -4,7 +4,6 @@
 
 package app.reseam.youtube.quality;
 
-import app.reseam.runtime.settings.ReseamSettings;
 import app.reseam.youtube.core.Logger;
 import app.reseam.youtube.core.Settings;
 import app.reseam.youtube.video.VideoInformation;
@@ -33,7 +32,7 @@ public final class RememberVideoQuality {
 
     public static void userChangedQuality(int resolution) {
         if (!shouldRememberVideoQuality()) return;
-        ReseamSettings.setString("you_tube_settings.video_quality_default", Integer.toString(resolution));
+        Settings.setString("video_quality_default", Integer.toString(resolution));
         Logger.debug(() -> "Remembered video quality: " + resolution);
     }
 

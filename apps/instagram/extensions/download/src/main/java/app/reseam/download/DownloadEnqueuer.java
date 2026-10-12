@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-import app.reseam.runtime.settings.ReseamSettings;
+import app.reseam.bundle.ReseamPatches;
 
 final class DownloadEnqueuer {
     private static final String DEFAULT_DOWNLOAD_DIR = "ReseamInsta";
@@ -217,7 +217,7 @@ final class DownloadEnqueuer {
     }
 
     private static String downloadDir() {
-        String value = ReseamSettings.getString(DOWNLOAD_FOLDER_KEY, DEFAULT_DOWNLOAD_DIR);
+        String value = ReseamPatches.bundle().settings().getString(DOWNLOAD_FOLDER_KEY, DEFAULT_DOWNLOAD_DIR);
         if (value == null) return DEFAULT_DOWNLOAD_DIR;
         value = value.trim();
         return value.isEmpty() ? DEFAULT_DOWNLOAD_DIR : value;

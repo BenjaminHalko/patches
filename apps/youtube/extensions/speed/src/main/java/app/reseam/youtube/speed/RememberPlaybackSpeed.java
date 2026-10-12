@@ -4,7 +4,6 @@
 
 package app.reseam.youtube.speed;
 
-import app.reseam.runtime.settings.ReseamSettings;
 import app.reseam.youtube.core.Logger;
 import app.reseam.youtube.core.Settings;
 import app.reseam.youtube.video.VideoInformation;
@@ -36,7 +35,7 @@ public final class RememberPlaybackSpeed {
 
     public static void userSelectedPlaybackSpeed(float speed) {
         if (!Settings.getBoolean("remember_playback_speed", false)) return;
-        ReseamSettings.setString("you_tube_settings.playback_speed_default", Float.toString(speed));
+        Settings.setString("playback_speed_default", Float.toString(speed));
         Logger.debug(() -> "Remembered playback speed: " + speed);
     }
 

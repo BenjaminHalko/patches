@@ -21,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import app.reseam.runtime.settings.ReseamSettings;
 import app.reseam.youtube.core.Logger;
 import app.reseam.youtube.core.Settings;
 import app.reseam.youtube.controls.PlayerControls;
@@ -225,8 +224,8 @@ public final class SponsorBlock {
         if (counted.add(segment.uuid) && Settings.getBoolean("sb_track_skip_count", true)) {
             long count = storedLong("sb_local_skip_count");
             long milliseconds = storedLong("sb_local_time_saved");
-            ReseamSettings.setString("you_tube_settings.sb_local_skip_count", Long.toString(count + 1));
-            ReseamSettings.setString("you_tube_settings.sb_local_time_saved", Long.toString(milliseconds + saved));
+            Settings.setString("sb_local_skip_count", Long.toString(count + 1));
+            Settings.setString("sb_local_time_saved", Long.toString(milliseconds + saved));
             SponsorBlockApi.execute(() -> {
                 try { SponsorBlockApi.request("POST", "/api/viewedVideoSponsorTime", "UUID", segment.uuid); }
                 catch (Exception error) { Logger.debug(() -> "SponsorBlock view count: " + error); }
@@ -259,7 +258,7 @@ public final class SponsorBlock {
     }
 
     static long storedLong(String name) {
-        try { return Long.parseLong(ReseamSettings.getString("you_tube_settings." + name, "0")); }
+        try { return Long.parseLong(Settings.getString(name, "0")); }
         catch (NumberFormatException ignored) { return 0; }
     }
 

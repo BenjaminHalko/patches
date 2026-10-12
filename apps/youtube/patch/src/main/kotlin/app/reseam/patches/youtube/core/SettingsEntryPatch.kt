@@ -6,7 +6,7 @@ package app.reseam.patches.youtube.core
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.patch
-import app.reseam.patch.settings.SETTINGS_OPEN_ACTION
+import app.reseam.patch.settings.opensSettings
 import app.reseam.patches.youtube.internal.booleanFeatureReads
 import app.reseam.patches.youtubecommon.openSettingsFromPreferenceIntents
 
@@ -54,9 +54,7 @@ val settingsEntry = patch("Reseam entry in YouTube settings") {
                         this["app:iconSpaceReserved"] = "true"
                     }
                     appendChild(
-                        createElement("intent").apply {
-                            this["android:action"] = SETTINGS_OPEN_ACTION
-                        },
+                        createElement("intent").apply { opensSettings() },
                     )
                 },
             )

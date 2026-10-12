@@ -35,7 +35,6 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import app.reseam.runtime.settings.ReseamSettings;
 import app.reseam.youtube.controls.SheetDialog;
 import app.reseam.youtube.controls.Ui;
 import app.reseam.youtube.core.Logger;
@@ -107,7 +106,7 @@ public final class CustomPlaybackSpeed {
             // Falls through to the reset below, like an out-of-range value.
         }
         showInvalidSpeedToast();
-        ReseamSettings.setString("you_tube_settings." + TAP_AND_HOLD_KEY, DEFAULT_TAP_AND_HOLD);
+        Settings.setString(TAP_AND_HOLD_KEY, DEFAULT_TAP_AND_HOLD);
         return Float.parseFloat(DEFAULT_TAP_AND_HOLD);
     }
 
@@ -117,7 +116,7 @@ public final class CustomPlaybackSpeed {
         } catch (IllegalArgumentException exception) {
             Logger.info(() -> "Invalid custom playback speeds: " + exception);
             showInvalidSpeedToast();
-            ReseamSettings.setString("you_tube_settings." + SPEEDS_KEY, DEFAULT_SPEEDS);
+            Settings.setString(SPEEDS_KEY, DEFAULT_SPEEDS);
             return parseSpeeds(DEFAULT_SPEEDS);
         }
     }

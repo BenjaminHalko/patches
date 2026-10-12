@@ -7,7 +7,7 @@ package app.reseam.instagram.download;
 import android.content.Context;
 import android.widget.Toast;
 
-import app.reseam.runtime.settings.ReseamSettings;
+import app.reseam.bundle.ReseamPatches;
 
 final class Ui {
     private static final String SHOW_TOAST_KEY = "download_settings.show_toast";
@@ -16,7 +16,7 @@ final class Ui {
 
     static void showToast(Context context, String message) {
         try {
-            if (!ReseamSettings.getBoolean(SHOW_TOAST_KEY, true)) return;
+            if (!ReseamPatches.bundle().settings().getBoolean(SHOW_TOAST_KEY, true)) return;
             if (context != null) Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
         } catch (Throwable t) {
             Logcat.e("showToast failed", t);

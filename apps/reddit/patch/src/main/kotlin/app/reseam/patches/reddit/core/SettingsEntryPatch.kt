@@ -23,7 +23,7 @@ import app.reseam.patch.native.NewMethod
 import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.replace
-import app.reseam.patch.settings.ReseamSettingsScreen
+import app.reseam.patch.settings.openSettings
 
 private const val FUNCTION0 = "kotlin.jvm.functions.Function0"
 private const val SETTINGS_SECTION = "com.reddit.settings.usersettings.UserSettingsSection"
@@ -55,7 +55,7 @@ val settingsEntry = patch("Reseam entry in Reddit settings") {
 
         // R8 renames kotlin.Unit.INSTANCE, so the Function0 body is emitted here.
         OpenReseamSettings.invoke.implement {
-            call(ReseamSettingsScreen.open)
+            openSettings()
             returnValue(staticField(unitInstance))
         }
         ReseamSettingsIcon.unit.implement { returnValue(staticField(unitInstance)) }

@@ -1,23 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-
 package app.reseam.instagram.settings;
 
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
-import app.reseam.runtime.settings.ReseamSettings;
-import app.reseam.runtime.settings.ReseamSettingsScreen;
+import app.reseam.bundle.ReseamPatches;
 
 public final class InstagramSettingsEntry {
-    private static final String TAG = "ReseamSettings";
     private static final int RESEAM_VIEW_TAG = 0x7f5151cc;
     private static final int RESEAM_DECOR_TAG = 0x7f5151cd;
     private static final int RESEAM_REPOST_VISIBILITY_TAG = 0x7f5151ce;
@@ -32,9 +28,6 @@ public final class InstagramSettingsEntry {
     private InstagramSettingsEntry() {}
 
     public static void init(Context ctx) {
-        Log.i(TAG, "InstagramSettingsEntry.init() called");
-        ReseamSettings.init(ctx);
-        IgdsToggleRows.install();
         Context app = ctx == null ? null : ctx.getApplicationContext();
         if (app instanceof Application) {
             repostViewIds = resolveRepostViewIds(app);
@@ -53,7 +46,6 @@ public final class InstagramSettingsEntry {
     private static void installLongPressHook(Application app) {
         if (hookInstalled) return;
         hookInstalled = true;
-        Log.i(TAG, "Installing activity lifecycle hook for long-press detection");
         app.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
             @Override public void onActivityCreated(Activity a, Bundle b) {}
             @Override public void onActivityStarted(Activity a) {}
@@ -71,10 +63,10 @@ public final class InstagramSettingsEntry {
         decor.setTag(RESEAM_DECOR_TAG, Boolean.TRUE);
         decor.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override public void onGlobalLayout() {
-                walk(decor, activity, ReseamSettings.getBoolean(HIDE_REPOST_SETTING, false));
+                walk(decor, activity, hideRepost());
             }
         });
-        walk(decor, activity, ReseamSettings.getBoolean(HIDE_REPOST_SETTING, false));
+        walk(decor, activity, hideRepost());
     }
 
     private static void walk(View v, Activity activity, boolean hideRepost) {
@@ -92,18 +84,14 @@ public final class InstagramSettingsEntry {
         CharSequence cd = v.getContentDescription();
         if (cd != null) {
             String s = cd.toString().toLowerCase();
-            // Match hamburger/overflow menu buttons
             if (s.contains("menu") || s.contains("options") || s.contains("more") || s.contains("hamburger")) {
                 if (v.getTag(RESEAM_VIEW_TAG) == null) {
                     v.setTag(RESEAM_VIEW_TAG, Boolean.TRUE);
-                    // Make sure the view can receive long-click events
                     v.setLongClickable(true);
                     v.setOnLongClickListener(view -> {
-                        Log.i(TAG, "Long-press detected, opening Reseam Settings");
-                        ReseamSettingsScreen.open();
+                        ReseamPatches.bundle().openSettings();
                         return true;
                     });
-                    Log.i(TAG, "Attached long-press listener to: " + cd + " (class=" + v.getClass().getName() + ")");
                 }
             }
         }
@@ -112,6 +100,10 @@ public final class InstagramSettingsEntry {
             int n = g.getChildCount();
             for (int i = 0; i < n; i++) walk(g.getChildAt(i), activity, hideRepost);
         }
+    }
+
+    private static boolean hideRepost() {
+        return ReseamPatches.bundle().settings().getBoolean(HIDE_REPOST_SETTING, false);
     }
 
     private static boolean isRepostView(int id) {

@@ -6,7 +6,7 @@ package app.reseam.x.featureswitches;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import app.reseam.runtime.settings.ReseamSettings;
+import app.reseam.bundle.ReseamPatches;
 
 /** Feature switch values forced by a Reseam toggle; each read checks the toggle, so changes apply live. */
 public final class FeatureSwitchOverrides {
@@ -33,7 +33,7 @@ public final class FeatureSwitchOverrides {
     /** The forced value for {@code key}, or null when the app's own value applies. */
     public static Object lookup(String key) {
         Entry entry = OVERRIDES.get(key);
-        if (entry == null || !ReseamSettings.getBoolean(entry.toggleKey, entry.toggleDefault)) return null;
+        if (entry == null || !ReseamPatches.bundle().settings().getBoolean(entry.toggleKey, entry.toggleDefault)) return null;
         return entry.value;
     }
 }

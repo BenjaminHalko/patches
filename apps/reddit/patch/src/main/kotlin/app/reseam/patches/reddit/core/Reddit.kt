@@ -13,10 +13,6 @@ const val REDDIT_PACKAGE = "com.reddit.frontpage"
 // Pinned: newer versions change code the targets were not read against.
 val REDDIT: CompatiblePackage = REDDIT_PACKAGE("2026.39.0")
 
-object RedditSettingsEntry : ExtClass("app.reseam.reddit.settings.RedditSettingsEntry") {
-    val init by static(Type.Context)
-}
-
 object OpenReseamSettings : ExtClass("app.reseam.reddit.settings.OpenReseamSettings") {
     val invoke by method(returns = "kotlin.Unit")
 }

@@ -39,7 +39,7 @@ final class WebRuntime {
             + "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
     private static final String HOST = "www.youtube.com";
     private static final String ROOT = "/reseam/web/";
-    private static final String ASSETS = "reseam/web/";
+    private static final String ASSETS = "reseam-patches/web/";
     private static final long TIMEOUT_MILLISECONDS = 20_000;
 
     private final Handler main = new Handler(Looper.getMainLooper());

@@ -103,6 +103,20 @@ path = "shared/youtube-spoof/patch/src/main/resources/web/ejs/**"
 SPDX-FileCopyrightText = "yt-dlp ejs contributors <https://github.com/yt-dlp/ejs>"
 SPDX-License-Identifier = "Unlicense"
 
+# ── Inter, by Rasmus Andersson, unmodified ──────────────────────────────────
+
+[[annotations]]
+path = "shared/bundle/patch/src/main/resources/brand/InterVariable.ttf"
+SPDX-FileCopyrightText = "2016 The Inter Project Authors <https://github.com/rsms/inter>"
+SPDX-License-Identifier = "OFL-1.1"
+
+# ── Lucide icons, unmodified ────────────────────────────────────────────────
+
+[[annotations]]
+path = "shared/bundle/patch/src/main/resources/icons/**"
+SPDX-FileCopyrightText = "2026 Lucide Icons and Contributors"
+SPDX-License-Identifier = "ISC"
+
 # ── Gradle wrapper (Apache-2.0, from the Gradle project) ────────────────────
 
 [[annotations]]

@@ -7,7 +7,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import app.reseam.runtime.settings.ReseamSettings;
+import app.reseam.bundle.ReseamPatches;
+import app.reseam.runtime.Reseam;
 
 public final class FlagOverrides {
     private static volatile Overrides overrides;
@@ -28,12 +29,12 @@ public final class FlagOverrides {
         current = new Overrides();
         for (String group : spec().split(";")) {
             String[] parts = group.split("\\|", -1);
-            if (!ReseamSettings.getBoolean(parts[0], Boolean.parseBoolean(parts[1]))) continue;
+            if (!Reseam.isEnabled(ReseamPatches.NAME, parts[0], Boolean.parseBoolean(parts[1]))) continue;
             addAll(current.disabled, parts[2]);
             addAll(current.forced, parts[3]);
         }
         // Flags are read before settings load; keep the defaults until they have.
-        if (ReseamSettings.prefs() != null) overrides = current;
+        if (Reseam.isStarted()) overrides = current;
         return current;
     }
 

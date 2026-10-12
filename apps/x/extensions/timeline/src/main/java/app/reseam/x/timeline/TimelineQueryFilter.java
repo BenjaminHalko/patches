@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import app.reseam.runtime.settings.ReseamSettings;
+import app.reseam.bundle.ReseamPatches;
 
 /**
  * Keeps unwanted entries out of timelines. Every timeline is read from the timeline_entry table
@@ -25,7 +25,7 @@ public final class TimelineQueryFilter {
         }
 
         boolean isOn() {
-            return ReseamSettings.getBoolean(key, defaultValue);
+            return ReseamPatches.bundle().settings().getBoolean(key, defaultValue);
         }
     }
 
