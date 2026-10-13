@@ -21,7 +21,7 @@ object MediaSettings : SettingsGroup(InstagramStrings) {
 }
 
 object PlaybackSettings : SettingsGroup(InstagramStrings) {
-    val disableVideoAutoplay by toggle(default = true, icon = lucide("circle-pause"))
+    val disableVideoAutoplay by toggle(default = false, icon = lucide("circle-pause"))
 }
 
 object StorySettings : SettingsGroup(InstagramStrings) {
@@ -62,9 +62,9 @@ object AppearanceSettings : SettingsGroup(InstagramStrings) {
 object FeedSettings : SettingsGroup(InstagramStrings) {
     val hideAds by toggle(default = true, icon = lucide("megaphone-off"))
     val followingOnly by toggle(default = false, icon = lucide("users"))
-    val hideSuggestedAccounts by toggle(default = false, icon = lucide("user-plus"))
-    val hideThreadsUnits by toggle(default = false, icon = lucide("list-x"))
-    val hideShoppingUnits by toggle(default = false, icon = lucide("shopping-bag"))
+    val hideSuggestedAccounts by toggle(default = true, icon = lucide("user-plus"))
+    val hideThreadsUnits by toggle(default = true, icon = lucide("list-x"))
+    val hideShoppingUnits by toggle(default = true, icon = lucide("shopping-bag"))
 }
 
 object DownloadSettings : SettingsGroup(InstagramStrings) {

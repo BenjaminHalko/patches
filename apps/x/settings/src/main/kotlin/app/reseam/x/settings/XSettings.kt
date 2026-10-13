@@ -10,7 +10,7 @@ import app.reseam.patch.settings.toggle
 import app.reseam.patches.bundle.lucide
 
 object XSettings : SettingsGroup(XStrings) {
-    val defaultToFollowing by toggle(default = true, icon = lucide("users"))
+    val defaultToFollowing by toggle(default = false, icon = lucide("users"))
     val hidePromotionPrompts by toggle(default = true, icon = lucide("rocket"))
     val hideAds by toggle(default = true, icon = lucide("megaphone-off"))
     val hidePremiumUpsells by toggle(default = true, icon = lucide("gem"))
@@ -36,7 +36,7 @@ object XSettings : SettingsGroup(XStrings) {
 
     val shareLinkProvider by
         choice(
-            default = "fixvx.com",
+            default = "off",
             choices =
                 listOf(
                     Choice("fixvx.com", XStrings.shareLinkProviderFixvxCom),

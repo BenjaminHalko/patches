@@ -117,7 +117,7 @@ object YouTubeMusicSettings : SettingsGroup(YouTubeMusicStrings) {
                 ),
         )
 
-    val startMinimized by toggle(default = true)
+    val startMinimized by toggle(default = false)
 
     val playbackSpeed by
         choice(

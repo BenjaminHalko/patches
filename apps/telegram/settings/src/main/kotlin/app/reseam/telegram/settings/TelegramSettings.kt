@@ -13,7 +13,7 @@ object TelegramSettings : SettingsGroup(TelegramStrings) {
     val hideSponsoredAds by toggle(default = true, icon = lucide("megaphone-off"))
     val disableAutoUpdate by toggle(default = true, icon = lucide("refresh-cw-off"))
     val unlockPremium by toggle(default = true, icon = lucide("gem"))
-    val hideTyping by toggle(default = true, icon = lucide("keyboard-off"))
+    val hideTyping by toggle(default = false, icon = lucide("keyboard-off"))
     val boostDownloads by toggle(default = true, icon = lucide("download"))
     val saveFromRestricted by toggle(default = true, icon = lucide("lock-open"))
     val removePlayStoreRestrictions by toggle(default = true, icon = lucide("store"))

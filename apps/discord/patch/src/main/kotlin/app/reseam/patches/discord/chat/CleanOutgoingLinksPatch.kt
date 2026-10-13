@@ -16,7 +16,6 @@ import app.reseam.patches.discord.core.discordSettings
 val cleanOutgoingLinks = patch("Clean outgoing links") {
     description("Remove tracking parameters from supported links when you send them.")
     compatibleWith(DISCORD)
-    enabledByDefault(false)
     settings(discordSettings, section(DiscordStrings.sectionChat, DiscordSettings.cleanOutgoingLinks))
 
     execute {

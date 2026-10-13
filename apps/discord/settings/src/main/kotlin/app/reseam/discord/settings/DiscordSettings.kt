@@ -33,7 +33,7 @@ object DiscordSettings : SettingsGroup(DiscordStrings) {
     val hideReplyPreviews by toggle(default = true, icon = lucide("reply"))
     val hideShopEntry by toggle(default = true, icon = lucide("shopping-bag"))
     val hideThemeActivityPreviews by toggle(default = true, icon = lucide("palette"))
-    val hideTypingIndicator by toggle(default = true, icon = lucide("keyboard-off"))
+    val hideTypingIndicator by toggle(default = false, icon = lucide("keyboard-off"))
     val instantChatJumps by toggle(default = true, icon = lucide("chevrons-down"))
     val jumpToFirstMessage by toggle(default = true, icon = lucide("chevrons-up"))
     val keepDeletedMessages by toggle(default = true, icon = lucide("message-square-x"))

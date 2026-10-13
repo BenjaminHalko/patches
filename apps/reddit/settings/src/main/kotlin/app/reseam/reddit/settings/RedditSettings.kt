@@ -22,7 +22,7 @@ object RedditSettings : SettingsGroup(RedditStrings) {
     val hideRecommendedCommunities by toggle(default = true, icon = lucide("users"))
     val hideTrendingSearches by toggle(default = true, icon = lucide("search-x"))
     val ignoreSuggestedSort by toggle(default = false, icon = lucide("arrow-down-wide-narrow"))
-    val hideCreateTab by toggle(default = true, icon = lucide("square-plus"))
+    val hideCreateTab by toggle(default = false, icon = lucide("square-plus"))
     val hideInboxTab by toggle(default = false, icon = lucide("inbox"))
     val hidePremiumSettings by toggle(default = true, icon = lucide("settings"))
     val blockForcedUpdates by toggle(default = true, icon = lucide("shield-check"))
