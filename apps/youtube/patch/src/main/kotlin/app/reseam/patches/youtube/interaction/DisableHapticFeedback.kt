@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.youtube.interaction
 
@@ -10,9 +9,10 @@ import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.settings.PlayerControlsSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 /**
  * Each player gesture vibrates from its own method, and each of those names the failure it logs
@@ -28,25 +28,25 @@ val disableHapticFeedback = patch("Disable haptic feedback") {
         youTubeSettings,
         section(
             YouTubeSettingsPages.Controls,
-            "Haptic feedback",
-            YouTubeSettings.hapticsChapters,
-            YouTubeSettings.hapticsPreciseSeeking,
-            YouTubeSettings.hapticsSeekUndo,
-            YouTubeSettings.hapticsZoom,
+            YouTubeStrings.sectionHapticFeedback,
+            PlayerControlsSettings.hapticsChapters,
+            PlayerControlsSettings.hapticsPreciseSeeking,
+            PlayerControlsSettings.hapticsSeekUndo,
+            PlayerControlsSettings.hapticsZoom,
         ),
     )
 
     execute {
-        gate(YouTubeSettings.hapticsChapters) {
+        gate(PlayerControlsSettings.hapticsChapters) {
             chapterHaptics.alwaysReturn()
         }
-        gate(YouTubeSettings.hapticsPreciseSeeking) {
+        gate(PlayerControlsSettings.hapticsPreciseSeeking) {
             preciseSeekingHaptics.alwaysReturn()
         }
-        gate(YouTubeSettings.hapticsSeekUndo) {
+        gate(PlayerControlsSettings.hapticsSeekUndo) {
             seekUndoHaptics.alwaysReturn()
         }
-        gate(YouTubeSettings.hapticsZoom) {
+        gate(PlayerControlsSettings.hapticsZoom) {
             zoomHaptics.alwaysReturn()
         }
     }

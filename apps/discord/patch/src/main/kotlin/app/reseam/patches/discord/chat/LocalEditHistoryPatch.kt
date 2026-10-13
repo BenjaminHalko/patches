@@ -3,12 +3,13 @@
 
 package app.reseam.patches.discord.chat
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val localEditHistory = patch("Local edit history") {
@@ -16,7 +17,7 @@ val localEditHistory = patch("Local edit history") {
     compatibleWith(DISCORD)
     enabledByDefault(false)
     dependsOn(messageHistory)
-    settings(discordSettings, section("Chat", DiscordSettings.localEditHistory))
+    settings(discordSettings, section(DiscordStrings.sectionChat, DiscordSettings.localEditHistory))
 
     execute {
         gate(DiscordSettings.localEditHistory) {

@@ -3,6 +3,7 @@
 
 package app.reseam.patches.instagram.profile
 
+import app.reseam.instagram.settings.InstagramStrings
 import app.reseam.patch.Type
 import app.reseam.patch.field
 import app.reseam.patch.klass
@@ -10,7 +11,7 @@ import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
-import app.reseam.patches.instagram.core.AppearanceSettings
+import app.reseam.instagram.settings.AppearanceSettings
 import app.reseam.patches.instagram.core.INSTAGRAM
 import app.reseam.patches.instagram.core.instagramSettings
 import app.reseam.patches.instagram.core.signatureCheck
@@ -21,7 +22,7 @@ val hideThreadsBadge = patch("Hide Threads badge") {
     description("Removes the Threads badge, label and profile link chip from profiles.")
     compatibleWith(INSTAGRAM)
     dependsOn(signatureCheck)
-    settings(instagramSettings, section("Appearance", AppearanceSettings.hideThreadsBadge))
+    settings(instagramSettings, section(InstagramStrings.sectionAppearance, AppearanceSettings.hideThreadsBadge))
 
     execute {
         gate(AppearanceSettings.hideThreadsBadge) {

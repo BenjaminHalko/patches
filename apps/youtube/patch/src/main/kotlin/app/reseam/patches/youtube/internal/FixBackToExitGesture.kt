@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.internal
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.before
@@ -17,6 +16,7 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patches.youtube.core.MAIN_ACTIVITY
 import app.reseam.patches.youtube.core.YOUTUBE
+import app.reseam.youtube.misc.bindings.FixBackToExitGesture
 
 private const val RECYCLER_VIEW = "android.support.v7.widget.RecyclerView"
 private const val ITERATOR = "java.util.Iterator"
@@ -36,20 +36,14 @@ val fixBackToExitGesture = patch {
             point("scrollFeedsToTopDone") { invokeInterface { owner(ITERATOR); name("next") } }
                 .next { opcode(Opcode.GOTO) }
                 .next { opcode(Opcode.IGET_OBJECT) }
-                .after { call(FixBackToExitGesture.onTopView) }
+                .after { FixBackToExitGesture.onTopView() }
         }
 
-        mainActivityOnBackPressed.before { call(FixBackToExitGesture.onBackPressStarted) }
+        mainActivityOnBackPressed.before { FixBackToExitGesture.onBackPressStarted() }
         mainActivityOnBackPressed
             .point("mainActivityOnBackPressedReturn") { opcode(Opcode.RETURN_VOID) }
-            .before { call(FixBackToExitGesture.onBackPressed, thisObject.cast(Type.Activity)) }
+            .before { FixBackToExitGesture.onBackPressed(thisObject.cast(Type.Activity)) }
     }
-}
-
-object FixBackToExitGesture : ExtClass("app.reseam.youtube.misc.FixBackToExitGesture") {
-    val onBackPressStarted by static()
-    val onTopView by static()
-    val onBackPressed by static(Type.Activity)
 }
 
 // Methods that scroll registered feed RecyclerViews to position 0, including instant

@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.youtubecommon
 
@@ -38,9 +37,7 @@ val lithoColorHook = patch {
             }
             .captureArgumentAs("color", 1)
             .before {
-                var color = capture("color")
-                hooks.forEach { hook -> color = call(hook, color) }
-                capture("color").assign(color)
+                capture("color").assign(hooks.fold(capture("color")) { color, hook -> call(hook, color) })
             }
     }
 }

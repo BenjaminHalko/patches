@@ -3,21 +3,11 @@
 
 package app.reseam.patches.universal
 
-import app.reseam.patch.ExtClass
-import app.reseam.patch.Type
 import app.reseam.patch.patch
+import app.reseam.universal.installer.bindings.PlayStoreInstaller
 
 private const val PACKAGE_MANAGER = "android.content.pm.PackageManager"
 private const val INSTALL_SOURCE_INFO = "android.content.pm.InstallSourceInfo"
-
-private object PlayStoreInstaller : ExtClass("app.reseam.universal.installer.PlayStoreInstaller") {
-    val ownPackage by static(returns = Type.String)
-    val getInstallerPackageName by static(PACKAGE_MANAGER, Type.String, returns = Type.String)
-    val getInstallSourceInfo by static(PACKAGE_MANAGER, Type.String, returns = INSTALL_SOURCE_INFO)
-    val getInstallingPackageName by static(INSTALL_SOURCE_INFO, returns = Type.String)
-    val getInitiatingPackageName by static(INSTALL_SOURCE_INFO, returns = Type.String)
-}
-
 val reportPlayStoreInstaller = patch("Report Play Store as installer") {
     description("Makes the app see itself as installed from Google Play.")
 

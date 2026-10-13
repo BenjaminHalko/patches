@@ -11,8 +11,8 @@ import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.settings.ToggleSetting
-import app.reseam.patches.x.core.FeatureSwitchOverrides
 import app.reseam.patches.x.core.X
+import app.reseam.x.featureswitches.bindings.FeatureSwitchOverrides
 
 val featureSwitchOverrides = patch {
     compatibleWith(X)
@@ -20,7 +20,7 @@ val featureSwitchOverrides = patch {
     execute {
         // Every typed getter funnels through this one lookup.
         featureSwitchValue.before {
-            val override = call(FeatureSwitchOverrides.lookup, param(0))
+            val override = FeatureSwitchOverrides.lookup(param(0))
             whenNotNull(override) { returnValue(override) }
         }
     }
@@ -29,7 +29,7 @@ val featureSwitchOverrides = patch {
 /** Forces the given feature switches off while [toggle] is on. Requires [featureSwitchOverrides]. */
 fun PatchRuntime.disableFeatureSwitches(toggle: ToggleSetting, vararg keys: String) {
     appEntry {
-        for (key in keys) call(FeatureSwitchOverrides.disable, string(key), string(toggle.key), bool(toggle.default))
+        for (key in keys) FeatureSwitchOverrides.disable(string(key), string(toggle.key), bool(toggle.default))
     }
 }
 

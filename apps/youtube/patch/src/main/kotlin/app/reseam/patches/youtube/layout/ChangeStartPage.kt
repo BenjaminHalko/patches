@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.layout
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.before
@@ -14,9 +13,11 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.misc.bindings.StartPage
+import app.reseam.youtube.settings.AppearanceSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 private val paneDescriptor = klass("paneDescriptor") { strings("PaneDescriptor for ") }
 
@@ -25,13 +26,13 @@ val changeStartPage = patch("Change start page") {
     compatibleWith(YOUTUBE)
     settings(
         youTubeSettings,
-        section(YouTubeSettingsPages.Appearance, "Start page", YouTubeSettings.changeStartPage, YouTubeSettings.changeStartPageAlways),
+        section(YouTubeSettingsPages.Appearance, YouTubeStrings.sectionStartPage, AppearanceSettings.changeStartPage, AppearanceSettings.changeStartPageAlways),
     )
 
     execute {
-        homeBrowseId.after { capture("browseId").assign(call(StartPage.overrideBrowseId, capture("browseId"))) }
+        homeBrowseId.after { capture("browseId").assign(StartPage.overrideBrowseId(capture("browseId"))) }
         // Shorts and Search have no browse id of their own, so they are reached by intent action.
-        launchIntent.before { call(StartPage.overrideIntentAction, param(0)) }
+        launchIntent.before { StartPage.overrideIntentAction(param(0)) }
     }
 }
 
@@ -50,9 +51,4 @@ val homeBrowseId = homePaneDescriptor
 val launchIntent = method("launchIntent") {
     strings("has_handled_intent")
     params("android.content.Intent")
-}
-
-object StartPage : ExtClass("app.reseam.youtube.misc.StartPage") {
-    val overrideBrowseId by static(Type.String, returns = Type.String)
-    val overrideIntentAction by static("android.content.Intent")
 }

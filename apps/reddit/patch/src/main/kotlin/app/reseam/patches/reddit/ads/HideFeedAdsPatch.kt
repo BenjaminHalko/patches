@@ -7,15 +7,16 @@ import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.reddit.core.REDDIT
-import app.reseam.patches.reddit.core.RedditSettings
+import app.reseam.reddit.settings.RedditSettings
 import app.reseam.patches.reddit.core.feedSectionContent
 import app.reseam.patches.reddit.core.hideFeedElements
 import app.reseam.patches.reddit.core.redditSettings
+import app.reseam.reddit.settings.RedditStrings
 
 val hideFeedAds = patch("Hide feed ads") {
     description("Removes promoted posts from feeds and search results.")
     compatibleWith(REDDIT)
-    settings(redditSettings, section("Ads", RedditSettings.hideFeedAds))
+    settings(redditSettings, section(RedditStrings.sectionAds, RedditSettings.hideFeedAds))
 
     execute {
         gate(RedditSettings.hideFeedAds) { adSections.forEach { it.alwaysReturn() } }

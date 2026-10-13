@@ -12,33 +12,34 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.section
 import app.reseam.patch.settings.whenEnabled
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.settings.AppearanceSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 private const val PREFERENCE_SCREEN = "androidx.preference.PreferenceScreen"
 
 // Preference keys from YouTube's settings XML. Premium has one row for members and one for offers.
 private val ROWS = mapOf(
-    "account_switcher_key" to YouTubeSettings.hideSettingsAccountSwitcher,
-    "parent_tools_key" to YouTubeSettings.hideSettingsFamilyCenter,
-    "premium_benefits_category_key" to YouTubeSettings.hideSettingsPremium,
-    "premium_category_key" to YouTubeSettings.hideSettingsPremium,
-    "subscription_product_setting_key" to YouTubeSettings.hideSettingsPurchases,
-    "billing_and_payment_key" to YouTubeSettings.hideSettingsBilling,
-    "badges_key" to YouTubeSettings.hideSettingsBadges,
-    "your_data_key" to YouTubeSettings.hideSettingsYourData,
-    "connected_accounts_browse_page_key" to YouTubeSettings.hideSettingsConnectedApps,
-    "premium_early_access_browse_page_key" to YouTubeSettings.hideSettingsExperimentalFeatures,
-    "pair_with_tv_key" to YouTubeSettings.hideSettingsWatchOnTv,
-    "help_key" to YouTubeSettings.hideSettingsHelp,
-    "send_feedback_key" to YouTubeSettings.hideSettingsSendFeedback,
+    "account_switcher_key" to AppearanceSettings.hideSettingsAccountSwitcher,
+    "parent_tools_key" to AppearanceSettings.hideSettingsFamilyCenter,
+    "premium_benefits_category_key" to AppearanceSettings.hideSettingsPremium,
+    "premium_category_key" to AppearanceSettings.hideSettingsPremium,
+    "subscription_product_setting_key" to AppearanceSettings.hideSettingsPurchases,
+    "billing_and_payment_key" to AppearanceSettings.hideSettingsBilling,
+    "badges_key" to AppearanceSettings.hideSettingsBadges,
+    "your_data_key" to AppearanceSettings.hideSettingsYourData,
+    "connected_accounts_browse_page_key" to AppearanceSettings.hideSettingsConnectedApps,
+    "premium_early_access_browse_page_key" to AppearanceSettings.hideSettingsExperimentalFeatures,
+    "pair_with_tv_key" to AppearanceSettings.hideSettingsWatchOnTv,
+    "help_key" to AppearanceSettings.hideSettingsHelp,
+    "send_feedback_key" to AppearanceSettings.hideSettingsSendFeedback,
 )
 
 val hideSettingsMenuItems = patch("Hide settings menu items") {
     description("Adds options to hide rows from YouTube's settings screen.")
     compatibleWith(YOUTUBE)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Appearance, "Settings menu", *ROWS.values.distinct().toTypedArray()))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Appearance, YouTubeStrings.sectionSettingsMenu, *ROWS.values.distinct().toTypedArray()))
 
     execute {
         val screen = removeServerHiddenRows

@@ -13,11 +13,11 @@ import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.point
-import app.reseam.patches.youtube.core.PlayerType
-import app.reseam.patches.youtube.core.ShortsPlayerState
-import app.reseam.patches.youtube.core.VideoState
 import app.reseam.patches.youtube.core.YOUTUBE
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.player.bindings.PlayerType
+import app.reseam.youtube.player.bindings.ShortsPlayer
+import app.reseam.youtube.player.bindings.VideoState
 
 // Where the player is (minimized, maximized, fullscreen, a Short) and whether it is playing.
 // Everything player-related reads it, so it is hooked once here.
@@ -26,8 +26,8 @@ val playerTypeHook = patch {
     dependsOn(youTubeSettings)
 
     execute {
-        playerTypeSetter.before { call(PlayerType.set, param(0)) }
-        nativePlayerTypeSetter.before { call(PlayerType.set, param(0)) }
+        playerTypeSetter.before { PlayerType.set(param(0)) }
+        nativePlayerTypeSetter.before { PlayerType.set(param(0)) }
 
         // Resource ids only exist against a loaded app, so the targets they seed are built here.
         val reelWatchPlayer = resources.id("id", "reel_watch_player")?.toLong()
@@ -38,7 +38,7 @@ val playerTypeHook = patch {
         }.point { literal(reelWatchPlayer) }
             .next { opcode(Opcode.MOVE_RESULT_OBJECT) }
             .captureAs("shortsPlayer", Type.View)
-            .after { call(ShortsPlayerState.attach, capture("shortsPlayer")) }
+            .after { ShortsPlayer.attach(capture("shortsPlayer")) }
 
         val play = resources.id("string", "accessibility_play")?.toLong() ?: error("string/accessibility_play is missing")
         val pause = resources.id("string", "accessibility_pause")?.toLong() ?: error("string/accessibility_pause is missing")
@@ -50,7 +50,7 @@ val playerTypeHook = patch {
         }.before {
             // The app itself tolerates a null state here, so reading the field cannot be unconditional.
             whenNotNull(param(0)) {
-                call(VideoState.set, param(0).field(videoStateField))
+                VideoState.set(param(0).field(videoStateField))
             }
         }
     }

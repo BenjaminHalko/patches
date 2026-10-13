@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.youtube.layout
 
@@ -12,21 +11,22 @@ import app.reseam.patch.method
 import app.reseam.patch.point
 import app.reseam.patches.youtube.core.MAIN_ACTIVITY
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.mainActivityOnCreate
 import app.reseam.patches.youtube.core.youTubeSettings
-import app.reseam.patches.youtubecommon.CustomBranding
 import app.reseam.patches.youtubecommon.Launcher
 import app.reseam.patches.youtubecommon.customBrandingFor
+import app.reseam.youtube.branding.bindings.CustomBranding
+import app.reseam.youtube.settings.AppearanceSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val customBranding = customBrandingFor(
     YOUTUBE,
     youTubeSettings,
     YouTubeSettingsPages.Appearance,
-    "General",
-    YouTubeSettings.customBrandingName,
-    YouTubeSettings.customBrandingIcon,
+    YouTubeStrings.sectionGeneral,
+    AppearanceSettings.customBrandingName,
+    AppearanceSettings.customBrandingIcon,
     Launcher(
         activity = MAIN_ACTIVITY,
         entry = "com.google.android.youtube.app.honeycomb.Shell\$HomeActivity",
@@ -44,11 +44,7 @@ val customBranding = customBrandingFor(
         .previous { opcode(Opcode.IGET_OBJECT); field { type(Type.Object) } }
         .field()
     notificationMethod.after {
-        call(
-            CustomBranding.setNotificationIcon,
-            thisObject.field(builderField).cast("android.app.Notification\$Builder"),
-            string(YouTubeSettings.customBrandingIcon.key),
-        )
+        CustomBranding.setNotificationIcon(thisObject.field(builderField).cast("android.app.Notification\$Builder"), string(AppearanceSettings.customBrandingIcon.key))
     }
 }
 

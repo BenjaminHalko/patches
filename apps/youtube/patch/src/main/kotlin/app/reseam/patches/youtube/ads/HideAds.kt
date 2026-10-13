@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.ads
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.klass
 import app.reseam.patch.method
@@ -16,7 +15,6 @@ import app.reseam.patch.settings.section
 import app.reseam.patch.settings.whenEnabled
 import app.reseam.patch.skipWhen
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.ClientContextEndpoint
@@ -25,11 +23,15 @@ import app.reseam.patches.youtube.internal.engagementPanelHook
 import app.reseam.patches.youtube.internal.engagementPanelId
 import app.reseam.patches.youtube.internal.engagementPanelShown
 import app.reseam.patches.youtube.internal.fixBackToExitGesture
+import app.reseam.patches.youtube.internal.overrideClientContextOsName
+import app.reseam.patches.youtube.internal.verticalScrollFix
 import app.reseam.patches.youtubecommon.hideById
 import app.reseam.patches.youtubecommon.lithoFilter
-import app.reseam.patches.youtube.internal.overrideClientContextOsName
 import app.reseam.patches.youtubecommon.registerLithoFilter
-import app.reseam.patches.youtube.internal.verticalScrollFix
+import app.reseam.youtube.ads.bindings.Ads
+import app.reseam.youtube.ads.bindings.AdsFilter
+import app.reseam.youtube.settings.AdsSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val hideAds = patch("Hide ads") {
     description("Removes general ads and promotional components.")
@@ -45,24 +47,24 @@ val hideAds = patch("Hide ads") {
         youTubeSettings,
         section(
             YouTubeSettingsPages.Ads,
-            "Ads",
-            YouTubeSettings.hideEndScreenStoreBanner,
-            YouTubeSettings.hideFullscreenAds,
-            YouTubeSettings.hideGeneralAds,
-            YouTubeSettings.hideMerchandiseBanners,
-            YouTubeSettings.hidePaidPromotionLabel,
-            YouTubeSettings.hidePlayerPopupAds,
-            YouTubeSettings.hideSelfSponsorAds,
-            YouTubeSettings.hideShoppingLinks,
-            YouTubeSettings.hideViewProductsBanner,
-            YouTubeSettings.hideYouTubePremiumPromotions,
+            YouTubeStrings.sectionAds,
+            AdsSettings.hideEndScreenStoreBanner,
+            AdsSettings.hideFullscreenAds,
+            AdsSettings.hideGeneralAds,
+            AdsSettings.hideMerchandiseBanners,
+            AdsSettings.hidePaidPromotionLabel,
+            AdsSettings.hidePlayerPopupAds,
+            AdsSettings.hideSelfSponsorAds,
+            AdsSettings.hideShoppingLinks,
+            AdsSettings.hideViewProductsBanner,
+            AdsSettings.hideYouTubePremiumPromotions,
         ),
     )
 
     execute {
         registerLithoFilter(AdsFilter)
-        overrideClientContextOsName(ClientContextEndpoint.BROWSE, YouTubeSettings.hideGeneralAds, "Android Automotive")
-        overrideClientContextOsName(ClientContextEndpoint.SEARCH, YouTubeSettings.hideGeneralAds, "Android Automotive")
+        overrideClientContextOsName(ClientContextEndpoint.BROWSE, AdsSettings.hideGeneralAds, "Android Automotive")
+        overrideClientContextOsName(ClientContextEndpoint.SEARCH, AdsSettings.hideGeneralAds, "Android Automotive")
 
         val dialogStyle = resources.id("style", "SlidingDialogAnimation")?.toLong()
             ?: error("style/SlidingDialogAnimation is missing")
@@ -73,7 +75,7 @@ val hideAds = patch("Hide ads") {
             literals(dialogStyle)
             calls { owner("android.view.Window"); name("setWindowAnimations"); params(Type.Int); returns(Type.Void) }
         }
-        gate(YouTubeSettings.hideFullscreenAds) {
+        gate(AdsSettings.hideFullscreenAds) {
             dialogBuilder.points("fullscreenDialogShown") {
                 invokeVirtual {
                     ownerAssignableTo("android.app.Dialog")
@@ -82,11 +84,11 @@ val hideAds = patch("Hide ads") {
                     returns(Type.Void)
                 }
             }.single().captureArgumentAs("dialog", 0).after {
-                call(Ads.closeFullscreenAd, capture("dialog"), param(0))
+                Ads.closeFullscreenAd(capture("dialog"), param(0))
             }
         }
 
-        gate(YouTubeSettings.hideYouTubePremiumPromotions) {
+        gate(AdsSettings.hideYouTubePremiumPromotions) {
             premiumViewMeasured.after {
                 thisObject.callVirtual("android.view.View", "setMeasuredDimension", "(II)V", int(0), int(0))
             }
@@ -94,7 +96,7 @@ val hideAds = patch("Hide ads") {
 
         // Newer R8 builds merge this callback into a dispatcher for unrelated player events.
         // Return only from the shelf branch, never from the shared method's entry.
-        gate(YouTubeSettings.hideGeneralAds) {
+        gate(AdsSettings.hideGeneralAds) {
             playerOverlayTimelyShelf
                 .point("timelyShelfBranch") { string("player_overlay_timely_shelf") }
                 .after { returnVoid() }
@@ -123,31 +125,23 @@ val hideAds = patch("Hide ads") {
         }
         storeBannerAdd.captureArgumentAs("item", 1).skipWhen {
             val hide = bool(false)
-            whenEnabled(YouTubeSettings.hideEndScreenStoreBanner) {
-                hide.assign(call(Ads.isStoreBanner, capture("item").cast(storeItemType).call(serializeStoreItem)))
+            whenEnabled(AdsSettings.hideEndScreenStoreBanner) {
+                hide.assign(Ads.isStoreBanner(capture("item").cast(storeItemType).call(serializeStoreItem)))
             }
             hide
         }
 
-        hideById("ad_attribution", YouTubeSettings.hideGeneralAds)
-        hideById("paid_promotion_label_text_view", YouTubeSettings.hidePaidPromotionLabel)
+        hideById("ad_attribution", AdsSettings.hideGeneralAds)
+        hideById("paid_promotion_label_text_view", AdsSettings.hidePaidPromotionLabel)
 
-        gate(YouTubeSettings.hidePlayerPopupAds) {
+        gate(AdsSettings.hidePlayerPopupAds) {
             engagementPanelShown.before {
-                whenTrue(call(Ads.isPlayerPopupAd, capture("panel").field(engagementPanelId))) {
+                whenTrue(Ads.isPlayerPopupAd(capture("panel").field(engagementPanelId))) {
                     returnNull()
                 }
             }
         }
     }
-}
-
-private object AdsFilter : ExtClass("app.reseam.youtube.ads.AdsFilter")
-
-private object Ads : ExtClass("app.reseam.youtube.ads.Ads") {
-    val closeFullscreenAd by static("android.app.Dialog", "[B")
-    val isStoreBanner by static("[B", returns = Type.Boolean)
-    val isPlayerPopupAd by static(Type.String, returns = Type.Boolean)
 }
 
 private val premiumViewMeasured = method("premiumViewMeasured") {

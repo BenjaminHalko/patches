@@ -3,6 +3,9 @@
 
 package app.reseam.patches.instagram.feed
 
+import app.reseam.instagram.feed.bindings.FollowingFeed
+import app.reseam.instagram.settings.FeedSettings
+import app.reseam.instagram.settings.InstagramStrings
 import app.reseam.patch.Type
 import app.reseam.patch.klass
 import app.reseam.patch.method
@@ -10,8 +13,6 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
-import app.reseam.patches.instagram.core.FeedSettings
-import app.reseam.patches.instagram.core.FollowingFeed
 import app.reseam.patches.instagram.core.INSTAGRAM
 import app.reseam.patches.instagram.core.instagramSettings
 import app.reseam.patches.instagram.core.signatureCheck
@@ -20,12 +21,12 @@ val followingFeed = patch("Following-only feed") {
     description("Loads the home feed from accounts you follow, without suggested posts.")
     compatibleWith(INSTAGRAM)
     dependsOn(signatureCheck)
-    settings(instagramSettings, section("Feed", FeedSettings.followingOnly))
+    settings(instagramSettings, section(InstagramStrings.sectionFeed, FeedSettings.followingOnly))
 
     execute {
         gate(FeedSettings.followingOnly) {
             klass(feedRequestParams.owner).method("<init>").after {
-                thisObject.set(feedRequestParams, call(FollowingFeed.following, thisObject.field(feedRequestParams)))
+                thisObject.set(feedRequestParams, FollowingFeed.following(thisObject.field(feedRequestParams)))
             }
         }
     }

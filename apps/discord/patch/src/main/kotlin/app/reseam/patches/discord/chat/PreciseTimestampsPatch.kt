@@ -3,12 +3,13 @@
 
 package app.reseam.patches.discord.chat
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.createMessageContent
 import app.reseam.patches.discord.core.discordSettings
 
@@ -16,7 +17,7 @@ val preciseTimestamps = patch("Precise timestamps") {
     description("Show seconds in chat timestamps.")
     compatibleWith(DISCORD)
     enabledByDefault(false)
-    settings(discordSettings, section("Chat", DiscordSettings.preciseTimestamps))
+    settings(discordSettings, section(DiscordStrings.sectionChat, DiscordSettings.preciseTimestamps))
 
     execute {
         gate(DiscordSettings.preciseTimestamps) {

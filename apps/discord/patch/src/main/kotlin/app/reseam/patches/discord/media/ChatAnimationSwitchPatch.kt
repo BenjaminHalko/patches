@@ -3,13 +3,14 @@
 
 package app.reseam.patches.discord.media
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.createMessageContent
 import app.reseam.patches.discord.core.discordSettings
 
@@ -17,7 +18,7 @@ val chatAnimationSwitch = patch("Chat animation switch") {
     description("Use the GIF autoplay switch to also turn off chat emoji animation.")
     compatibleWith(DISCORD)
     enabledByDefault(false)
-    settings(discordSettings, section("Media", DiscordSettings.chatAnimationSwitch))
+    settings(discordSettings, section(DiscordStrings.sectionMedia, DiscordSettings.chatAnimationSwitch))
 
     execute {
         gate(DiscordSettings.chatAnimationSwitch) {

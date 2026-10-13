@@ -5,22 +5,23 @@ package app.reseam.patches.youtube.core
 
 import app.reseam.patch.settings.SettingsPage
 import app.reseam.patches.bundle.lucide
+import app.reseam.youtube.settings.YouTubeStrings
 
 /** YouTube's menu structure; the SDK only knows generic pages and sections. */
 internal object YouTubeSettingsPages {
-    val Video = SettingsPage("video", "Video", order = 0, summary = "Quality, speed, SponsorBlock and dislikes", icon = lucide("clapperboard"))
-    val Player = SettingsPage("player", "Player", order = 10, summary = "Controls, overlay, miniplayer and casting", icon = lucide("tv-minimal-play"))
-    val Shorts = SettingsPage("shorts", "Shorts", order = 20, summary = "Autoplay, overlay and hidden buttons", icon = lucide("film"))
-    val Ads = SettingsPage("ads", "Ads", order = 30, summary = "Video ads and sponsored cards", icon = lucide("megaphone-off"))
-    val Appearance = SettingsPage("appearance", "Appearance", order = 40, summary = "Feed, comments, thumbnails and layout", icon = lucide("palette"))
-    val Downloads = SettingsPage("downloads", "Downloads", order = 50, summary = "Offline videos in any quality", icon = lucide("download"))
-    val Advanced = SettingsPage("advanced", "Advanced", order = 60, summary = "Streams, privacy and diagnostics", icon = lucide("sliders-horizontal"))
+    val Video = SettingsPage("video", YouTubeStrings.pageVideo, order = 0, summary = YouTubeStrings.pageVideoSummary, icon = lucide("clapperboard"))
+    val Player = SettingsPage("player", YouTubeStrings.pagePlayer, order = 10, summary = YouTubeStrings.pagePlayerSummary, icon = lucide("tv-minimal-play"))
+    val Shorts = SettingsPage("shorts", YouTubeStrings.pageShorts, order = 20, summary = YouTubeStrings.pageShortsSummary, icon = lucide("film"))
+    val Ads = SettingsPage("ads", YouTubeStrings.pageAds, order = 30, summary = YouTubeStrings.pageAdsSummary, icon = lucide("megaphone-off"))
+    val Appearance = SettingsPage("appearance", YouTubeStrings.pageAppearance, order = 40, summary = YouTubeStrings.pageAppearanceSummary, icon = lucide("palette"))
+    val Downloads = SettingsPage("downloads", YouTubeStrings.pageDownloads, order = 50, summary = YouTubeStrings.pageDownloadsSummary, icon = lucide("download"))
+    val Advanced = SettingsPage("advanced", YouTubeStrings.pageAdvanced, order = 60, summary = YouTubeStrings.pageAdvancedSummary, icon = lucide("sliders-horizontal"))
 
-    val Controls = SettingsPage("player.controls", "Controls and gestures", Player, order = 0, summary = "Buttons, seekbar, double tap and swipes", icon = lucide("hand"))
-    val Overlay = SettingsPage("player.overlay", "Overlay and menus", Player, order = 10, summary = "The player overlay and end screens", icon = lucide("layers"))
-    val Feed = SettingsPage("appearance.feed", "Feed", Appearance, order = 0, summary = "Shelves and cards in your feeds", icon = lucide("layout-list"))
-    val Comments = SettingsPage("appearance.comments", "Comments", Appearance, order = 10, summary = "Summaries and sections in comments", icon = lucide("message-square"))
-    val Description = SettingsPage("appearance.description", "Video description", Appearance, order = 20, summary = "Sections below the video", icon = lucide("text"))
-    val Channel = SettingsPage("appearance.channel", "Channel pages", Appearance, order = 30, summary = "Tabs and buttons on channels", icon = lucide("user-round"))
-    val Filters = SettingsPage("appearance.filters", "Content filters", Appearance, order = 40, summary = "Hide videos by keyword or custom rule", icon = lucide("funnel"))
+    val Controls = SettingsPage("player.controls", YouTubeStrings.pagePlayerControls, Player, order = 0, summary = YouTubeStrings.pagePlayerControlsSummary, icon = lucide("hand"))
+    val Overlay = SettingsPage("player.overlay", YouTubeStrings.pagePlayerOverlay, Player, order = 10, summary = YouTubeStrings.pagePlayerOverlaySummary, icon = lucide("layers"))
+    val Feed = SettingsPage("appearance.feed", YouTubeStrings.pageAppearanceFeed, Appearance, order = 0, summary = YouTubeStrings.pageAppearanceFeedSummary, icon = lucide("layout-list"))
+    val Comments = SettingsPage("appearance.comments", YouTubeStrings.pageAppearanceComments, Appearance, order = 10, summary = YouTubeStrings.pageAppearanceCommentsSummary, icon = lucide("message-square"))
+    val Description = SettingsPage("appearance.description", YouTubeStrings.pageAppearanceDescription, Appearance, order = 20, summary = YouTubeStrings.pageAppearanceDescriptionSummary, icon = lucide("text"))
+    val Channel = SettingsPage("appearance.channel", YouTubeStrings.pageAppearanceChannel, Appearance, order = 30, summary = YouTubeStrings.pageAppearanceChannelSummary, icon = lucide("user-round"))
+    val Filters = SettingsPage("appearance.filters", YouTubeStrings.pageAppearanceFilters, Appearance, order = 40, summary = YouTubeStrings.pageAppearanceFiltersSummary, icon = lucide("funnel"))
 }

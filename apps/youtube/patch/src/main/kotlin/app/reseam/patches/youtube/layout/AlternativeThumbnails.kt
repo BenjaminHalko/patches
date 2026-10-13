@@ -11,21 +11,24 @@ import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.*
 import app.reseam.patches.youtube.internal.*
 import app.reseam.patches.youtubecommon.appHelper
+import app.reseam.youtube.settings.AppearanceSettings
+import app.reseam.youtube.settings.YouTubeStrings
+import app.reseam.youtube.thumbnails.bindings.AlternativeThumbnailsPatch
 
 val alternativeThumbnails = patch("Alternative thumbnails") {
     description("Replaces thumbnails with DeArrow images or still captures, with separate choices for each feed.")
     compatibleWith(YOUTUBE)
     dependsOn(navigationBarHook, playerTypeHook)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Appearance, "Alternative thumbnails",
-        YouTubeSettings.altThumbnailHome, YouTubeSettings.altThumbnailSubscriptions,
-        YouTubeSettings.altThumbnailLibrary, YouTubeSettings.altThumbnailPlayer,
-        YouTubeSettings.altThumbnailSearch, YouTubeSettings.altThumbnailDearrowApiUrl,
-        YouTubeSettings.altThumbnailDearrowConnectionToast, YouTubeSettings.altThumbnailStillsFast,
-        YouTubeSettings.altThumbnailStillsTime))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Appearance, YouTubeStrings.sectionAlternativeThumbnails,
+        AppearanceSettings.altThumbnailHome, AppearanceSettings.altThumbnailSubscriptions,
+        AppearanceSettings.altThumbnailLibrary, AppearanceSettings.altThumbnailPlayer,
+        AppearanceSettings.altThumbnailSearch, AppearanceSettings.altThumbnailDearrowApiUrl,
+        AppearanceSettings.altThumbnailDearrowConnectionToast, AppearanceSettings.altThumbnailStillsFast,
+        AppearanceSettings.altThumbnailStillsTime))
 
     execute {
         imageRequestConstructor.before {
-            param(0).assign(call(AlternativeThumbnails.override, param(0)))
+            param(0).assign(AlternativeThumbnailsPatch.overrideImageURL(param(0)))
         }
 
         // Pin the image callback by its HTTP parser, then use the stable Cronet interface names.
@@ -40,12 +43,12 @@ val alternativeThumbnails = patch("Alternative thumbnails") {
                 params("org.chromium.net.UrlRequest", response.descriptor)
                 returns(Type.Void)
             }.before {
-                call(AlternativeThumbnails.onResponse, param(1).call(getUrl), param(1).call(getStatus))
+                AlternativeThumbnailsPatch.onResponse(param(1).call(getUrl), param(1).call(getStatus))
             }
             callbacks.method("onFailed") {
                 params("org.chromium.net.UrlRequest", response.descriptor, "org.chromium.net.CronetException")
                 returns(Type.Void)
-            }.before { call(AlternativeThumbnails.onFailure, param(0)) }
+            }.before { AlternativeThumbnailsPatch.onFailure(param(0)) }
         }
 
         // A failed request can have no response. Read the original URL through an app-side
@@ -66,10 +69,4 @@ private val imageResponseStarted = methods("image response parsers") {
     strings("Content-Length", "Content-Type", "identity", "application/x-protobuf")
     params("org.chromium.net.UrlRequest", "org.chromium.net.UrlResponseInfo")
     returns(Type.Void)
-}
-
-private object AlternativeThumbnails : ExtClass("app.reseam.youtube.thumbnails.AlternativeThumbnailsPatch") {
-    val override by static(Type.String, returns = Type.String, name = "overrideImageURL")
-    val onResponse by static(Type.String, Type.Int)
-    val onFailure by static(Type.Object)
 }

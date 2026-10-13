@@ -1,10 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.youtube.layout
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.klass
@@ -13,14 +11,16 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.misc.bindings.FormFactor
+import app.reseam.youtube.settings.AppearanceSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val changeFormFactor = patch("Change form factor") {
     description("Serves the phone, tablet or wearable layout regardless of the device.")
     compatibleWith(YOUTUBE)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Appearance, "Form factor", YouTubeSettings.changeFormFactor))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Appearance, YouTubeStrings.sectionFormFactor, AppearanceSettings.changeFormFactor))
 
     execute {
         // The enum carries the wire value in its only instance field, and the client info builder
@@ -28,7 +28,7 @@ val changeFormFactor = patch("Change form factor") {
         clientInfoBuilder
             .point { field { owner(formFactorEnum.descriptor); type(Type.Int) } }
             .captureAs("formFactor", Type.Int)
-            .after { capture("formFactor").assign(call(FormFactor.formFactor, capture("formFactor"))) }
+            .after { capture("formFactor").assign(FormFactor.formFactor(capture("formFactor"))) }
     }
 }
 
@@ -46,8 +46,4 @@ val clientInfoBuilder = method("clientInfoBuilder") {
     inClass(clientInfoProvider)
     params()
     calls { owner("Ljava/util/TimeZone;"); name("getDefault") }
-}
-
-object FormFactor : ExtClass("app.reseam.youtube.misc.FormFactor") {
-    val formFactor by static(Type.Int, returns = Type.Int)
 }

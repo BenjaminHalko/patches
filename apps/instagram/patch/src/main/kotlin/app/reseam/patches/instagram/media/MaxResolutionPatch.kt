@@ -3,6 +3,7 @@
 
 package app.reseam.patches.instagram.media
 
+import app.reseam.instagram.settings.InstagramStrings
 import app.reseam.patch.Type
 import app.reseam.patch.klass
 import app.reseam.patch.method
@@ -11,13 +12,13 @@ import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.instagram.core.EXTENDED_IMAGE_URL
 import app.reseam.patches.instagram.core.INSTAGRAM
-import app.reseam.patches.instagram.core.MediaSettings
+import app.reseam.instagram.settings.MediaSettings
 import app.reseam.patches.instagram.core.instagramSettings
 
 val maxResolution = patch("Max resolution") {
     description("Always loads the highest resolution image available.")
     compatibleWith(INSTAGRAM)
-    settings(instagramSettings, section("Media", MediaSettings.maxResolution))
+    settings(instagramSettings, section(InstagramStrings.sectionMedia, MediaSettings.maxResolution))
 
     execute {
         gate(MediaSettings.maxResolution) {

@@ -3,7 +3,6 @@
 
 package app.reseam.patches.youtube.layout
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.dex.AccessFlags
@@ -15,17 +14,19 @@ import app.reseam.patch.point
 import app.reseam.patch.points
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.miniplayer.bindings.Miniplayer
+import app.reseam.youtube.settings.PlayerSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val miniplayer = patch("Miniplayer") {
     description("Changes the current miniplayer's width, buttons and subtext.")
     compatibleWith(YOUTUBE)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Player, "Miniplayer",
-        YouTubeSettings.hideMiniplayerOverlayButtons,
-        YouTubeSettings.hideMiniplayerSubtext,
-        YouTubeSettings.miniplayerWidthDip,
+    settings(youTubeSettings, section(YouTubeSettingsPages.Player, YouTubeStrings.sectionMiniplayer,
+        PlayerSettings.hideMiniplayerOverlayButtons,
+        PlayerSettings.hideMiniplayerSubtext,
+        PlayerSettings.miniplayerWidthDip,
     ))
 
     execute {
@@ -63,13 +64,7 @@ val miniplayer = patch("Miniplayer") {
         sizing.point("initialMiniplayerWidth") { literal(192) }
             .next { invokeStatic { params("android.util.DisplayMetrics", Type.Int); returns(Type.Int) } }
             .next { resultOf(Type.Int) }.captureAs("width", Type.Int).after {
-                capture("width").assign(call(Miniplayer.width, capture("width")))
+                capture("width").assign(Miniplayer.width(capture("width")))
             }
     }
-}
-
-object Miniplayer : ExtClass("app.reseam.youtube.miniplayer.Miniplayer") {
-    val width by static(Type.Int, returns = Type.Int)
-    val hideOverlayButton by static(Type.View)
-    val hideSubtext by static(Type.View)
 }

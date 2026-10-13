@@ -19,7 +19,7 @@ val discordSettings = settingsHost("discord") {
     brand(reseamBrand)
 
     install {
-        getPackages.after { call(ReseamReactPackage.addTo, capture("result")) }
+        getPackages.after { ReseamReactPackage.addTo(capture("result")) }
         settingRows.wrap(SettingsRow.settingRows)
         settingsList.wrap(SettingsRow.settingsList)
     }

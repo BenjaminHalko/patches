@@ -10,14 +10,15 @@ import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.telegram.core.TELEGRAM
 import app.reseam.patches.telegram.core.TL_USER
-import app.reseam.patches.telegram.core.TelegramSettings
+import app.reseam.telegram.settings.TelegramSettings
 import app.reseam.patches.telegram.core.messagesController
 import app.reseam.patches.telegram.core.telegramSettings
+import app.reseam.telegram.settings.TelegramStrings
 
 val unlockPremium = patch("Unlock Premium") {
     description("Unlocks Premium-only features in the UI.")
     compatibleWith(TELEGRAM)
-    settings(telegramSettings, section("Premium", TelegramSettings.unlockPremium))
+    settings(telegramSettings, section(TelegramStrings.sectionPremium, TelegramSettings.unlockPremium))
 
     execute {
         gate(TelegramSettings.unlockPremium) {

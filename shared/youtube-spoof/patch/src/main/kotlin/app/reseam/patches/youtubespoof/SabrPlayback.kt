@@ -3,7 +3,6 @@
 
 package app.reseam.patches.youtubespoof
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.MethodTarget
 import app.reseam.patch.PatchRuntime
 import app.reseam.patch.Type
@@ -15,6 +14,7 @@ import app.reseam.patch.method
 import app.reseam.patch.methods
 import app.reseam.patch.replace
 import app.reseam.patches.youtubecommon.appHelper
+import app.reseam.youtube.spoof.bindings.SabrPlayback
 
 private const val MEDIA = "com.google.android.libraries.youtube.media.interfaces."
 private const val COMMON = "com.google.protos.youtube.api.innertube.MediaCommonConfigOuterClass\$MediaCommonConfig"
@@ -28,20 +28,6 @@ private const val TOKEN_MANAGER = MEDIA + "ProofOfOriginTokenManager"
 private const val TOKEN_CALLBACK = MEDIA + "OnPoTokenMintedCallback"
 private const val REGISTRY = "com.google.protobuf.ExtensionRegistryLite"
 private const val ARRAY_LIST = "java.util.ArrayList"
-
-internal object SabrPlayback : ExtClass("app.reseam.youtube.spoof.SabrPlayback") {
-    val installed by static(Type.Object, "app.reseam.youtube.spoof.StreamingData")
-    val prepare by static(Type.Object, Type.Object, Type.Object, Type.Object, returns = Type.Object)
-    val token by static(Type.Object, "[B", returns = "[B")
-    val refresh by static(Type.Object, Type.Object, returns = Type.Boolean)
-    val request by static(Type.Object, Type.Object, "[B", returns = "[B")
-    val response by static(Type.Object, BYTE_BUFFER)
-    val completed by static(Type.Object)
-    val replaceConfig by static(Type.Object, Type.Object, returns = Type.Object)
-    val parseCommonConfig by static("[B", returns = Type.Object)
-    val tokenMinted by static(Type.Object, "[B")
-}
-
 /** Uses retained JNI boundaries; all obfuscated members are resolved by their unique type shapes. */
 internal fun PatchRuntime.hookSabrPlayback() {
     val configClass = klass(CONFIG)
@@ -82,8 +68,8 @@ internal fun PatchRuntime.hookSabrPlayback() {
     }
 
     createNativePlayback.before {
-        param(1).assign(call(SabrPlayback.prepare, param(2), param(1), param(7), param(10)).cast(CONFIG))
-        param(9).assign(call(SabrPlayback.token, param(7), param(9)))
+        param(1).assign(SabrPlayback.prepare(param(2), param(1), param(7), param(10)).cast(CONFIG))
+        param(9).assign(SabrPlayback.token(param(7), param(9)))
     }
 
     // Helpers inside the request class read its fields, which are package-private in some apps.
@@ -109,18 +95,18 @@ internal fun PatchRuntime.hookSabrPlayback() {
     nativeEntries("dispatchRequest", FETCH, MEDIA + "NetFetchTask", REQUEST, CALLBACKS).forEach {
         it.before {
             val bytes = param(0).call(requestBody)
-            val replacement = call(SabrPlayback.request, thisObject, param(1), bytes)
+            val replacement = SabrPlayback.request(thisObject, param(1), bytes)
             whenNotEqual(bytes, replacement) { param(0).assign(param(0).call(withBody, replacement)) }
         }
     }
-    responseChunk.before { call(SabrPlayback.response, thisObject, param(0)) }
-    responseComplete.before { call(SabrPlayback.completed, thisObject) }
+    responseChunk.before { SabrPlayback.response(thisObject, param(0)) }
+    responseComplete.before { SabrPlayback.completed(thisObject) }
     nativeEntries("refreshToken", TOKEN_MANAGER, Type.Void, TOKEN_CALLBACK).forEach {
-        it.before { whenTrue(call(SabrPlayback.refresh, thisObject, param(0))) { returnVoid() } }
+        it.before { whenTrue(SabrPlayback.refresh(thisObject, param(0))) { returnVoid() } }
     }
     nativeEntries("currentToken", TOKEN_MANAGER, "[B").forEach {
         it.before {
-            val token = call(SabrPlayback.token, thisObject, nullObject)
+            val token = SabrPlayback.token(thisObject, nullObject)
             whenNotNull(token) { returnValue(token) }
         }
     }
@@ -140,10 +126,12 @@ private val createNativePlayback = method("createNativePlayback") {
     param(7, FETCH)
     param(10, TOKEN_MANAGER)
 }
+
 private val responseChunk = method("responseChunk") {
     inClass(klass(CALLBACKS + "\$CppProxy"))
     params(BYTE_BUFFER)
 }
+
 private val responseComplete = method("responseComplete") {
     inClass(klass(CALLBACKS + "\$CppProxy"))
     params(MEDIA + "QoeError", Type.Boolean)

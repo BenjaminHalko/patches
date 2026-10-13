@@ -3,12 +3,11 @@
 
 package app.reseam.patches.youtubemusic.layout
 
-import app.reseam.patch.ExtClass
-import app.reseam.patch.Type
 import app.reseam.patch.patch
 import app.reseam.patches.youtubecommon.lithoColorHook
 import app.reseam.patches.youtubecommon.registerLithoColorHook
 import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
+import app.reseam.youtubemusic.layout.bindings.MusicTheme
 
 val theme = patch("Theme") {
     description("Changes YouTube Music's black background to a color of your choice.")
@@ -30,9 +29,4 @@ val theme = patch("Theme") {
         MusicTheme.background.implement { returnValue(int(argb)) }
         registerLithoColorHook(MusicTheme.paintColor)
     }
-}
-
-private object MusicTheme : ExtClass("app.reseam.youtubemusic.layout.MusicTheme") {
-    val background by static(returns = Type.Int)
-    val paintColor by static(Type.Int, returns = Type.Int)
 }

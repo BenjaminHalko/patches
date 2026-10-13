@@ -3,6 +3,7 @@
 
 package app.reseam.patches.instagram.core
 
+import app.reseam.instagram.settings.bindings.InstagramSettingsEntry
 import app.reseam.patch.appEntry
 import app.reseam.patch.settings.settingsHost
 import app.reseam.patches.bundle.reseamBrand
@@ -14,7 +15,7 @@ val instagramSettings = settingsHost("instagram") {
 
     install {
         appEntry {
-            call(InstagramSettingsEntry.init, application)
+            InstagramSettingsEntry.init(application)
         }
     }
 }

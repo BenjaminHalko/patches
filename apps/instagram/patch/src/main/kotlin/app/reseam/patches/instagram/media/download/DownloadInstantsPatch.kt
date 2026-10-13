@@ -3,7 +3,8 @@
 
 package app.reseam.patches.instagram.media.download
 
-import app.reseam.patch.ExtClass
+import app.reseam.instagram.download.bindings.InstantDownloader
+import app.reseam.instagram.download.bindings.InstantMedia
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.before
@@ -20,17 +21,6 @@ private const val INSTANTS_VIEWER_PLUGIN = "com.instagram.quicksnap.unified.Quic
 private const val INSTANTS_CAMERA_MODEL = "com.instagram.quicksnap.camera.domain.QuickSnapCameraViewModel"
 private const val MEDIA = "com.instagram.feed.media.Media"
 private const val USER = "com.instagram.user.model.User"
-
-private object InstantDownloader : ExtClass("app.reseam.instagram.download.InstantDownloader") {
-    val attach by static(Type.Object, Type.View)
-    val showItem by static(Type.Object)
-    val detach by static(Type.Object)
-}
-
-private object InstantMedia : ExtClass("app.reseam.instagram.download.InstantMedia") {
-    val media by static(Type.Object, returns = Type.Object)
-}
-
 private val instantViewer = klass("instantViewer447") {
     hasInstanceField(INSTANTS_VIEWER_PLUGIN)
     hasInstanceField(INSTANTS_CAMERA_MODEL)
@@ -80,14 +70,14 @@ val downloadInstants = patch("Download Instants") {
 
     execute {
         viewerCreated.after {
-            call(InstantDownloader.attach, thisObject, param(0))
+            InstantDownloader.attach(thisObject, param(0))
         }
         renderInstant.before {
             val item = thisObject.fieldOfType(instantItem.descriptor)
-            call(InstantDownloader.showItem, item)
+            InstantDownloader.showItem(item)
         }
         viewerDestroyed.before {
-            call(InstantDownloader.detach, thisObject)
+            InstantDownloader.detach(thisObject)
         }
         InstantMedia.media.implement {
             whenNotNull(param(0)) {

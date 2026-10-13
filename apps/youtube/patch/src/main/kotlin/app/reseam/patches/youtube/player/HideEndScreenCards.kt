@@ -10,18 +10,19 @@ import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.settings.PlayerOverlaySettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val hideEndScreenCards = patch("Hide end screen cards") {
     description("Removes cards shown over the video at the end of playback.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Overlay, "End screen", YouTubeSettings.hideEndScreenCards))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Overlay, YouTubeStrings.sectionEndScreen, PlayerOverlaySettings.hideEndScreenCards))
 
     execute {
-        gate(YouTubeSettings.hideEndScreenCards) {
+        gate(PlayerOverlaySettings.hideEndScreenCards) {
             method("creator end-screen initialization") {
                 strings("Error creating creator EndscreenElement, ignoring it. Style: %s")
             }.before { returnVoid() }
@@ -32,7 +33,7 @@ val hideEndScreenCards = patch("Hide end screen cards") {
 
         listOf("circle", "icon", "video").forEach { name ->
             val id = resourceId(name)
-            gate(YouTubeSettings.hideEndScreenCards) {
+            gate(PlayerOverlaySettings.hideEndScreenCards) {
                 method("end-screen $name layout") {
                     params()
                     returns(Type.View)

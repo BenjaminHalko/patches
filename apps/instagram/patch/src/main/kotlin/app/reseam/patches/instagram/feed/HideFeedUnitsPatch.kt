@@ -3,6 +3,9 @@
 
 package app.reseam.patches.instagram.feed
 
+import app.reseam.instagram.feed.bindings.FeedUnits
+import app.reseam.instagram.settings.FeedSettings
+import app.reseam.instagram.settings.InstagramStrings
 import app.reseam.patch.Type
 import app.reseam.patch.appEntry
 import app.reseam.patch.method
@@ -11,8 +14,6 @@ import app.reseam.patch.point
 import app.reseam.patch.redirectTo
 import app.reseam.patch.settings.ToggleSetting
 import app.reseam.patch.settings.section
-import app.reseam.patches.instagram.core.FeedSettings
-import app.reseam.patches.instagram.core.FeedUnits
 import app.reseam.patches.instagram.core.INSTAGRAM
 import app.reseam.patches.instagram.core.instagramSettings
 import app.reseam.patches.instagram.core.signatureCheck
@@ -52,13 +53,13 @@ val hideFeedUnits = patch("Hide suggested feed units") {
     dependsOn(signatureCheck)
     settings(
         instagramSettings,
-        section("Feed", FeedSettings.hideSuggestedAccounts, FeedSettings.hideThreadsUnits, FeedSettings.hideShoppingUnits),
+        section(InstagramStrings.sectionFeed, FeedSettings.hideSuggestedAccounts, FeedSettings.hideThreadsUnits, FeedSettings.hideShoppingUnits),
     )
 
     execute {
         appEntry {
             UNIT_KEYS.forEach { (setting, keys) ->
-                keys.forEach { call(FeedUnits.hide, string(it), string(setting.key), bool(setting.default)) }
+                keys.forEach { FeedUnits.hide(string(it), string(setting.key), bool(setting.default)) }
             }
         }
         UNIT_KEYS.values.flatten().forEach { unitKeyMatch(it).redirectTo(FeedUnits.matches) }

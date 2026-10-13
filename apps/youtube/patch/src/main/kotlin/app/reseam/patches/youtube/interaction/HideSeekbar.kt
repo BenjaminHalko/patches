@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.youtube.interaction
 
@@ -11,10 +10,11 @@ import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.seekbarColor
+import app.reseam.youtube.settings.PlayerControlsSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val hideSeekbar = patch {
     compatibleWith(YOUTUBE)
@@ -23,17 +23,17 @@ val hideSeekbar = patch {
         youTubeSettings,
         section(
             YouTubeSettingsPages.Controls,
-            "Seekbar",
-            YouTubeSettings.hideSeekbar,
-            YouTubeSettings.hideSeekbarThumbnail,
-            YouTubeSettings.seekbarCustomColor,
-            YouTubeSettings.seekbarCustomColorPrimary,
-            YouTubeSettings.seekbarCustomColorAccent,
+            YouTubeStrings.sectionSeekbar,
+            PlayerControlsSettings.hideSeekbar,
+            PlayerControlsSettings.hideSeekbarThumbnail,
+            PlayerControlsSettings.seekbarCustomColor,
+            PlayerControlsSettings.seekbarCustomColorPrimary,
+            PlayerControlsSettings.seekbarCustomColorAccent,
         ),
     )
 
     execute {
-        gate(YouTubeSettings.hideSeekbar) {
+        gate(PlayerControlsSettings.hideSeekbar) {
             seekbarOnDraw.before { returnVoid() }
         }
     }

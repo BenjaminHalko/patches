@@ -3,20 +3,21 @@
 
 package app.reseam.patches.discord.developer
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val developerMenu = patch("Developer menu") {
     description("Show Discord's existing developer tools in Settings.")
     compatibleWith(DISCORD)
     enabledByDefault(false)
-    settings(discordSettings, section("Developer", DiscordSettings.developerMenu))
+    settings(discordSettings, section(DiscordStrings.sectionDeveloper, DiscordSettings.developerMenu))
 
     execute {
         gate(DiscordSettings.developerMenu) {

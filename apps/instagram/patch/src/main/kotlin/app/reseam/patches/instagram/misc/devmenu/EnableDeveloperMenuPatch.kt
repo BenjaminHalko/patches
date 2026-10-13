@@ -3,6 +3,7 @@
 
 package app.reseam.patches.instagram.misc.devmenu
 
+import app.reseam.instagram.settings.InstagramStrings
 import app.reseam.patch.Type
 import app.reseam.patch.klass
 import app.reseam.patch.method
@@ -10,7 +11,7 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
-import app.reseam.patches.instagram.core.DeveloperSettings
+import app.reseam.instagram.settings.DeveloperSettings
 import app.reseam.patches.instagram.core.INSTAGRAM
 import app.reseam.patches.instagram.core.USER_SESSION
 import app.reseam.patches.instagram.core.instagramSettings
@@ -21,7 +22,7 @@ val enableDeveloperMenu = patch("Enable developer menu") {
     compatibleWith(INSTAGRAM)
     enabledByDefault(false)
     dependsOn(signatureCheck)
-    settings(instagramSettings, section("Developer", DeveloperSettings.unlockDeveloperOptions))
+    settings(instagramSettings, section(InstagramStrings.sectionDeveloper, DeveloperSettings.unlockDeveloperOptions))
 
     execute {
         gate(DeveloperSettings.unlockDeveloperOptions) {

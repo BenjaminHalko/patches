@@ -3,7 +3,6 @@
 
 package app.reseam.patches.youtube.interaction
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.classTarget
 import app.reseam.patch.dex.AccessFlags
@@ -15,15 +14,17 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.playerui.bindings.ScrubbingPreview
+import app.reseam.youtube.settings.PlayerControlsSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 private const val POINT = "android.graphics.Point"
 
 val scrubbingPreview = patch {
     compatibleWith(YOUTUBE)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Controls, "Seekbar", YouTubeSettings.scrubbingPreview))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Controls, YouTubeStrings.sectionSeekbar, PlayerControlsSettings.scrubbingPreview))
 
     execute {
         ScrubbingPreview.scrubberPosition.implement {
@@ -31,15 +32,15 @@ val scrubbingPreview = patch {
             returnVoid()
         }
 
-        gate(YouTubeSettings.scrubbingPreview) {
+        gate(PlayerControlsSettings.scrubbingPreview) {
             // The watch player's full-size preview keeps receiving scrub events and storyboard frames
             // while it is unavailable; only its own overlay stays hidden.
             fullPreviewAvailable.alwaysReturn(false)
-            fullPreviewScrub.before { call(ScrubbingPreview.onScrub, param(0), param(1)) }
-            fullPreviewFrame.before { call(ScrubbingPreview.onFrame, param(0).fieldOfType("android.graphics.Bitmap")) }
-            seekbarOnDraw.before { call(ScrubbingPreview.setSeekbar, thisObject) }
+            fullPreviewScrub.before { ScrubbingPreview.onScrub(param(0), param(1)) }
+            fullPreviewFrame.before { ScrubbingPreview.onFrame(param(0).fieldOfType("android.graphics.Bitmap")) }
+            seekbarOnDraw.before { ScrubbingPreview.setSeekbar(thisObject) }
             filmStripStateChange.point { opcode(Opcode.IPUT_OBJECT) }
-                .before { call(ScrubbingPreview.setFilmStripState, param(0)) }
+                .before { ScrubbingPreview.setFilmStripState(param(0)) }
         }
     }
 }
@@ -86,12 +87,4 @@ private val filmStripState = klass("filmStripState") { strings("USER_MANUALLY_OP
 private val filmStripStateChange = method("filmStripStateChange") {
     params(filmStripState.descriptor)
     returns(Type.Void)
-}
-
-private object ScrubbingPreview : ExtClass("app.reseam.youtube.playerui.ScrubbingPreview") {
-    val onScrub by static(Type.Int, Type.Long)
-    val onFrame by static("android.graphics.Bitmap")
-    val setSeekbar by static(Type.View)
-    val setFilmStripState by static("java.lang.Enum")
-    val scrubberPosition by static(Type.View, POINT)
 }

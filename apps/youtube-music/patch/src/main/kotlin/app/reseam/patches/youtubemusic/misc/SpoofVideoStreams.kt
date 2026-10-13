@@ -9,8 +9,9 @@ import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
 import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
 import app.reseam.patches.youtubemusic.core.musicActivityOnCreate
 import app.reseam.patches.youtubemusic.core.youTubeMusicSettings
-import app.reseam.patches.youtubespoof.SpoofSettings
+import app.reseam.youtubespoof.settings.SpoofSettings
 import app.reseam.patches.youtubespoof.spoofStreams
+import app.reseam.youtubemusic.settings.YouTubeMusicStrings
 
 val spoofVideoStreams = patch("Spoof video streams") {
     description("Requests and installs playback streams from a compatible YouTube client.")
@@ -19,7 +20,7 @@ val spoofVideoStreams = patch("Spoof video streams") {
         youTubeMusicSettings,
         section(
             YouTubeMusicSettingsPages.Advanced,
-            "Stream compatibility",
+            YouTubeMusicStrings.sectionStreamCompatibility,
             SpoofSettings.spoofVideoStreams,
             SpoofSettings.spoofVideoStreamsClient,
             SpoofSettings.spoofVideoStreamsTokenSource,

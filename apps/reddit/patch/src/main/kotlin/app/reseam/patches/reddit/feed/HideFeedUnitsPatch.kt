@@ -4,14 +4,15 @@
 package app.reseam.patches.reddit.feed
 
 import app.reseam.patch.patch
-import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.ToggleSetting
+import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.reddit.core.REDDIT
-import app.reseam.patches.reddit.core.RedditSettings
+import app.reseam.reddit.settings.RedditSettings
 import app.reseam.patches.reddit.core.feedSectionContent
 import app.reseam.patches.reddit.core.hideFeedElements
 import app.reseam.patches.reddit.core.redditSettings
+import app.reseam.reddit.settings.RedditStrings
 
 // Standalone units come out of the cell group mapper on their own; the rest render as sections of a post.
 private class FeedUnits(val elements: List<String> = emptyList(), val sections: List<String> = emptyList())
@@ -45,7 +46,7 @@ private val FEED_UNITS: Map<ToggleSetting, FeedUnits> = mapOf(
 val hideFeedUnits = patch("Hide feed units") {
     description("Removes Trending, carousels, promos, surveys, nudges and other units Reddit injects into feeds and posts.")
     compatibleWith(REDDIT)
-    settings(redditSettings, section("Feed", *FEED_UNITS.keys.toTypedArray()))
+    settings(redditSettings, section(RedditStrings.sectionFeed, *FEED_UNITS.keys.toTypedArray()))
 
     execute {
         FEED_UNITS.forEach { (setting, units) ->

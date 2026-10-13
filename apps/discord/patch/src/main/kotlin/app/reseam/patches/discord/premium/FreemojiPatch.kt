@@ -3,19 +3,20 @@
 
 package app.reseam.patches.discord.premium
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val freemoji = patch("Freemoji") {
     description("Send locked custom emoji as image links.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Nitro", DiscordSettings.freemoji))
+    settings(discordSettings, section(DiscordStrings.sectionNitro, DiscordSettings.freemoji))
 
     execute {
         gate(DiscordSettings.freemoji) {

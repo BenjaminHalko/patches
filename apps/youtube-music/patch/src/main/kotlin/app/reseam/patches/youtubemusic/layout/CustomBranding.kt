@@ -7,16 +7,17 @@ import app.reseam.patches.youtubecommon.Launcher
 import app.reseam.patches.youtubecommon.customBrandingFor
 import app.reseam.patches.youtubemusic.core.MUSIC_ACTIVITY
 import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
-import app.reseam.patches.youtubemusic.core.YouTubeMusicSettings
 import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
 import app.reseam.patches.youtubemusic.core.musicActivityOnCreate
 import app.reseam.patches.youtubemusic.core.youTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicStrings
 
 val customBranding = customBrandingFor(
     YOUTUBE_MUSIC,
     youTubeMusicSettings,
     YouTubeMusicSettingsPages.Interface,
-    "Branding",
+    YouTubeMusicStrings.sectionBranding,
     YouTubeMusicSettings.customBrandingName,
     YouTubeMusicSettings.customBrandingIcon,
     Launcher(

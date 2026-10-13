@@ -11,16 +11,17 @@ import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.x.core.X
-import app.reseam.patches.x.core.XSettings
+import app.reseam.x.settings.XSettings
 import app.reseam.patches.x.core.xSettings
 import app.reseam.patches.x.featureswitches.disableFeatureSwitches
 import app.reseam.patches.x.featureswitches.featureSwitchOverrides
+import app.reseam.x.settings.XStrings
 
 val defaultToFollowing = patch("Default to Following") {
     description("Opens Following by default and prevents automatic switches to For You.")
     compatibleWith(X)
     dependsOn(featureSwitchOverrides)
-    settings(xSettings, section("Home", XSettings.defaultToFollowing))
+    settings(xSettings, section(XStrings.sectionHome, XSettings.defaultToFollowing))
 
     execute {
         disableFeatureSwitches(
@@ -43,6 +44,7 @@ val followingHomeTab = klass("followingHomeTab") {
     strings("Following")
     extends(initialHomeTab.returnType)
 }
+
 val followingHomeTabInstance = fieldTarget("followingHomeTabInstance") {
     followingHomeTab.classDef.staticFields.single { it.fieldType == followingHomeTab.descriptor }.ref
 }

@@ -15,19 +15,20 @@ import app.reseam.patch.points
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.settings.PlayerControlsSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val enableSlideToSeek = patch {
     compatibleWith(YOUTUBE)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Controls, "Seekbar", YouTubeSettings.slideToSeek))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Controls, YouTubeStrings.sectionSeekbar, PlayerControlsSettings.slideToSeek))
 
     execute {
         val abCheck = slideToSeekMethod
             .point("slideToSeekCheck") { invokeVirtual { returns(Type.Boolean); paramCount(0) } }
             .callee()
-        gate(YouTubeSettings.slideToSeek) {
+        gate(PlayerControlsSettings.slideToSeek) {
             methods("slideToSeekCallers") {
                 calls(abCheck)
             }.points { calls(abCheck) }.forEach {

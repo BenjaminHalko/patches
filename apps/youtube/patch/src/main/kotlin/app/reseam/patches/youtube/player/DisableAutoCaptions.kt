@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.player
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.before
 import app.reseam.patch.dex.AccessFlags
@@ -12,15 +11,17 @@ import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.playerui.bindings.DisableAutoCaptions
+import app.reseam.youtube.settings.PlayerOverlaySettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val disableAutoCaptions = patch("Disable auto captions") {
     description("Prevents captions from being enabled automatically.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Overlay, "Player overlay", YouTubeSettings.disableAutoCaptions))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Overlay, YouTubeStrings.sectionPlayerOverlay, PlayerOverlaySettings.disableAutoCaptions))
 
     execute {
         val subtitleTrack = method("subtitle track option") {
@@ -30,7 +31,7 @@ val disableAutoCaptions = patch("Disable auto captions") {
             strings("DISABLE_CAPTIONS_OPTION")
         }
         subtitleTrack.before {
-            whenTrue(call(DisableAutoCaptions.disableAutoCaptions)) { returnTrue() }
+            whenTrue(DisableAutoCaptions.disableAutoCaptions()) { returnTrue() }
         }
 
         val pcStart = method("start video informer") {
@@ -38,13 +39,8 @@ val disableAutoCaptions = patch("Disable auto captions") {
             paramCount(4)
             returns(Type.Void)
         }
-        pcStart.before { call(DisableAutoCaptions.setCaptionsButtonStatus, bool(false)) }
+        pcStart.before { DisableAutoCaptions.setCaptionsButtonStatus(bool(false)) }
 
-        subtitleButtonController.before { call(DisableAutoCaptions.setCaptionsButtonStatus, bool(true)) }
+        subtitleButtonController.before { DisableAutoCaptions.setCaptionsButtonStatus(bool(true)) }
     }
-}
-
-object DisableAutoCaptions : ExtClass("app.reseam.youtube.playerui.DisableAutoCaptions") {
-    val disableAutoCaptions by static(returns = Type.Boolean)
-    val setCaptionsButtonStatus by static(Type.Boolean)
 }

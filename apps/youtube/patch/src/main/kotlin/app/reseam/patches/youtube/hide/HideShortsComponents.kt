@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.hide
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.alwaysReturn
@@ -15,14 +14,16 @@ import app.reseam.patch.patch
 import app.reseam.patch.resourceRef
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
-import app.reseam.patches.youtubecommon.conversionContextPath
 import app.reseam.patches.youtube.internal.engagementPanelHook
-import app.reseam.patches.youtubecommon.lithoFilter
 import app.reseam.patches.youtube.internal.playerTypeHook
+import app.reseam.patches.youtubecommon.conversionContextPath
+import app.reseam.patches.youtubecommon.lithoFilter
 import app.reseam.patches.youtubecommon.registerLithoFilter
+import app.reseam.youtube.settings.ShortsSettings
+import app.reseam.youtube.settings.YouTubeStrings
+import app.reseam.youtube.shorts.bindings.ShortsFilter
 
 val hideShortsComponents = patch("Hide Shorts components") {
     description("Hides Shorts shelves and configurable components in the Shorts player.")
@@ -46,43 +47,43 @@ val hideShortsComponents = patch("Hide Shorts components") {
         youTubeSettings,
         section(
             YouTubeSettingsPages.Shorts,
-            "Shorts",
-            YouTubeSettings.hideShortsAiButton,
-            YouTubeSettings.hideShortsAutoDubbedLabel,
-            YouTubeSettings.hideShortsChannel,
-            YouTubeSettings.hideShortsChannelBar,
-            YouTubeSettings.hideShortsCommentsButton,
-            YouTubeSettings.hideShortsDislikeButton,
-            YouTubeSettings.hideShortsFullVideoLinkLabel,
-            YouTubeSettings.hideShortsEffectButton,
-            YouTubeSettings.hideShortsGreenScreenButton,
-            YouTubeSettings.hideShortsNewPostsButton,
-            YouTubeSettings.hideShortsHashtagButton,
-            YouTubeSettings.hideShortsHome,
-            YouTubeSettings.hideShortsInfoPanel,
-            YouTubeSettings.hideShortsJoinButton,
-            YouTubeSettings.hideShortsLikeButton,
-            YouTubeSettings.hideShortsLikeFountain,
-            YouTubeSettings.hideShortsLivePreview,
-            YouTubeSettings.hideShortsLocationLabel,
-            YouTubeSettings.hideShortsPausedOverlayButtons,
-            YouTubeSettings.hideShortsPreviewComment,
-            YouTubeSettings.hideShortsRemixButton,
-            YouTubeSettings.hideShortsSaveSoundButton,
-            YouTubeSettings.hideShortsSearchSuggestions,
-            YouTubeSettings.hideShortsShareButton,
-            YouTubeSettings.hideShortsShopButton,
-            YouTubeSettings.hideShortsSoundButton,
-            YouTubeSettings.hideShortsSoundMetadataLabel,
-            YouTubeSettings.hideShortsStickers,
-            YouTubeSettings.hideShortsSubscribeButton,
-            YouTubeSettings.hideShortsSuperThanksButton,
-            YouTubeSettings.hideShortsTaggedProducts,
-            YouTubeSettings.hideShortsUpcomingButton,
-            YouTubeSettings.hideShortsUseSoundButton,
-            YouTubeSettings.hideShortsUseTemplateButton,
-            YouTubeSettings.hideShortsVideoDescription,
-            YouTubeSettings.hideShortsVideoTitle,
+            YouTubeStrings.sectionShorts,
+            ShortsSettings.hideShortsAiButton,
+            ShortsSettings.hideShortsAutoDubbedLabel,
+            ShortsSettings.hideShortsChannel,
+            ShortsSettings.hideShortsChannelBar,
+            ShortsSettings.hideShortsCommentsButton,
+            ShortsSettings.hideShortsDislikeButton,
+            ShortsSettings.hideShortsFullVideoLinkLabel,
+            ShortsSettings.hideShortsEffectButton,
+            ShortsSettings.hideShortsGreenScreenButton,
+            ShortsSettings.hideShortsNewPostsButton,
+            ShortsSettings.hideShortsHashtagButton,
+            ShortsSettings.hideShortsHome,
+            ShortsSettings.hideShortsInfoPanel,
+            ShortsSettings.hideShortsJoinButton,
+            ShortsSettings.hideShortsLikeButton,
+            ShortsSettings.hideShortsLikeFountain,
+            ShortsSettings.hideShortsLivePreview,
+            ShortsSettings.hideShortsLocationLabel,
+            ShortsSettings.hideShortsPausedOverlayButtons,
+            ShortsSettings.hideShortsPreviewComment,
+            ShortsSettings.hideShortsRemixButton,
+            ShortsSettings.hideShortsSaveSoundButton,
+            ShortsSettings.hideShortsSearchSuggestions,
+            ShortsSettings.hideShortsShareButton,
+            ShortsSettings.hideShortsShopButton,
+            ShortsSettings.hideShortsSoundButton,
+            ShortsSettings.hideShortsSoundMetadataLabel,
+            ShortsSettings.hideShortsStickers,
+            ShortsSettings.hideShortsSubscribeButton,
+            ShortsSettings.hideShortsSuperThanksButton,
+            ShortsSettings.hideShortsTaggedProducts,
+            ShortsSettings.hideShortsUpcomingButton,
+            ShortsSettings.hideShortsUseSoundButton,
+            ShortsSettings.hideShortsUseTemplateButton,
+            ShortsSettings.hideShortsVideoDescription,
+            ShortsSettings.hideShortsVideoTitle,
         ),
     )
 
@@ -119,11 +120,7 @@ val hideShortsComponents = patch("Hide Shorts components") {
                 calls { owner("Ljava/util/Collections;"); name("nCopies"); returns(Type.List) }
             }
             resultListMethod.after {
-                call(
-                    ShortsFilter.hideActionButtons,
-                    param(1).cast(conversionContextPath.owner).field(conversionContextPath),
-                    capture("result"),
-                )
+                ShortsFilter.hideActionButtons(param(1).cast(conversionContextPath.owner).field(conversionContextPath), capture("result"))
             }
         }
 
@@ -142,11 +139,4 @@ val componentContextParser = method("componentContextParser") {
 val componentContextParserClass = classTarget("componentContextParserClass") {
     bytecode.findClass(componentContextParser.owner)
         ?: error("The component context parser class is missing")
-}
-
-object ShortsFilter : ExtClass("app.reseam.youtube.shorts.ShortsFilter") {
-    val hideActionButtons by static(
-        "java.lang.StringBuilder",
-        Type.List,
-    )
 }

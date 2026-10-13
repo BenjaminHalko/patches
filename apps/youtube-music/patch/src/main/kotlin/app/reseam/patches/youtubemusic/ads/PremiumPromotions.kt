@@ -3,7 +3,6 @@
 
 package app.reseam.patches.youtubemusic.ads
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.klass
 import app.reseam.patch.method
@@ -11,18 +10,20 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
+import app.reseam.patches.youtubecommon.lithoFilter
+import app.reseam.patches.youtubecommon.registerLithoFilter
 import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
-import app.reseam.patches.youtubemusic.core.YouTubeMusicSettings
 import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
 import app.reseam.patches.youtubemusic.core.youTubeMusicSettings
 import app.reseam.patches.youtubemusic.layout.VIEW_GONE
-import app.reseam.patches.youtubecommon.lithoFilter
-import app.reseam.patches.youtubecommon.registerLithoFilter
+import app.reseam.youtubemusic.layout.bindings.PremiumPromotionsFilter
+import app.reseam.youtubemusic.settings.YouTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicStrings
 
 val premiumPromotions = patch("Premium promotions") {
     description("Hides Get Music Premium in the account menu and in settings.")
     compatibleWith(YOUTUBE_MUSIC)
-    settings(youTubeMusicSettings, section(YouTubeMusicSettingsPages.Ads, "Premium", YouTubeMusicSettings.hidePremiumPromotions))
+    settings(youTubeMusicSettings, section(YouTubeMusicSettingsPages.Ads, YouTubeMusicStrings.sectionPremium, YouTubeMusicSettings.hidePremiumPromotions))
 
     dependsOn(lithoFilter)
 
@@ -49,5 +50,3 @@ private val membershipLabel = klass("com.google.android.apps.youtube.music.setti
     .point("membershipRow") { string("settings_header_paid_memberships") }
     .next { invokeVirtual { params(); returns(Type.CharSequence) } }
     .callee("membershipLabel")
-
-private object PremiumPromotionsFilter : ExtClass("app.reseam.youtubemusic.layout.PremiumPromotionsFilter")

@@ -4,7 +4,7 @@
 
 package app.reseam.patches.youtube.video.quality
 
-import app.reseam.patch.ExtClass
+import app.reseam.patches.youtube.internal.VIDEO_QUALITY_ARRAY
 import app.reseam.patch.Type
 import app.reseam.patch.before
 import app.reseam.patch.classTarget
@@ -15,17 +15,13 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.videoInformationHook
 import app.reseam.patches.youtube.internal.videoQualityClass
-
-private const val EXTENSION_VIDEO_QUALITY_ARRAY = "[Lapp/reseam/youtube/video/VideoInformation\$VideoQualityInterface;"
-
-object HidePremiumVideoQuality : ExtClass("app.reseam.youtube.quality.HidePremiumVideoQuality") {
-    val hidePremiumVideoQuality by static(EXTENSION_VIDEO_QUALITY_ARRAY, returns = EXTENSION_VIDEO_QUALITY_ARRAY)
-}
+import app.reseam.youtube.quality.bindings.HidePremiumVideoQuality
+import app.reseam.youtube.settings.VideoSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 private val currentVideoFormatToString = method("current video format toString") {
     name("toString")
@@ -59,16 +55,13 @@ val hidePremiumVideoQuality = patch("Hide Premium video quality") {
     description("Removes Premium-only quality choices from the quality menu.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings, videoInformationHook)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Video, "Video quality", YouTubeSettings.hidePremiumVideoQuality))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Video, YouTubeStrings.sectionVideoQuality, VideoSettings.hidePremiumVideoQuality))
 
     execute {
         // The manual extension filter keeps the app constructor's concrete array type and avoids
         // generating an ExternalSyntheticLambda that would need to be patched too.
         qualityArrayPut.captureAs("qualities", "[" + videoQualityClass.descriptor).before {
-            val filtered = call(
-                HidePremiumVideoQuality.hidePremiumVideoQuality,
-                capture("qualities").cast(EXTENSION_VIDEO_QUALITY_ARRAY),
-            )
+            val filtered = HidePremiumVideoQuality.withoutPremium(capture("qualities").cast(VIDEO_QUALITY_ARRAY))
             capture("qualities").assign(filtered.cast(("[" + videoQualityClass.descriptor)))
         }
     }

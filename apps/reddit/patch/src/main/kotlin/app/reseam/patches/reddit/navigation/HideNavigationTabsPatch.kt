@@ -10,13 +10,14 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.reddit.core.REDDIT
-import app.reseam.patches.reddit.core.RedditSettings
+import app.reseam.reddit.settings.RedditSettings
 import app.reseam.patches.reddit.core.redditSettings
+import app.reseam.reddit.settings.RedditStrings
 
 val hideNavigationTabs = patch("Hide navigation tabs") {
     description("Removes the Create or Inbox tab from the bottom bar.")
     compatibleWith(REDDIT)
-    settings(redditSettings, section("Navigation", RedditSettings.hideCreateTab, RedditSettings.hideInboxTab))
+    settings(redditSettings, section(RedditStrings.sectionNavigation, RedditSettings.hideCreateTab, RedditSettings.hideInboxTab))
 
     execute {
         fun label(name: String) = resources.id("string", name)?.toLong() ?: error("string/$name missing")

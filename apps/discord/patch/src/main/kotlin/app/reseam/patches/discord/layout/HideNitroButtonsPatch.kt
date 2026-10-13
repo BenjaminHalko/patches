@@ -3,18 +3,19 @@
 
 package app.reseam.patches.discord.layout
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val hideNitroButtons = patch("Hide Nitro buttons") {
     description("Remove small Nitro promotion buttons from feature screens.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Layout", DiscordSettings.hideNitroButtons))
+    settings(discordSettings, section(DiscordStrings.sectionLayout, DiscordSettings.hideNitroButtons))
 
     execute {
         gate(DiscordSettings.hideNitroButtons) {

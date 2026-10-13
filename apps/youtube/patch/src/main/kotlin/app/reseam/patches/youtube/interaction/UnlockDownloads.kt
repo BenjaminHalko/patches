@@ -3,7 +3,6 @@
 
 package app.reseam.patches.youtube.interaction
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.before
 import app.reseam.patch.classTarget
 import app.reseam.patch.dex.AccessFlags
@@ -12,21 +11,16 @@ import app.reseam.patch.patch
 import app.reseam.patch.settings.section
 import app.reseam.patch.settings.whenEnabled
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.misc.spoofVideoStreams
 import app.reseam.patches.youtubecommon.parseProtobuf
 import app.reseam.patches.youtubecommon.protobufBytes
 import app.reseam.patches.youtubespoof.answerRefusedDownloads
-
-object DownloadOptions : ExtClass("app.reseam.youtube.downloads.DownloadOptions") {
-    val unlock by static("[B", returns = "[B")
-}
-
-object QualityPicker : ExtClass("app.reseam.youtube.downloads.QualityPicker") {
-    val requested by static("[B")
-}
+import app.reseam.youtube.downloads.bindings.DownloadOptions
+import app.reseam.youtube.downloads.bindings.QualityPicker
+import app.reseam.youtube.settings.DownloadSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 private val downloadActionCommand = method("download action command") {
     strings("Unknown command")
@@ -60,17 +54,17 @@ val unlockDownloads = patch("Unlock downloads") {
     dependsOn(youTubeSettings, spoofVideoStreams)
     settings(
         youTubeSettings,
-        section(YouTubeSettingsPages.Downloads, "Unlock downloads", YouTubeSettings.unlockDownloads),
+        section(YouTubeSettingsPages.Downloads, YouTubeStrings.sectionUnlockDownloads, DownloadSettings.unlockDownloads),
     )
 
     execute {
-        answerRefusedDownloads(YouTubeSettings.unlockDownloads)
+        answerRefusedDownloads(DownloadSettings.unlockDownloads)
         downloadActionRequest.before {
-            whenEnabled(YouTubeSettings.unlockDownloads) { call(QualityPicker.requested, protobufBytes(param(0))) }
+            whenEnabled(DownloadSettings.unlockDownloads) { QualityPicker.requested(protobufBytes(param(0))) }
         }
         downloadActionResponse.before {
-            whenEnabled(YouTubeSettings.unlockDownloads) {
-                val unlocked = call(DownloadOptions.unlock, protobufBytes(param(0)))
+            whenEnabled(DownloadSettings.unlockDownloads) {
+                val unlocked = DownloadOptions.unlock(protobufBytes(param(0)))
                 whenNotNull(unlocked) {
                     param(0).assign(parseProtobuf(downloadActionResponseClass, "download action response", unlocked))
                 }

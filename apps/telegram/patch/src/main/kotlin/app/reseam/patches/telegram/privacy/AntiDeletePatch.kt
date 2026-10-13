@@ -16,23 +16,27 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
-import app.reseam.patches.telegram.core.DeletedArchive
-import app.reseam.patches.telegram.core.RecoveredChats
 import app.reseam.patches.telegram.core.SPARSE_ARRAYS
 import app.reseam.patches.telegram.core.TELEGRAM
 import app.reseam.patches.telegram.core.TL_MESSAGES
-import app.reseam.patches.telegram.core.TelegramSettings
 import app.reseam.patches.telegram.core.chatActivity
 import app.reseam.patches.telegram.core.messagesController
 import app.reseam.patches.telegram.core.messagesStorage
 import app.reseam.patches.telegram.core.telegramSettings
+import app.reseam.telegram.antidelete.bindings.DeletedArchive
+import app.reseam.telegram.antidelete.bindings.MessageMarkers
+import app.reseam.telegram.antidelete.bindings.ArchivedMessages
+import app.reseam.telegram.antidelete.bindings.ArchiveStorage
+import app.reseam.telegram.antidelete.bindings.RecoveredChats
+import app.reseam.telegram.settings.TelegramSettings
+import app.reseam.telegram.settings.TelegramStrings
 
 val antiDelete = patch("Recover deleted messages") {
     description("Keeps messages others delete, archived locally and shown back in the chat.")
     compatibleWith(TELEGRAM)
     enabledByDefault(false)
     dependsOn(antiDeleteRuntime)
-    settings(telegramSettings, section("Privacy", TelegramSettings.recoverDeleted, TelegramSettings.recoverDeletedChats))
+    settings(telegramSettings, section(TelegramStrings.sectionPrivacy, TelegramSettings.recoverDeleted, TelegramSettings.recoverDeletedChats))
 
     execute {
         // R8 renames RecyclerView; the chat adapter's own refresh is what ChatActivity calls.
@@ -43,33 +47,30 @@ val antiDelete = patch("Recover deleted messages") {
 
         gate(TelegramSettings.recoverDeleted) {
             deleteMessages.before {
-                call(DeletedArchive.markLocalDelete, param(3), param(0))
+                DeletedArchive.markLocalDelete(param(3), param(0))
             }
 
             markMessagesAsDeleted.before {
-                call(DeletedArchive.onMarkDeleted, thisObject, param(0), param(1))
+                ArchiveStorage.onMarkDeleted(thisObject, param(0), param(1))
             }
 
             processDeletedMessages.before {
-                param(0).assign(call(
-                    DeletedArchive.filterDeletedMessages,
-                    param(0), param(1), thisObject.field(chatDialogId), thisObject.field(messagesDict), thisObject.field(chatAdapter),
-                ))
+                param(0).assign(DeletedArchive.filterDeletedMessages(param(0), param(1), thisObject.field(chatDialogId), thisObject.field(messagesDict), thisObject.field(chatAdapter)))
             }
 
             processLoadedMessages.before {
-                call(DeletedArchive.injectDeleted, param(0), param(2), param(5), param(13))
+                ArchivedMessages.injectDeleted(param(0), param(2), param(5), param(13))
             }
 
             chatOnResume.before {
-                call(DeletedArchive.reapplyMarkers, thisObject.field(messagesDict), thisObject.field(chatAdapter), thisObject.field(chatDialogId))
+                MessageMarkers.reapplyMarkers(thisObject.field(messagesDict), thisObject.field(chatAdapter), thisObject.field(chatDialogId))
             }
 
             chatCreateView.after {
                 whenNotNull(thisObject.field(chatHeaderItem)) {
                     thisObject.field(chatHeaderItem).call(
                         addMenuItem,
-                        int(RECOVER_DELETED_ITEM), staticField(recoverDeletedIcon), call(RecoveredChats.menuLabel, thisObject.field(chatDialogId)),
+                        int(RECOVER_DELETED_ITEM), staticField(recoverDeletedIcon), RecoveredChats.menuLabel(thisObject.field(chatDialogId)),
                     )
                 }
             }
@@ -77,7 +78,7 @@ val antiDelete = patch("Recover deleted messages") {
             chatMenuClick.before {
                 whenEqual(param(0), int(RECOVER_DELETED_ITEM)) {
                     val chat = thisObject.fieldOfType(chatActivity.descriptor)
-                    val label = call(RecoveredChats.toggle, chat.field(chatDialogId))
+                    val label = RecoveredChats.toggle(chat.field(chatDialogId))
                     chat.field(chatHeaderItem).field(lazyMenuItems)
                         .callVirtual("java.util.HashMap", "get", "(Ljava/lang/Object;)Ljava/lang/Object;", callStatic("java.lang.Integer", "valueOf", "(I)Ljava/lang/Integer;", param(0)))
                         .cast(lazyMenuItem.descriptor)

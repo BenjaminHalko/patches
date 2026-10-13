@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.video.quality
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.before
@@ -17,27 +16,22 @@ import app.reseam.patch.point
 import app.reseam.patch.points
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
-import app.reseam.patches.youtubecommon.lithoFilter
 import app.reseam.patches.youtube.internal.lithoRecyclerViewAttached
-import app.reseam.patches.youtubecommon.registerLithoFilter
 import app.reseam.patches.youtube.internal.videoInformationHook
-
-object AdvancedVideoQualityMenu : ExtClass("app.reseam.youtube.quality.AdvancedVideoQualityMenu") {
-    val onFlyoutMenuCreate by static(Type.View)
-    val addVideoQualityListMenuListener by static(Type.View)
-    val forceAdvancedVideoQualityMenuCreation by static(Type.Boolean, returns = Type.Boolean)
-}
-
-private object AdvancedVideoQualityFilter : ExtClass("app.reseam.youtube.quality.AdvancedVideoQualityFilter")
+import app.reseam.patches.youtubecommon.lithoFilter
+import app.reseam.patches.youtubecommon.registerLithoFilter
+import app.reseam.youtube.quality.bindings.AdvancedVideoQualityFilter
+import app.reseam.youtube.quality.bindings.AdvancedVideoQualityMenu
+import app.reseam.youtube.settings.VideoSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val advancedVideoQualityMenu = patch("Advanced video quality menu") {
     description("Opens YouTube's detailed quality list from the quick quality menu.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings, videoInformationHook, lithoFilter)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Video, "Video quality", YouTubeSettings.advancedVideoQualityMenu))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Video, YouTubeStrings.sectionVideoQuality, VideoSettings.advancedVideoQualityMenu))
 
     execute {
         val titleId = resources.id("layout", "video_quality_bottom_sheet_list_fragment_title")?.toLong()
@@ -51,7 +45,7 @@ val advancedVideoQualityMenu = patch("Advanced video quality menu") {
             literals(titleId)
         }.points("quality list") { checkCast("android.widget.ListView") }.forEach {
             captureAs("qualityList", Type.View).after {
-                call(AdvancedVideoQualityMenu.addVideoQualityListMenuListener, capture("qualityList"))
+                AdvancedVideoQualityMenu.addVideoQualityListMenuListener(capture("qualityList"))
             }
         }
 
@@ -69,12 +63,12 @@ val advancedVideoQualityMenu = patch("Advanced video quality menu") {
             field { type(Type.Boolean) }
         }.captureAs("advancedOption", Type.Boolean).after {
             capture("advancedOption").assign(
-                call(AdvancedVideoQualityMenu.forceAdvancedVideoQualityMenuCreation, capture("advancedOption")),
+                AdvancedVideoQualityMenu.forceAdvancedVideoQualityMenuCreation(capture("advancedOption")),
             )
         }
 
         lithoRecyclerViewAttached.before {
-            call(AdvancedVideoQualityMenu.onFlyoutMenuCreate, param(1))
+            AdvancedVideoQualityMenu.onFlyoutMenuCreate(param(1))
         }
         registerLithoFilter(AdvancedVideoQualityFilter)
     }

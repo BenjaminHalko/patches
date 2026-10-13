@@ -3,7 +3,6 @@
 
 package app.reseam.patches.youtubemusic.layout
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.XmlElement
 import app.reseam.patch.after
@@ -13,16 +12,18 @@ import app.reseam.patch.points
 import app.reseam.patch.resourceRef
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
-import app.reseam.patches.youtubemusic.core.YouTubeMusicSettings
 import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
 import app.reseam.patches.youtubemusic.core.youTubeMusicSettings
+import app.reseam.youtubemusic.layout.bindings.MiniplayerButtons
+import app.reseam.youtubemusic.settings.YouTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicStrings
 
 val miniplayerButtons = patch("Miniplayer skip buttons") {
     description("Adds previous and next buttons to the miniplayer.")
     compatibleWith(YOUTUBE_MUSIC)
     settings(
         youTubeMusicSettings,
-        section(YouTubeMusicSettingsPages.Player, "Miniplayer",
+        section(YouTubeMusicSettingsPages.Player, YouTubeMusicStrings.sectionMiniplayer,
             YouTubeMusicSettings.miniplayerPreviousButton, YouTubeMusicSettings.miniplayerNextButton),
     )
 
@@ -48,13 +49,9 @@ val miniplayerButtons = patch("Miniplayer skip buttons") {
             invokeVirtual { name("findViewById"); params(Type.Int); returns(Type.View) }
             argument(1) { literal(playButtonId.toLong()) }
         }.single().next { resultOf(Type.View) }.captureAs("playButton").after {
-            call(MiniplayerButtons.bind, capture("playButton"))
+            MiniplayerButtons.bind(capture("playButton"))
         }
     }
 }
 
 private fun XmlElement.descendants(): Sequence<XmlElement> = sequenceOf(this) + children.asSequence().flatMap { it.descendants() }
-
-private object MiniplayerButtons : ExtClass("app.reseam.youtubemusic.layout.MiniplayerButtons") {
-    val bind by static(Type.View)
-}

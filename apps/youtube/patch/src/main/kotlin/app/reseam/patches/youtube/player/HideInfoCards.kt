@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.player
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.dex.AccessFlags
 import app.reseam.patch.dex.Opcode
@@ -15,17 +14,19 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtubecommon.lithoFilter
 import app.reseam.patches.youtubecommon.registerLithoFilter
+import app.reseam.youtube.playerui.bindings.HideInfoCardsFilter
+import app.reseam.youtube.settings.PlayerOverlaySettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val hideInfoCards = patch("Hide info cards") {
     description("Removes information cards shown over videos.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings, lithoFilter)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Overlay, "Player overlay", YouTubeSettings.hideInfoCards))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Overlay, YouTubeStrings.sectionPlayerOverlay, PlayerOverlaySettings.hideInfoCards))
 
     execute {
         val drawerId = resources.id("id", "info_cards_drawer_header")?.toLong()
@@ -47,7 +48,7 @@ val hideInfoCards = patch("Hide info cards") {
             returns("java.lang.Boolean")
             custom { parameterTypes[0].startsWith("L") }
         }
-        gate(YouTubeSettings.hideInfoCards) {
+        gate(PlayerOverlaySettings.hideInfoCards) {
             incognito.point("info-card visibility") {
                 invokeVirtual {
                     owner("android.view.View")
@@ -65,7 +66,7 @@ val hideInfoCards = patch("Hide info cards") {
             literals(drawerId)
             opcode(Opcode.INVOKE_VIRTUAL, Opcode.IGET_OBJECT, Opcode.INVOKE_INTERFACE)
         }
-        gate(YouTubeSettings.hideInfoCards) {
+        gate(PlayerOverlaySettings.hideInfoCards) {
             oldInfoCardsMethod.point("old info-card interface call") {
                 opcode(Opcode.IGET_OBJECT)
                 then {
@@ -80,5 +81,3 @@ val hideInfoCards = patch("Hide info cards") {
         registerLithoFilter(HideInfoCardsFilter)
     }
 }
-
-object HideInfoCardsFilter : ExtClass("app.reseam.youtube.playerui.HideInfoCardsFilter")

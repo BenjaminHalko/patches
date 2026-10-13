@@ -3,6 +3,7 @@
 
 package app.reseam.patches.youtube.internal
 
+import app.reseam.youtube.video.bindings.VideoInformation
 import app.reseam.patch.Type
 import app.reseam.patch.before
 import app.reseam.patch.method
@@ -30,6 +31,6 @@ val videoPlaybackStateHook = patch {
     execute {
         hookVideoId(VideoInformation.setVideoId)
         hookBackgroundPlayVideoId(VideoInformation.setVideoId)
-        playerTimeMethod.before { call(VideoInformation.setVideoTime, param(0)) }
+        playerTimeMethod.before { VideoInformation.setVideoTime(param(0)) }
     }
 }

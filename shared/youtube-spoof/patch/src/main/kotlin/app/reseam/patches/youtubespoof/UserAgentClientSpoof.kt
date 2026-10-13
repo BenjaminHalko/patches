@@ -3,17 +3,12 @@
 
 package app.reseam.patches.youtubespoof
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.PatchRuntime
-import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.dex.stringValue
 import app.reseam.patch.methods
 import app.reseam.patch.point
-
-private object UserAgentClientSpoof : ExtClass("app.reseam.youtube.spoof.UserAgentClientSpoof") {
-    val rewritePackageName by static(Type.String, Type.String, returns = Type.String)
-}
+import app.reseam.youtube.spoof.bindings.UserAgentClientSpoof
 
 fun PatchRuntime.spoofUserAgentPackageName(stockPackageName: String) {
     val sites = userAgentPackageNameSites.all
@@ -30,7 +25,7 @@ fun PatchRuntime.spoofUserAgentPackageName(stockPackageName: String) {
             .captureAs("packageName", "java.lang.String")
         packageName.after {
             capture("packageName").assign(
-                call(UserAgentClientSpoof.rewritePackageName, capture("packageName"), string(stockPackageName)),
+                UserAgentClientSpoof.rewritePackageName(capture("packageName"), string(stockPackageName)),
             )
         }
     }

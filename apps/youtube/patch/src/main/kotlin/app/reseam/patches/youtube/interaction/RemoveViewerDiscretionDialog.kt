@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.interaction
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.dex.AccessFlags
 import app.reseam.patch.dex.Opcode
@@ -16,9 +15,11 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.misc.bindings.ViewerDiscretionDialog
+import app.reseam.youtube.settings.VideoSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 private const val ALERT_DIALOG = "android.app.AlertDialog"
 private const val ALERT_DIALOG_BUILDER = "android.app.AlertDialog\$Builder"
@@ -31,28 +32,28 @@ val removeViewerDiscretionDialog = patch("Remove viewer discretion dialog") {
         """,
     )
     compatibleWith(YOUTUBE)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Video, "Age restriction", YouTubeSettings.removeViewerDiscretionDialog))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Video, YouTubeStrings.sectionAgeRestriction, VideoSettings.removeViewerDiscretionDialog))
 
     execute {
         // Which dialog is on screen is not knowable from the dialog itself, so the extension keeps
         // the last playability status and only dismisses the dialogs that status can produce.
-        gate(YouTubeSettings.removeViewerDiscretionDialog) {
+        gate(VideoSettings.removeViewerDiscretionDialog) {
             playabilityGuard.before {
-                call(ViewerDiscretionDialog.setPlayabilityStatus, param(0))
+                ViewerDiscretionDialog.setPlayabilityStatus(param(0))
             }
 
             dialogShown.after {
-                call(ViewerDiscretionDialog.confirm, capture("dialog"))
+                ViewerDiscretionDialog.confirm(capture("dialog"))
             }
         }
 
         // Tracked points remain attached to their instructions as either hook is emitted.
-        gate(YouTubeSettings.removeViewerDiscretionDialog) {
+        gate(VideoSettings.removeViewerDiscretionDialog) {
             modernDialogCreated.after {
-                call(ViewerDiscretionDialog.confirm, capture("dialog"))
+                ViewerDiscretionDialog.confirm(capture("dialog"))
             }
             modernDialogChosen.after {
-                capture("modern").assign(call(ViewerDiscretionDialog.useModernDialog, capture("modern")))
+                capture("modern").assign(ViewerDiscretionDialog.useModernDialog(capture("modern")))
             }
         }
     }
@@ -107,9 +108,3 @@ val modernDialogCreated = modernDialogBuilder
     .point("modernDialogCreated") { invokeVirtual { owner(ALERT_DIALOG_BUILDER); name("create") } }
     .next { resultOf(ALERT_DIALOG) }
     .captureAs("dialog", ALERT_DIALOG)
-
-object ViewerDiscretionDialog : ExtClass("app.reseam.youtube.misc.ViewerDiscretionDialog") {
-    val setPlayabilityStatus by static("java.lang.Enum")
-    val confirm by static(ALERT_DIALOG)
-    val useModernDialog by static(Type.Boolean, returns = Type.Boolean)
-}

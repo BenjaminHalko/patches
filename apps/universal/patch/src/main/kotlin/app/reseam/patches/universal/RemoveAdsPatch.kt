@@ -4,21 +4,15 @@
 package app.reseam.patches.universal
 
 import app.reseam.patch.BytecodeScope
-import app.reseam.patch.ExtClass
-import app.reseam.patch.native.MethodRef
 import app.reseam.patch.Type
 import app.reseam.patch.descriptor
 import app.reseam.patch.dex.parameterTypes
+import app.reseam.patch.native.MethodRef
 import app.reseam.patch.patch
 import app.reseam.patch.proto
+import app.reseam.universal.googleads.bindings.AdMobLoader
 
 private const val GMA = "com.google.android.gms.ads"
-
-private object AdMobLoader : ExtClass("app.reseam.universal.googleads.AdMobLoader") {
-    val load by static(Type.Context, Type.String, "$GMA.AdRequest", "$GMA.AdLoadCallback")
-    val loadManager by static(Type.Context, Type.String, "$GMA.admanager.AdManagerAdRequest", "$GMA.AdLoadCallback")
-}
-
 /** Static full-screen loaders whose fourth argument is the load callback, by request type. */
 private val ADMOB_CALLBACK_LOADERS = mapOf(
     AdMobLoader.load to listOf(

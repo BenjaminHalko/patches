@@ -4,11 +4,11 @@
 
 package app.reseam.patches.youtube.internal
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.ExtMethod
 import app.reseam.patch.MethodTarget
 import app.reseam.patch.ResourceScope
 import app.reseam.patch.Type
+import app.reseam.patch.XmlDocument
 import app.reseam.patch.XmlElement
 import app.reseam.patch.after
 import app.reseam.patch.before
@@ -20,9 +20,9 @@ import app.reseam.patch.dex.returnType
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.point
-import app.reseam.patch.XmlDocument
 import app.reseam.patch.resourceRef
 import app.reseam.patches.youtube.core.YOUTUBE
+import app.reseam.youtube.controls.bindings.PlayerControls
 
 private const val AUTO_NS = "http://schemas.android.com/apk/res-auto"
 private const val CONSTRAINT_LAYOUT = "androidx.constraintlayout.widget.ConstraintLayout"
@@ -47,13 +47,6 @@ fun registerPlayerControlLayout(resourcePath: String, idName: String, position: 
 /** Registers the extension initializer corresponding to a previously registered XML fragment. */
 fun registerPlayerControlInitializer(initializer: ExtMethod) {
     bottomInitializers += initializer
-}
-
-object PlayerControls : ExtClass("app.reseam.youtube.controls.PlayerControls") {
-    val setVisibility by static(Type.Boolean, Type.Boolean)
-    val setVisibilityImmediate by static(Type.Boolean)
-    val setFullscreenCloseButton by static(Type.View)
-    val setPlayerControlsVisibility by static("java.lang.Enum")
 }
 
 private val visibilityEntityMethod = method("player controls visibility entity") {
@@ -122,17 +115,14 @@ val playerControls = patch {
             .point("fullscreen button id") { literal(fullscreen) }
             .next { checkCast("android.widget.ImageView") }
             .captureAs("fullscreenButton", Type.View)
-            .after { call(PlayerControls.setFullscreenCloseButton, capture("fullscreenButton")) }
+            .after { PlayerControls.setFullscreenCloseButton(capture("fullscreenButton")) }
 
-        controlsOverlay.before { call(PlayerControls.setVisibility, param(0), param(1)) }
+        controlsOverlay.before { PlayerControls.setVisibility(param(0), param(1)) }
         visibilityEntityConstructor
             .point("resolved player controls visibility") { opcode(Opcode.IPUT_OBJECT) }
             .captureAs("visibilityContainer", visibilityEntityConstructor.parameterTypes.single())
             .after {
-                call(
-                    PlayerControls.setPlayerControlsVisibility,
-                    call(visibilityFactory, capture("visibilityContainer").field(visibilityStateField)),
-                )
+                PlayerControls.setPlayerControlsVisibility(call(visibilityFactory, capture("visibilityContainer").field(visibilityStateField)))
             }
 
         listOf(

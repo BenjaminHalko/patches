@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtubecommon
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.MethodTarget
 import app.reseam.patch.PatchRuntime
 import app.reseam.patch.Type
@@ -17,10 +16,11 @@ import app.reseam.patch.methodTarget
 import app.reseam.patch.native.NewField
 import app.reseam.patch.point
 import app.reseam.patch.replace
+import app.reseam.youtube.audio.bindings.ForceOriginalAudio
 
 /** Prefers the original audio track; [activityOnCreate] is where the setting is read. */
 fun PatchRuntime.preferOriginalAudio(activityOnCreate: MethodTarget) {
-    activityOnCreate.before { call(ForceOriginalAudio.setEnabled) }
+    activityOnCreate.before { ForceOriginalAudio.setEnabled() }
     val cacheName = "reseam_is_default_audio_override"
     formatStreamClass.classDef.addField(
         NewField(
@@ -53,15 +53,10 @@ fun PatchRuntime.preferOriginalAudio(activityOnCreate: MethodTarget) {
         val original = thisObject.call(originalDefaultAudioTrack)
         val audioId = thisObject.call(audioTrackIdMethod)
         val displayName = thisObject.call(audioTrackDisplayNameMethod)
-        val selected = call(ForceOriginalAudio.isDefaultAudioStream, original, audioId, displayName)
+        val selected = ForceOriginalAudio.isDefaultAudioStream(original, audioId, displayName)
         thisObject.set(cacheField, callStatic("java.lang.Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", selected))
         returnValue(selected)
     }
-}
-
-private object ForceOriginalAudio : ExtClass("app.reseam.youtube.audio.ForceOriginalAudio") {
-    val setEnabled by static()
-    val isDefaultAudioStream by static(Type.Boolean, Type.String, Type.String, returns = Type.Boolean)
 }
 
 private val formatStreamToString = method("format stream toString") {

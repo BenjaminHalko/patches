@@ -24,6 +24,9 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.replace
 import app.reseam.patch.settings.openSettings
+import app.reseam.reddit.settings.bindings.OpenReseamSettings
+import app.reseam.reddit.settings.bindings.ReseamSettingsIcon
+import app.reseam.reddit.settings.bindings.ReseamSettingsItem
 
 private const val FUNCTION0 = "kotlin.jvm.functions.Function0"
 private const val SETTINGS_SECTION = "com.reddit.settings.usersettings.UserSettingsSection"
@@ -75,7 +78,7 @@ val settingsEntry = patch("Reseam entry in Reddit settings") {
         itemInterface.virtualMethods.filter { AccessFlags.ABSTRACT.isSet(it.info.accessFlags) }.forEach { member ->
             val bridge = item.addBridge(member)
             when (member.returnType) {
-                descriptor("java.util.Set") -> bridge.replace { returnValue(call(ReseamSettingsItem.sessions)) }
+                descriptor("java.util.Set") -> bridge.replace { returnValue(ReseamSettingsItem.sessions()) }
                 descriptor(SETTINGS_SECTION) -> bridge.replace { returnValue(enumValue(SETTINGS_SECTION, "General")) }
                 Type.String -> bridge.replace { returnValue(string("key_pref_reseam")) }
                 Type.Int -> bridge.replace { returnValue(int(GENERAL_ORDER)) }
@@ -93,7 +96,7 @@ val settingsEntry = patch("Reseam entry in Reddit settings") {
         }
 
         settingsItemRegistry.before {
-            param(0).assign(call(ReseamSettingsItem.withItem, param(0)))
+            param(0).assign(ReseamSettingsItem.withItem(param(0)))
         }
     }
 }
@@ -102,6 +105,7 @@ val settingsItemRegistry = method("settingsItemRegistry") {
     name("<init>")
     calls { owner(CONTRIBUTION_EXCEPTION); name("<init>") }
 }
+
 val settingsItemKey = settingsItemRegistry.point { invokeInterface { returns(Type.String); paramCount(0) } }.callee("settingsItemKey")
 
 val privacyPolicyItemContent = method("privacyPolicyItemContent") {
@@ -110,6 +114,7 @@ val privacyPolicyItemContent = method("privacyPolicyItemContent") {
     paramCount(3)
     param(2, Type.Int)
 }
+
 val settingsRow = privacyPolicyItemContent.point { invokeStatic { hasParam(FUNCTION0); hasParam(Type.String) } }.callee("settingsRow")
 
 val unitInstance = fieldTarget("unitInstance") {

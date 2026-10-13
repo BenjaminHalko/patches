@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.youtube.player
 
@@ -12,15 +11,16 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.settings.PlayerOverlaySettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val disableRollingNumberAnimations = patch("Disable rolling number animations") {
     description("Stops animated number transitions in the player.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Overlay, "Player overlay", YouTubeSettings.disableRollingNumberAnimations))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Overlay, YouTubeStrings.sectionPlayerOverlay, PlayerOverlaySettings.disableRollingNumberAnimations))
 
     execute {
         val rollingNumber = method("rolling-number image update") {
@@ -39,7 +39,7 @@ val disableRollingNumberAnimations = patch("Disable rolling number animations") 
                     "Lcom/google/android/libraries/youtube/rendering/ui/spec/typography/YouTubeAppCompatTextView;"
             }
         }
-        gate(YouTubeSettings.disableRollingNumberAnimations) {
+        gate(PlayerOverlaySettings.disableRollingNumberAnimations) {
             rollingNumber
                 .point("rolling number image span") {
                     invokeVirtual {

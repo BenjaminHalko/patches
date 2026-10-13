@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.layout
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.dex.AccessFlags
@@ -15,11 +14,13 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.MAIN_ACTIVITY
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtubecommon.lithoColorHook
 import app.reseam.patches.youtubecommon.registerLithoColorHook
+import app.reseam.youtube.settings.AppearanceSettings
+import app.reseam.youtube.settings.YouTubeStrings
+import app.reseam.youtube.theme.bindings.ThemePatch
 
 private const val DARK_DEFAULT = "#FF000000"
 private const val LIGHT_DEFAULT = "#FFFFFFFF"
@@ -31,7 +32,7 @@ val theme = patch("Theme") {
     dependsOn(lithoColorHook)
     settings(
         youTubeSettings,
-        section(YouTubeSettingsPages.Appearance, "General", YouTubeSettings.gradientLoadingScreen, YouTubeSettings.splashScreenAnimationStyle),
+        section(YouTubeSettingsPages.Appearance, YouTubeStrings.sectionGeneral, AppearanceSettings.gradientLoadingScreen, AppearanceSettings.splashScreenAnimationStyle),
     )
 
     val darkThemeBackgroundColor = stringOption(
@@ -101,7 +102,7 @@ val theme = patch("Theme") {
                 then(within = 6) { resultOf(Type.Boolean) }
             }
             .captureAs("gradient", Type.Boolean)
-            .after { capture("gradient").assign(call(ThemePatch.gradientLoadingScreenEnabled, capture("gradient"))) }
+            .after { capture("gradient").assign(ThemePatch.gradientLoadingScreenEnabled(capture("gradient"))) }
 
         splashScreenStyle
             .point {
@@ -109,15 +110,15 @@ val theme = patch("Theme") {
                 then(within = 6) { resultOf(Type.Int) }
             }
             .captureAs("style", Type.Int)
-            .after { capture("style").assign(call(ThemePatch.getLoadingScreenType, capture("style"))) }
+            .after { capture("style").assign(ThemePatch.getLoadingScreenType(capture("style"))) }
 
         splashStartupCheck.next { resultOf(Type.Boolean) }
             .captureAs("showSplash", Type.Boolean)
-            .after { capture("showSplash").assign(call(ThemePatch.showSplashScreen, capture("showSplash"))) }
+            .after { capture("showSplash").assign(ThemePatch.showSplashScreen(capture("showSplash"))) }
 
         splashStartupCheck.writer(0, "splashStartupState")
             .captureAs("startupState", Type.Int)
-            .after { capture("startupState").assign(call(ThemePatch.splashStartupState, capture("startupState"))) }
+            .after { capture("startupState").assign(ThemePatch.splashStartupState(capture("startupState"))) }
 
     }
 }
@@ -142,11 +143,3 @@ private val splashScreenStyle = method("splashScreenStyle") {
 // from the splash style rather than matching an unrelated earlier boolean in onCreate.
 private val splashStartupCheck = splashScreenStyle.point { literal(SPLASH_STYLE_RESOURCE) }
     .previous { invokeStatic { params(Type.Int); returns(Type.Boolean) } }
-
-object ThemePatch : ExtClass("app.reseam.youtube.theme.ThemePatch") {
-    val getValue by static(Type.Int, returns = Type.Int)
-    val gradientLoadingScreenEnabled by static(Type.Boolean, returns = Type.Boolean)
-    val showSplashScreen by static(Type.Boolean, returns = Type.Boolean)
-    val splashStartupState by static(Type.Int, returns = Type.Int)
-    val getLoadingScreenType by static(Type.Int, returns = Type.Int)
-}

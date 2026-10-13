@@ -5,8 +5,6 @@
 package app.reseam.patches.youtube.internal
 
 import app.reseam.patch.ExtMethod
-import app.reseam.patch.points
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.before
@@ -14,16 +12,18 @@ import app.reseam.patch.classTarget
 import app.reseam.patch.dex.AccessFlags
 import app.reseam.patch.dex.Opcode
 import app.reseam.patch.dex.opcode
+import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.methodTarget
 import app.reseam.patch.patch
 import app.reseam.patch.point
-import app.reseam.patch.klass
+import app.reseam.patch.points
 import app.reseam.patch.replace
 import app.reseam.patches.youtube.core.MAIN_ACTIVITY
 import app.reseam.patches.youtube.core.YOUTUBE
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtubecommon.appHelper
+import app.reseam.youtube.navigation.bindings.NavigationBar
 
 private const val DRAWABLE = "android.graphics.drawable.Drawable"
 private const val DRAWABLE_DESCRIPTOR = "Landroid/graphics/drawable/Drawable;"
@@ -62,7 +62,7 @@ val navigationBarHook = patch {
                 returns(Type.Void)
             }
         }.captureArgumentAs("searchBar", 0, Type.View).before {
-            call(NavigationBar.searchBarResultsViewLoaded, capture("searchBar"))
+            NavigationBar.searchBarResultsViewLoaded(capture("searchBar"))
         }
 
         val toolbarLayout = method("toolbarLayout") {
@@ -74,7 +74,7 @@ val navigationBarHook = patch {
         toolbarLayout.point("toolbarLoaded") {
             checkCast("Lcom/google/android/apps/youtube/app/ui/actionbar/MainCollapsingToolbarLayout;")
         }.captureAs("toolbar", FRAME_LAYOUT).after {
-            call(NavigationBar.setToolbar, capture("toolbar"))
+            NavigationBar.setToolbar(capture("toolbar"))
         }
 
         val pivotBarInitialized = method("pivotBarInitialized") {
@@ -106,7 +106,7 @@ val navigationBarHook = patch {
             invokeStatic { owner(enumOwner); returns(enumOwner) }
         }.forEach {
             next { resultOf(enumOwner) }.captureAs("enum").after {
-                call(NavigationBar.setLastAppNavigationEnum, capture("enum"))
+                NavigationBar.setLastAppNavigationEnum(capture("enum"))
             }
         }
         listOf(
@@ -123,12 +123,12 @@ val navigationBarHook = patch {
             .captureArgumentAs("view", 0, Type.View)
             .captureArgumentAs("selected", 1, Type.Boolean)
             .after {
-                call(NavigationBar.navigationTabSelected, capture("view"), capture("selected"))
+                NavigationBar.navigationTabSelected(capture("view"), capture("selected"))
             }
 
         navigationMainActivityOnBackPressed
             .point("navigationBackPressed") { opcode(Opcode.RETURN_VOID) }
-            .before { call(NavigationBar.onBackPressed, thisObject.cast(Type.Activity)) }
+            .before { NavigationBar.onBackPressed(thisObject.cast(Type.Activity)) }
 
         // Resolve the framework method before adding the bridge; afterward the bridge has the
         // same public/final/zero-argument Drawable shape and would be an ambiguous query match.
@@ -138,20 +138,6 @@ val navigationBarHook = patch {
         val helper = appHelper(toolbarClass.classDef, "patch_getNavigationIcon", "()$DRAWABLE_DESCRIPTOR")
         helper.replace { returnValue(thisObject.call(actualToolbarTarget)) }
     }
-}
-
-object NavigationBar : ExtClass("app.reseam.youtube.navigation.NavigationBar") {
-    val searchBarResultsViewLoaded by static(Type.View)
-    val setToolbar by static(FRAME_LAYOUT)
-    val setLastAppNavigationEnum by static(Type.Object)
-    val navigationTabLoaded by static(Type.View)
-    val navigationImageResourceTabLoaded by static(Type.View)
-    val getNavigationButton by static(
-        Type.View,
-        returns = "app.reseam.youtube.navigation.NavigationBar\$NavigationButton",
-    )
-    val navigationTabSelected by static(Type.View, Type.Boolean)
-    val onBackPressed by static(Type.Activity)
 }
 
 private val pivotBarConstructor = method("pivotBarConstructor") {
@@ -197,6 +183,6 @@ private val toolbarBackButton = method("toolbarBackButton") {
 /** Observe the mapped view once, including image-resource tabs which delegate here. */
 fun hookNavigationTabCreated(hook: ExtMethod) {
     NavigationBar.navigationTabLoaded.target.after {
-        call(hook, call(NavigationBar.getNavigationButton, param(0)), param(0))
+        call(hook, NavigationBar.getNavigationButton(param(0)), param(0))
     }
 }

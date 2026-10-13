@@ -3,18 +3,19 @@
 
 package app.reseam.patches.discord.layout
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val hideContactSyncPrompt = patch("Hide contact sync prompt") {
     description("Remove the contact sync promotion from the friends screen.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Layout", DiscordSettings.hideContactSyncPrompt))
+    settings(discordSettings, section(DiscordStrings.sectionLayout, DiscordSettings.hideContactSyncPrompt))
 
     execute {
         gate(DiscordSettings.hideContactSyncPrompt) {

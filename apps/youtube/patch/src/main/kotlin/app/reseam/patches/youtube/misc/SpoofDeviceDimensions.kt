@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.youtube.misc
 
@@ -12,32 +11,33 @@ import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.settings.AdvancedSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 // The server picks which formats to offer from the screen box the client reports, so a box that
 // spans every size it knows about makes it offer all of them.
-private const val MIN_HEIGHT_OR_WIDTH = 64
-private const val MAX_HEIGHT_OR_WIDTH = 4096
+private const val SMALLEST_SIDE = 64
+private const val LARGEST_SIDE = 4096
 
 val spoofDeviceDimensions = patch("Spoof device dimensions") {
     description("Reports a screen that spans every size YouTube knows, which unlocks higher video qualities.")
     compatibleWith(YOUTUBE)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Advanced, "Device dimensions", YouTubeSettings.spoofDeviceDimensions))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Advanced, YouTubeStrings.sectionDeviceDimensions, AdvancedSettings.spoofDeviceDimensions))
 
     execute {
         val dimensions = klass(deviceDimensionsToString.owner)
-        gate(YouTubeSettings.spoofDeviceDimensions) {
+        gate(AdvancedSettings.spoofDeviceDimensions) {
             method("deviceDimensionsConstructor") {
                 inClass(dimensions)
                 flags(AccessFlags.CONSTRUCTOR)
                 params(Type.Int, Type.Int, Type.Int, Type.Int)
             }.before {
-                param(0).assign(int(MIN_HEIGHT_OR_WIDTH))
-                param(1).assign(int(MAX_HEIGHT_OR_WIDTH))
-                param(2).assign(int(MIN_HEIGHT_OR_WIDTH))
-                param(3).assign(int(MAX_HEIGHT_OR_WIDTH))
+                param(0).assign(int(SMALLEST_SIDE))
+                param(1).assign(int(LARGEST_SIDE))
+                param(2).assign(int(SMALLEST_SIDE))
+                param(3).assign(int(LARGEST_SIDE))
             }
         }
     }

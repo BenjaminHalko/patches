@@ -10,13 +10,14 @@ import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.telegram.core.TELEGRAM
-import app.reseam.patches.telegram.core.TelegramSettings
+import app.reseam.telegram.settings.TelegramSettings
 import app.reseam.patches.telegram.core.telegramSettings
+import app.reseam.telegram.settings.TelegramStrings
 
 val disableAutoUpdate = patch("Disable auto-update") {
     description("Stops in-app update checks and prompts.")
     compatibleWith(TELEGRAM)
-    settings(telegramSettings, section("Updates", TelegramSettings.disableAutoUpdate))
+    settings(telegramSettings, section(TelegramStrings.sectionUpdates, TelegramSettings.disableAutoUpdate))
 
     execute {
         gate(TelegramSettings.disableAutoUpdate) {

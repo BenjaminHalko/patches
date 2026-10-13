@@ -14,6 +14,8 @@ import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.openSettings
+import app.reseam.x.settings.bindings.OpenReseamSettings
+import app.reseam.x.settings.bindings.SettingsRows
 
 private const val FUNCTION0 = "kotlin.jvm.functions.Function0"
 private const val LOGO_PATH = "res/drawable/reseam_logo.png"
@@ -51,7 +53,7 @@ val settingsEntry = patch("Reseam entry in X settings") {
             returnValue(
                 newInstance(
                     settingsSectionCtor.owner, settingsSectionCtor.proto,
-                    nullObject, nullObject, call(SettingsRows.single, item), int(SECTION_DEFAULTS_HEADER_AND_SUBTITLE),
+                    nullObject, nullObject, SettingsRows.single(item), int(SECTION_DEFAULTS_HEADER_AND_SUBTITLE),
                 ),
             )
         }
@@ -61,7 +63,7 @@ val settingsEntry = patch("Reseam entry in X settings") {
         settingsListState.method("<init>").before {
             whenEqual(paramOfType(resourceText.descriptor).field(resourceTextId), int(settingsTitle.toInt())) {
                 val sections = paramOfType(Type.List)
-                sections.assign(call(SettingsRows.withSection, sections, call(SettingsRows.section)))
+                sections.assign(SettingsRows.withSection(sections, SettingsRows.section()))
             }
         }
     }
@@ -80,6 +82,7 @@ private val resourceTextId = resourceText.method("toString")
 val additionalResourcesRows = method("additionalResourcesRows") {
     strings("https://x.com/privacy", "https://business.x.com/help/troubleshooting/how-twitter-ads-work.html")
 }
+
 val settingsItemCtor = additionalResourcesRows.point { invokeDirect { name("<init>"); hasParam(FUNCTION0) } }.callee("settingsItemCtor")
 val settingsSectionCtor = additionalResourcesRows.point { invokeDirect { name("<init>"); hasParam(Type.List); paramCount(4) } }.callee("settingsSectionCtor")
 // The literal variant of the text type settings rows take.

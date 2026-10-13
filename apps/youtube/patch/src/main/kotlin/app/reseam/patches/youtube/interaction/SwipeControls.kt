@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.youtube.interaction
 
@@ -13,22 +12,25 @@ import app.reseam.patches.youtube.internal.engagementPanelHook
 import app.reseam.patches.youtube.internal.playerControls
 import app.reseam.patches.youtube.internal.playerTypeHook
 import app.reseam.patches.youtubecommon.appHelper
+import app.reseam.youtube.settings.PlayerControlsSettings
+import app.reseam.youtube.settings.YouTubeStrings
+import app.reseam.youtube.swipe.bindings.SwipeControls
 
 val swipeControls = patch("Swipe controls") {
     description("Adds fullscreen volume and brightness gestures, configurable feedback, and brightness restoration.")
     compatibleWith(YOUTUBE)
     dependsOn(playerTypeHook, playerControls, engagementPanelHook)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Controls, "Swipe controls",
-        YouTubeSettings.swipeBrightness, YouTubeSettings.swipeVolume,
-        YouTubeSettings.swipePressToEngage, YouTubeSettings.swipeHapticFeedback,
-        YouTubeSettings.swipeSaveAndRestoreBrightness, YouTubeSettings.swipeLowestValueEnableAutoBrightness,
-        YouTubeSettings.swipeOverlayStyle, YouTubeSettings.swipeOverlayBackgroundOpacity,
-        YouTubeSettings.swipeOverlayProgressBrightnessColor, YouTubeSettings.swipeOverlayProgressVolumeColor,
-        YouTubeSettings.swipeTextOverlaySize, YouTubeSettings.swipeOverlayTimeout,
-        YouTubeSettings.swipeThreshold, YouTubeSettings.swipeVolumeSensitivity))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Controls, YouTubeStrings.sectionSwipeControls,
+        PlayerControlsSettings.swipeBrightness, PlayerControlsSettings.swipeVolume,
+        PlayerControlsSettings.swipePressToEngage, PlayerControlsSettings.swipeHapticFeedback,
+        PlayerControlsSettings.swipeSaveAndRestoreBrightness, PlayerControlsSettings.swipeLowestValueEnableAutoBrightness,
+        PlayerControlsSettings.swipeOverlayStyle, PlayerControlsSettings.swipeOverlayBackgroundOpacity,
+        PlayerControlsSettings.swipeOverlayProgressBrightnessColor, PlayerControlsSettings.swipeOverlayProgressVolumeColor,
+        PlayerControlsSettings.swipeTextOverlaySize, PlayerControlsSettings.swipeOverlayTimeout,
+        PlayerControlsSettings.swipeThreshold, PlayerControlsSettings.swipeVolumeSensitivity))
 
     execute {
-        mainActivityOnCreate.after { call(SwipeControls.initialize, thisObject) }
+        mainActivityOnCreate.after { SwipeControls.initialize(thisObject) }
         val activity = klass(MAIN_ACTIVITY)
         listOf(
             Triple("dispatchTouchEvent", "android.view.MotionEvent", SwipeControls.touch),
@@ -61,10 +63,4 @@ val swipeControls = patch("Swipe controls") {
             target.before { whenTrue(call(hook, thisObject, param(0))) { returnTrue() } }
         }
     }
-}
-
-private object SwipeControls : ExtClass("app.reseam.youtube.swipe.SwipeControls") {
-    val initialize by static(Type.Activity)
-    val touch by static(Type.Activity, "android.view.MotionEvent", returns = Type.Boolean)
-    val key by static(Type.Activity, "android.view.KeyEvent", returns = Type.Boolean)
 }

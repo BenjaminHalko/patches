@@ -3,13 +3,14 @@
 
 package app.reseam.patches.discord.chat
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 import app.reseam.patches.discord.core.draftStore
 import app.reseam.patches.discord.core.messageActions
@@ -19,7 +20,7 @@ import app.reseam.patches.discord.core.userStore
 val draftPreview = patch("Draft preview") {
     description("Long press the send button to see your message in the chat before sending it.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Chat", DiscordSettings.draftPreview))
+    settings(discordSettings, section(DiscordStrings.sectionChat, DiscordSettings.draftPreview))
 
     execute {
         gate(DiscordSettings.draftPreview) {

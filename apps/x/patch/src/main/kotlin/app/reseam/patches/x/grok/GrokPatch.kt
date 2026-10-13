@@ -12,10 +12,11 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.x.core.X
-import app.reseam.patches.x.core.XSettings
+import app.reseam.x.settings.XSettings
 import app.reseam.patches.x.core.xSettings
 import app.reseam.patches.x.featureswitches.disableFeatureSwitches
 import app.reseam.patches.x.featureswitches.featureSwitchOverrides
+import app.reseam.x.settings.XStrings
 
 val grok = patch("Grok") {
     description("Hides the Grok tab, the Grok buttons on posts and profiles, Imagine prompts, Grok in the composer and the drawer, and can turn off Grok translations.")
@@ -24,7 +25,7 @@ val grok = patch("Grok") {
     settings(
         xSettings,
         section(
-            "Grok",
+            XStrings.sectionGrok,
             XSettings.hideGrokTab,
             XSettings.hideGrokPostButton,
             XSettings.hideGrokPrompts,

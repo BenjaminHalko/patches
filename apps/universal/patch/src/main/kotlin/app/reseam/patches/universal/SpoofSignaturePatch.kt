@@ -3,26 +3,13 @@
 
 package app.reseam.patches.universal
 
-import app.reseam.patch.ExtClass
-import app.reseam.patch.Type
 import app.reseam.patch.patch
+import app.reseam.universal.signature.bindings.OriginalSignature
 
 private const val PACKAGE_MANAGER = "android.content.pm.PackageManager"
 private const val PACKAGE_INFO = "android.content.pm.PackageInfo"
 private const val SIGNING_INFO = "android.content.pm.SigningInfo"
 private const val SIGNATURES = "android.content.pm.Signature[]"
-
-private object OriginalSignature : ExtClass("app.reseam.universal.signature.OriginalSignature") {
-    val ownPackage by static(returns = Type.String)
-    val certificates by static(returns = Type.String)
-    val getPackageInfo by static(PACKAGE_MANAGER, Type.String, Type.Int, returns = PACKAGE_INFO)
-    val getPackageInfoWithFlags by static(PACKAGE_MANAGER, Type.String, "$PACKAGE_MANAGER\$PackageInfoFlags", returns = PACKAGE_INFO, name = "getPackageInfo")
-    val hasSigningCertificate by static(PACKAGE_MANAGER, Type.String, "[B", Type.Int, returns = Type.Boolean)
-    val getApkContentsSigners by static(SIGNING_INFO, returns = SIGNATURES)
-    val getSigningCertificateHistory by static(SIGNING_INFO, returns = SIGNATURES)
-    val hasMultipleSigners by static(SIGNING_INFO, returns = Type.Boolean)
-}
-
 val spoofSignature = patch("Spoof signature") {
     description("Shows the app the signature it was published with, so checks for a modified app pass.")
 

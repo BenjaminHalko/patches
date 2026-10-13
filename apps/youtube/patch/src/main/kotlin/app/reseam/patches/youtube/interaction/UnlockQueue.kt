@@ -4,7 +4,6 @@
 package app.reseam.patches.youtube.interaction
 
 import app.reseam.patch.CodeScope
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.ValueRef
 import app.reseam.patch.after
@@ -20,33 +19,22 @@ import app.reseam.patch.reserveLocal
 import app.reseam.patch.settings.section
 import app.reseam.patch.settings.whenEnabled
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.videoInformationHook
 import app.reseam.patches.youtubecommon.parseProtobuf
-import app.reseam.patches.youtubecommon.protobufBytes
 import app.reseam.patches.youtubecommon.protobufByteString
 import app.reseam.patches.youtubecommon.protobufByteStringBytes
+import app.reseam.patches.youtubecommon.protobufBytes
+import app.reseam.youtube.queue.bindings.QueueContext
+import app.reseam.youtube.queue.bindings.QueueMenu
+import app.reseam.youtube.queue.bindings.QueueReply
+import app.reseam.youtube.settings.VideoSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 private const val LISTENABLE_FUTURE = "com.google.common.util.concurrent.ListenableFuture"
 private const val OPTIONAL = "j\$.util.Optional"
 private const val MESSAGE_LITE = "com.google.protobuf.MessageLite"
-
-object QueueReply : ExtClass("app.reseam.youtube.queue.QueueReply") {
-    val wrap by static(LISTENABLE_FUTURE, Type.String, returns = LISTENABLE_FUTURE)
-    val parse by static("[B", returns = Type.Object)
-}
-
-object QueueMenu : ExtClass("app.reseam.youtube.queue.QueueMenu") {
-    val unlock by static("[B", returns = "[B")
-}
-
-object QueueContext : ExtClass("app.reseam.youtube.queue.QueueContext") {
-    val watched by static(MESSAGE_LITE)
-    val complete by static("[B", returns = "[B")
-}
-
 private val activeDevicesRequest = method("active devices request") {
     strings("mdx/get_active_devices")
 }
@@ -125,7 +113,7 @@ val unlockQueue = patch("Unlock queue") {
     dependsOn(youTubeSettings, videoInformationHook)
     settings(
         youTubeSettings,
-        section(YouTubeSettingsPages.Video, "Queue", YouTubeSettings.unlockQueue),
+        section(YouTubeSettingsPages.Video, YouTubeStrings.sectionQueue, VideoSettings.unlockQueue),
     )
 
     execute {
@@ -135,33 +123,33 @@ val unlockQueue = patch("Unlock queue") {
         val params = activeDevicesSender.reserveLocal("params", Type.String)
         activeDevicesSender.before { local(params).assign(param(1)) }
         activeDevicesResponse.after {
-            whenEnabled(YouTubeSettings.unlockQueue) {
-                capture("response").assign(call(QueueReply.wrap, capture("response"), local(params)))
+            whenEnabled(VideoSettings.unlockQueue) {
+                capture("response").assign(QueueReply.wrap(capture("response"), local(params)))
             }
         }
 
         menuCommandResolver.before {
-            whenEnabled(YouTubeSettings.unlockQueue) {
-                val unlocked = call(QueueMenu.unlock, protobufBytes(param(0)))
+            whenEnabled(VideoSettings.unlockQueue) {
+                val unlocked = QueueMenu.unlock(protobufBytes(param(0)))
                 whenNotNull(unlocked) { param(0).assign(parseProtobuf(commandClass, "command", unlocked)) }
             }
         }
 
         watchNextModelInit.after {
-            whenEnabled(YouTubeSettings.unlockQueue) {
-                call(QueueContext.watched, thisObject.fieldOfType(queueInsertResolver.parameterTypes.first()))
+            whenEnabled(VideoSettings.unlockQueue) {
+                QueueContext.watched(thisObject.fieldOfType(queueInsertResolver.parameterTypes.first()))
             }
         }
         val current = queueInsertResolver.reserveLocal("queue context", "[B")
         queueInsertResolver.before {
-            whenEnabled(YouTubeSettings.unlockQueue) {
+            whenEnabled(VideoSettings.unlockQueue) {
                 val state = thisObject.fieldOfType(queueState.descriptor)
                 val stored = state.field(queueContext)
                 local(current).assign(nullObject)
                 whenTrue(stored.callVirtual(OPTIONAL, "isPresent", "()Z")) {
                     local(current).assign(protobufByteStringBytes(stored.callVirtual(OPTIONAL, "get", "()Ljava/lang/Object;")))
                 }
-                val completed = call(QueueContext.complete, local(current))
+                val completed = QueueContext.complete(local(current))
                 whenNotNull(completed) { state.set(queueContext, optionalOf(protobufByteString(completed))) }
             }
         }

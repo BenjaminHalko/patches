@@ -12,13 +12,14 @@ import app.reseam.patch.replace
 import app.reseam.patch.settings.section
 import app.reseam.patch.settings.whenEnabled
 import app.reseam.patches.telegram.core.TELEGRAM
-import app.reseam.patches.telegram.core.TelegramSettings
+import app.reseam.telegram.settings.TelegramSettings
 import app.reseam.patches.telegram.core.telegramSettings
+import app.reseam.telegram.settings.TelegramStrings
 
 val downloadBoost = patch("Download speed boost") {
     description("Larger chunks (512 KiB) and 8 parallel requests instead of 128 KiB / 4.")
     compatibleWith(TELEGRAM)
-    settings(telegramSettings, section("Downloads", TelegramSettings.boostDownloads))
+    settings(telegramSettings, section(TelegramStrings.sectionDownloads, TelegramSettings.boostDownloads))
 
     execute {
         updateParams.replace {

@@ -3,13 +3,14 @@
 
 package app.reseam.patches.discord.guild
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.designSystem
 import app.reseam.patches.discord.core.discordSettings
 import app.reseam.patches.discord.core.guildChannelStore
@@ -22,7 +23,7 @@ import app.reseam.patches.discord.core.userStore
 val serverDetails = patch("Server details") {
     description("Show a server's owner, creation date, members, boosts and more in its options.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Servers", DiscordSettings.serverDetails))
+    settings(discordSettings, section(DiscordStrings.sectionServers, DiscordSettings.serverDetails))
 
     execute {
         gate(DiscordSettings.serverDetails) {

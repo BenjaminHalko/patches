@@ -3,6 +3,9 @@
 
 package app.reseam.patches.instagram.interaction
 
+import app.reseam.instagram.follows.bindings.FollowsYouIndicator
+import app.reseam.instagram.settings.FollowSettings
+import app.reseam.instagram.settings.InstagramStrings
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.classTarget
@@ -13,8 +16,6 @@ import app.reseam.patch.methodTarget
 import app.reseam.patch.methods
 import app.reseam.patch.patch
 import app.reseam.patch.settings.section
-import app.reseam.patches.instagram.core.FollowSettings
-import app.reseam.patches.instagram.core.FollowsYouIndicator
 import app.reseam.patches.instagram.core.INSTAGRAM
 import app.reseam.patches.instagram.core.USER_SESSION
 import app.reseam.patches.instagram.core.instagramSettings
@@ -28,11 +29,11 @@ val followsYou = patch("Follows you indicator") {
     description("Shows a 'Follows you' badge next to usernames in search results.")
     compatibleWith(INSTAGRAM)
     dependsOn(signatureCheck)
-    settings(instagramSettings, section("Social", FollowSettings.followsYouIndicator))
+    settings(instagramSettings, section(InstagramStrings.sectionSocial, FollowSettings.followsYouIndicator))
 
     execute {
         searchSubtitleBuilder.after {
-            val updated = call(FollowsYouIndicator.appendFromSession, capture("result"), param(1), param(3))
+            val updated = FollowsYouIndicator.appendFromSession(capture("result"), param(1), param(3))
             returnValue(updated)
         }
 
@@ -46,7 +47,7 @@ val followsYou = patch("Follows you indicator") {
                 val relation = user.call(userRelationship)
                 whenNotNull(relation) {
                     val followedBy = relation.callInterface(RELATIONSHIP, pandoFollowedBy.name, "()Ljava/lang/Boolean;")
-                    returnValue(call(FollowsYouIndicator.maybeAppend, subtitle, followedBy))
+                    returnValue(FollowsYouIndicator.maybeAppend(subtitle, followedBy))
                 }
             }
             returnValue(subtitle)

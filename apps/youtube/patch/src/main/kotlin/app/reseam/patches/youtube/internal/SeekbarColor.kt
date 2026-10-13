@@ -4,25 +4,25 @@
 
 package app.reseam.patches.youtube.internal
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.before
 import app.reseam.patch.classTarget
 import app.reseam.patch.dex.AccessFlags
 import app.reseam.patch.dex.Opcode
-import app.reseam.patch.dex.returnType
 import app.reseam.patch.dex.methodRef
 import app.reseam.patch.dex.parameterTypes
+import app.reseam.patch.dex.returnType
 import app.reseam.patch.method
 import app.reseam.patch.patch
-import app.reseam.patch.points
 import app.reseam.patch.point
+import app.reseam.patch.points
 import app.reseam.patch.replace
 import app.reseam.patches.youtube.core.YOUTUBE
+import app.reseam.patches.youtubecommon.appHelper
 import app.reseam.patches.youtubecommon.lithoColorHook
 import app.reseam.patches.youtubecommon.registerLithoColorHook
-import app.reseam.patches.youtubecommon.appHelper
+import app.reseam.youtube.theme.bindings.SeekbarColor
 
 private const val LOTTIE = "com.airbnb.lottie.LottieAnimationView"
 private const val LOTTIE_FACTORY_ZIP_INPUT = "java.util.zip.ZipInputStream"
@@ -33,7 +33,7 @@ val seekbarColor = patch {
     dependsOn(lithoColorHook)
 
     execute {
-        registerLithoColorHook(SeekbarColorExtension.getLithoColor)
+        registerLithoColorHook(SeekbarColor.getLithoColor)
 
         val inlinePlayed = resources.id("color", "inline_time_bar_played_not_highlighted_color")
             ?.toLong() ?: error("color/inline_time_bar_played_not_highlighted_color is missing")
@@ -54,7 +54,7 @@ val seekbarColor = patch {
             }.all.also { check(it.isNotEmpty()) { "No color lookup for $resourceId" } }.forEach { site ->
                 site.next { resultOf(Type.Int) }
                 .captureAs("color", Type.Int)
-                .after { capture("color").assign(call(SeekbarColorExtension.getVideoPlayerSeekbarColor, capture("color"))) }
+                .after { capture("color").assign(SeekbarColor.getVideoPlayerSeekbarColor(capture("color"))) }
             }
         }
 
@@ -80,7 +80,7 @@ val seekbarColor = patch {
         // Literal queries use the runtime ARGB value, including high16 shifts.
         clickedColor.point("clickedPaintColor") { literal(-65536L) }
             .captureAs("color", Type.Int)
-            .after { capture("color").assign(call(SeekbarColorExtension.getVideoPlayerSeekbarClickedColor, capture("color"))) }
+            .after { capture("color").assign(SeekbarColor.getVideoPlayerSeekbarClickedColor(capture("color"))) }
 
         hookResourceColor(
             method("seekbarHandleColor") {
@@ -101,7 +101,7 @@ val seekbarColor = patch {
         watchHistory.point { literal(-1712394514L) }
             .previous { opcode(Opcode.MOVE_RESULT) }
             .captureAs("progress", Type.Boolean)
-            .after { capture("progress").assign(call(SeekbarColorExtension.showWatchHistoryProgressDrawable, capture("progress"))) }
+            .after { capture("progress").assign(SeekbarColor.showWatchHistoryProgressDrawable(capture("progress"))) }
 
         val lithoGradient = method("lithoLinearGradient") {
             flags(AccessFlags.STATIC)
@@ -109,7 +109,7 @@ val seekbarColor = patch {
             params(Type.Float, Type.Float, Type.Float, Type.Float, "[I", "[F")
         }
         lithoGradient.before {
-            param(4).assign(call(SeekbarColorExtension.getLithoLinearGradient, param(4), param(5)))
+            param(4).assign(SeekbarColor.getLithoLinearGradient(param(4), param(5)))
         }
 
         val playerGradient = method("playerLinearGradient") {
@@ -123,7 +123,7 @@ val seekbarColor = patch {
             .captureAs("gradient", "[I")
             .after {
                 capture("gradient").assign(
-                    call(SeekbarColorExtension.getPlayerLinearGradient, capture("gradient"), param(0), param(1)),
+                    SeekbarColor.getPlayerLinearGradient(capture("gradient"), param(0), param(1)),
                 )
             }
 
@@ -137,7 +137,7 @@ val seekbarColor = patch {
             returns(Type.Void)
             calls { owner("Lcom/airbnb/lottie/LottieAnimationView;"); name("isInEditMode") }
         }
-        bytecode.redirectCalls(lottieSetAnimationInt.ref, SeekbarColorExtension.setSplashAnimationLottie)
+        bytecode.redirectCalls(lottieSetAnimationInt.ref, SeekbarColor.setSplashAnimationLottie)
 
         val lottieFactoryZip = method("lottieFactoryZip") {
             flags(AccessFlags.PUBLIC or AccessFlags.STATIC)
@@ -173,14 +173,4 @@ val seekbarColor = patch {
             returnVoid()
         }
     }
-}
-
-object SeekbarColorExtension : ExtClass("app.reseam.youtube.theme.SeekbarColor") {
-    val setSplashAnimationLottie by static(LOTTIE, Type.Int)
-    val showWatchHistoryProgressDrawable by static(Type.Boolean, returns = Type.Boolean)
-    val getLithoColor by static(Type.Int, returns = Type.Int)
-    val getPlayerLinearGradient by static("[I", Type.Int, Type.Int, returns = "[I")
-    val getLithoLinearGradient by static("[I", "[F", returns = "[I")
-    val getVideoPlayerSeekbarClickedColor by static(Type.Int, returns = Type.Int)
-    val getVideoPlayerSeekbarColor by static(Type.Int, returns = Type.Int)
 }

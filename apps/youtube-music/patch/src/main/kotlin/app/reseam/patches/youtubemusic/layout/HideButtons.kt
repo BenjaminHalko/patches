@@ -3,19 +3,20 @@
 
 package app.reseam.patches.youtubemusic.layout
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.before
 import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.patch
-import app.reseam.patch.settings.section
 import app.reseam.patch.settings.gate
+import app.reseam.patch.settings.section
 import app.reseam.patches.youtubecommon.hideById
 import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
-import app.reseam.patches.youtubemusic.core.YouTubeMusicSettings
 import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
 import app.reseam.patches.youtubemusic.core.youTubeMusicSettings
+import app.reseam.youtubemusic.layout.bindings.ToolbarButtons
+import app.reseam.youtubemusic.settings.YouTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicStrings
 
 val hideButtons = patch("Hide buttons") {
     description("Adds options to hide the cast, search, history and activity feed buttons.")
@@ -23,7 +24,7 @@ val hideButtons = patch("Hide buttons") {
     settings(
         youTubeMusicSettings,
         with(YouTubeMusicSettings) {
-            section(YouTubeMusicSettingsPages.Interface, "Buttons",
+            section(YouTubeMusicSettingsPages.Interface, YouTubeMusicStrings.sectionButtons,
                 hideCastButton, hideSearchButton, hideHistoryButton, hideActivityFeedButton)
         },
     )
@@ -60,8 +61,4 @@ val hideButtons = patch("Hide buttons") {
 private val mediaRouteButton = klass("mediaRouteButton") {
     strings("MediaRouteButton")
     extends("android.view.View")
-}
-
-private object ToolbarButtons : ExtClass("app.reseam.youtubemusic.layout.ToolbarButtons") {
-    val setVisible by static("android.view.MenuItem", Type.Boolean, returns = "android.view.MenuItem")
 }

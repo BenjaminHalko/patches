@@ -3,20 +3,21 @@
 
 package app.reseam.patches.discord.privacy
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val localReadState = patch("Local read state") {
     description("Mark messages as read on this phone without updating your other devices.")
     compatibleWith(DISCORD)
     enabledByDefault(false)
-    settings(discordSettings, section("Privacy", DiscordSettings.localReadState))
+    settings(discordSettings, section(DiscordStrings.sectionPrivacy, DiscordSettings.localReadState))
 
     execute {
         gate(DiscordSettings.localReadState) {

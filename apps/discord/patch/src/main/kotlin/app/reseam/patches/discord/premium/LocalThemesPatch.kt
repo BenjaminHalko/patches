@@ -3,19 +3,20 @@
 
 package app.reseam.patches.discord.premium
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val localThemes = patch("Local themes") {
     description("Use bundled Nitro themes and save your choice on this phone.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Nitro", DiscordSettings.localThemes))
+    settings(discordSettings, section(DiscordStrings.sectionNitro, DiscordSettings.localThemes))
 
     execute {
         gate(DiscordSettings.localThemes) {

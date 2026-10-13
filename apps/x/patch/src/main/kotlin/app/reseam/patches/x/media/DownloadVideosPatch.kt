@@ -6,19 +6,20 @@ package app.reseam.patches.x.media
 import app.reseam.patch.patch
 import app.reseam.patch.settings.section
 import app.reseam.patches.x.core.X
-import app.reseam.patches.x.core.XSettings
+import app.reseam.x.settings.XSettings
 import app.reseam.patches.x.core.forceFlagWhen
 import app.reseam.patches.x.core.xSettings
 import app.reseam.patches.x.featureswitches.disableFeatureSwitches
 import app.reseam.patches.x.featureswitches.featureSwitchOverrides
 import app.reseam.patches.x.premium.unlockPremium
+import app.reseam.x.settings.XStrings
 
 // Download Video itself is behind the Premium tier check that Unlock Premium passes.
 val downloadVideos = patch("Download videos") {
     description("Offers Download Video on every video and saves the original file instead of the watermarked copy X gives non-Premium accounts.")
     compatibleWith(X)
     dependsOn(unlockPremium, featureSwitchOverrides)
-    settings(xSettings, section("Media", XSettings.downloadAnyVideo, XSettings.downloadWithoutWatermark))
+    settings(xSettings, section(XStrings.sectionMedia, XSettings.downloadAnyVideo, XSettings.downloadWithoutWatermark))
 
     execute {
         // The menu offers Download Video only when the media model's flag is set.

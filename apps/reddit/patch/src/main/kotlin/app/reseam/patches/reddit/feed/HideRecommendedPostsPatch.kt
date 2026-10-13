@@ -7,17 +7,18 @@ import app.reseam.patch.klass
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
-import app.reseam.patches.reddit.core.FeedElements
 import app.reseam.patches.reddit.core.REDDIT
-import app.reseam.patches.reddit.core.RedditSettings
 import app.reseam.patches.reddit.core.cellGroupMapper
 import app.reseam.patches.reddit.core.feedElementClassNames
 import app.reseam.patches.reddit.core.redditSettings
+import app.reseam.reddit.feed.bindings.FeedElements
+import app.reseam.reddit.settings.RedditSettings
+import app.reseam.reddit.settings.RedditStrings
 
 val hideRecommendedPosts = patch("Hide recommended posts") {
     description("Removes suggested posts from communities you do not follow in Home.")
     compatibleWith(REDDIT)
-    settings(redditSettings, section("Feed", RedditSettings.hideRecommendedPosts))
+    settings(redditSettings, section(RedditStrings.sectionFeed, RedditSettings.hideRecommendedPosts))
 
     execute {
         val postElement = feedElementClassNames(listOf("PostElement(linkId="))
@@ -25,7 +26,7 @@ val hideRecommendedPosts = patch("Hide recommended posts") {
         gate(RedditSettings.hideRecommendedPosts) {
             cellGroupMapper.after {
                 whenNotNull(paramOfType(recommendationContext.descriptor)) {
-                    whenTrue(call(FeedElements.isAny, capture("result"), string(postElement))) { returnNull() }
+                    whenTrue(FeedElements.isAny(capture("result"), string(postElement))) { returnNull() }
                 }
             }
         }

@@ -10,7 +10,6 @@ import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.mainActivityOnCreate
 import app.reseam.patches.youtube.core.youTubeSettings
@@ -20,9 +19,10 @@ import app.reseam.patches.youtube.internal.hookBackgroundPlayVideoId
 import app.reseam.patches.youtube.internal.hookClientContextOsName
 import app.reseam.patches.youtube.internal.hookVideoId
 import app.reseam.patches.youtube.internal.videoIdHook
-import app.reseam.patches.youtubespoof.SpoofSettings
-import app.reseam.patches.youtubespoof.SpoofVideoStreams
 import app.reseam.patches.youtubespoof.spoofStreams
+import app.reseam.youtube.settings.YouTubeStrings
+import app.reseam.youtube.spoof.bindings.SpoofVideoStreams
+import app.reseam.youtubespoof.settings.SpoofSettings
 
 val spoofVideoStreams = patch("Spoof video streams") {
     description("Requests and installs playback streams from a compatible YouTube client.")
@@ -32,11 +32,11 @@ val spoofVideoStreams = patch("Spoof video streams") {
         youTubeSettings,
         section(
             YouTubeSettingsPages.Advanced,
-            "Stream compatibility",
+            YouTubeStrings.sectionStreamCompatibility,
             SpoofSettings.spoofVideoStreams,
             SpoofSettings.spoofVideoStreamsClient,
             SpoofSettings.spoofVideoStreamsTokenSource,
-            YouTubeSettings.spoofVideoStreamsStatsForNerds,
+            SpoofSettings.spoofVideoStreamsStatsForNerds,
         ),
     )
 
@@ -47,7 +47,7 @@ val spoofVideoStreams = patch("Spoof video streams") {
         hookVideoId(SpoofVideoStreams.onVideoChanged)
         hookBackgroundPlayVideoId(SpoofVideoStreams.onVideoChanged)
         nerdsStatsVideoFormatBuilder.after {
-            capture("result").assign(call(SpoofVideoStreams.appendSpoofedClient, capture("result")))
+            capture("result").assign(SpoofVideoStreams.appendSpoofedClient(capture("result")))
         }
 
         hookClientContextOsName(ClientContextEndpoint.BROWSE, SpoofVideoStreams.rewriteClientContextOsName)

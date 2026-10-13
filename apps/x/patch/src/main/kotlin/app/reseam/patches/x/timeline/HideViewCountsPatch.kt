@@ -12,13 +12,14 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.x.core.X
-import app.reseam.patches.x.core.XSettings
+import app.reseam.x.settings.XSettings
 import app.reseam.patches.x.core.xSettings
+import app.reseam.x.settings.XStrings
 
 val hideViewCounts = patch("Hide view counts") {
     description("Removes the Views item from the post action bar and the view count from the post detail line.")
     compatibleWith(X)
-    settings(xSettings, section("Timeline", XSettings.hideViewCounts))
+    settings(xSettings, section(XStrings.sectionTimeline, XSettings.hideViewCounts))
 
     execute {
         // The action type enum keeps its constant names for serialization.

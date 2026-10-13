@@ -9,8 +9,8 @@ import app.reseam.patch.method
 import app.reseam.patch.methodTarget
 import app.reseam.patch.patch
 import app.reseam.patch.point
-import app.reseam.patches.x.core.TimelineQueryFilter
 import app.reseam.patches.x.core.X
+import app.reseam.x.timeline.bindings.TimelineQueryFilter
 
 private const val TIMELINE_VIEW_SCHEMA_QUERY = "SELECT name, sql FROM sqlite_master WHERE type = 'view' AND name = 'TimelineView'"
 
@@ -28,7 +28,7 @@ val timelineQueryFilter = patch {
         require(implementations.isNotEmpty()) { "no implementation of ${prepare.descriptor} found" }
         for (implementation in implementations) {
             methodTarget("prepare:${implementation.owner}") { implementation }.before {
-                param(0).assign(call(TimelineQueryFilter.rewrite, param(0)))
+                param(0).assign(TimelineQueryFilter.rewrite(param(0)))
             }
         }
     }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="custom_filter">Enable custom component filter</string>
+    <string name="custom_filter_summary">Enables expressions in the custom component-filter field.</string>
+    <string name="custom_filter_strings">Custom component filters</string>
+    <string name="custom_filter_strings_summary">One expression per line: ^path#accessibility$buffer.</string>
+    <string name="debug_logging">Debug logging</string>
+    <string name="debug_logging_summary">Writes what the Reseam patches are doing to the Android log.</string>
+    <string name="sanitize_sharing_links">Sanitize sharing links</string>
+    <string name="sanitize_sharing_links_summary">Strips the tracking parameters YouTube adds to a shared link.</string>
+    <string name="force_original_audio">Force original audio</string>
+    <string name="force_original_audio_summary">Prefers the original audio track over dubbed tracks.</string>
+    <string name="custom_branding_icon_custom">Custom</string>
+</resources>

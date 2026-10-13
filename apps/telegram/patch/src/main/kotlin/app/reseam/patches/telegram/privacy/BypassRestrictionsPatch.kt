@@ -11,14 +11,15 @@ import app.reseam.patch.settings.section
 import app.reseam.patches.telegram.core.TELEGRAM
 import app.reseam.patches.telegram.core.TL_CHAT
 import app.reseam.patches.telegram.core.TL_USER_FULL
-import app.reseam.patches.telegram.core.TelegramSettings
+import app.reseam.telegram.settings.TelegramSettings
 import app.reseam.patches.telegram.core.messagesController
 import app.reseam.patches.telegram.core.telegramSettings
+import app.reseam.telegram.settings.TelegramStrings
 
 val bypassRestrictions = patch("Save from restricted chats") {
     description("Re-enables copy, save, and forward in chats with content protection on.")
     compatibleWith(TELEGRAM)
-    settings(telegramSettings, section("Privacy", TelegramSettings.saveFromRestricted))
+    settings(telegramSettings, section(TelegramStrings.sectionPrivacy, TelegramSettings.saveFromRestricted))
 
     execute {
         gate(TelegramSettings.saveFromRestricted) {

@@ -12,20 +12,21 @@ import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.settings.PlayerControlsSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 private const val DURATION = "j\$.time.Duration"
 
 val disableDoubleTapActions = patch("Disable double tap actions") {
     description("Double tapping the player seeks by the usual amount instead of jumping to a chapter.")
     compatibleWith(YOUTUBE)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Controls, "Double tap", YouTubeSettings.disableChapterSkipDoubleTap))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Controls, YouTubeStrings.sectionDoubleTap, PlayerControlsSettings.disableChapterSkipDoubleTap))
 
     execute {
         // The flag is read twice: once as it is recorded, once as the seek source is chosen.
-        gate(YouTubeSettings.disableChapterSkipDoubleTap) {
+        gate(PlayerControlsSettings.disableChapterSkipDoubleTap) {
             doubleTapInfoConstructor.before {
                 param(2).assign(bool(false))
             }

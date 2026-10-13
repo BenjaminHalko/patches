@@ -3,13 +3,13 @@
 
 package app.reseam.patches.youtubecommon
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.PatchRuntime
 import app.reseam.patch.Type
 import app.reseam.patch.methods
 import app.reseam.patch.points
 import app.reseam.patch.settings.ToggleSetting
 import app.reseam.patch.settings.gate
+import app.reseam.youtube.core.bindings.Views
 
 private const val MENU = "android.view.Menu"
 private const val MENU_ITEM = "android.view.MenuItem"
@@ -28,7 +28,7 @@ fun PatchRuntime.hideById(name: String, setting: ToggleSetting) {
     }.all
     check(views.isNotEmpty() || items.isNotEmpty()) { "Nothing looks up id/$name" }
     gate(setting) {
-        views.forEach { it.next { resultOf(Type.View) }.captureAs("view").after { call(Views.hide, capture("view")) } }
+        views.forEach { it.next { resultOf(Type.View) }.captureAs("view").after { Views.hide(capture("view")) } }
         items.forEach {
             it.next { resultOf(MENU_ITEM) }.captureAs("item").after {
                 whenNotNull(capture("item")) {
@@ -37,8 +37,4 @@ fun PatchRuntime.hideById(name: String, setting: ToggleSetting) {
             }
         }
     }
-}
-
-private object Views : ExtClass("app.reseam.youtube.core.Views") {
-    val hide by static(Type.View)
 }

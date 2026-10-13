@@ -10,13 +10,14 @@ import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.x.core.X
-import app.reseam.patches.x.core.XSettings
+import app.reseam.x.settings.XSettings
 import app.reseam.patches.x.core.xSettings
+import app.reseam.x.settings.XStrings
 
 val unlockPremium = patch("Unlock Premium") {
     description("Passes the client-side Premium tier checks X runs before video downloads and other Premium-only options.")
     compatibleWith(X)
-    settings(xSettings, section("Premium", XSettings.unlockPremium))
+    settings(xSettings, section(XStrings.sectionPremium, XSettings.unlockPremium))
 
     execute {
         gate(XSettings.unlockPremium) { premiumTierChecks.forEach { alwaysReturn(true) } }

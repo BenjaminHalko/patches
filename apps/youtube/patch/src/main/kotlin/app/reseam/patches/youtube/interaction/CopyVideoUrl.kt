@@ -1,25 +1,20 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.youtube.interaction
 
-import app.reseam.patch.ExtClass
-import app.reseam.patch.Type
 import app.reseam.patch.patch
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.playerControls
 import app.reseam.patches.youtube.internal.registerPlayerControlInitializer
 import app.reseam.patches.youtube.internal.registerPlayerControlLayout
 import app.reseam.patches.youtube.internal.videoPlaybackStateHook
-
-object CopyVideoUrl : ExtClass("app.reseam.youtube.buttons.CopyVideoUrl") {
-    val initialize by static(Type.View)
-}
+import app.reseam.youtube.buttons.bindings.CopyVideoUrl
+import app.reseam.youtube.settings.PlayerControlsSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val copyVideoUrl = patch("Copy video URL") {
     description("Adds player buttons that copy the current video's URL, optionally with its timestamp.")
@@ -27,7 +22,7 @@ val copyVideoUrl = patch("Copy video URL") {
     dependsOn(youTubeSettings, videoPlaybackStateHook, playerControls)
     settings(
         youTubeSettings,
-        section(YouTubeSettingsPages.Controls, "Player buttons", YouTubeSettings.copyVideoUrl, YouTubeSettings.copyVideoUrlTimestamp),
+        section(YouTubeSettingsPages.Controls, YouTubeStrings.sectionPlayerButtons, PlayerControlsSettings.copyVideoUrl, PlayerControlsSettings.copyVideoUrlTimestamp),
     )
     execute {
         resources.addId("reseam_copy_video_url_button")

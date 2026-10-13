@@ -1,10 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.youtube.player
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.before
@@ -16,15 +14,17 @@ import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.playerui.bindings.HideEndScreenSuggestedVideo
+import app.reseam.youtube.settings.PlayerOverlaySettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 val hideEndScreenSuggestedVideo = patch("Hide end-screen suggested video") {
     description("Removes the suggested video shown at the end of playback.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Overlay, "End screen", YouTubeSettings.hideEndScreenSuggestedVideo))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Overlay, YouTubeStrings.sectionEndScreen, PlayerOverlaySettings.hideEndScreenSuggestedVideo))
 
     execute {
         val autoNavConstructor = method("autoplay constructor") {
@@ -44,7 +44,7 @@ val hideEndScreenSuggestedVideo = patch("Hide end-screen suggested video") {
         }
 
         autoNavStatus.after {
-            call(HideEndScreenSuggestedVideo.setAutoplayStatus, capture("result"))
+            HideEndScreenSuggestedVideo.setAutoplayStatus(capture("result"))
         }
 
         val removeListener = method("remove end-screen layout listener") {
@@ -60,12 +60,7 @@ val hideEndScreenSuggestedVideo = patch("Hide end-screen suggested video") {
             }
         }
         removeListener.before {
-            whenTrue(call(HideEndScreenSuggestedVideo.hideEndScreenSuggestedVideo)) { returnVoid() }
+            whenTrue(HideEndScreenSuggestedVideo.shouldHide()) { returnVoid() }
         }
     }
-}
-
-object HideEndScreenSuggestedVideo : ExtClass("app.reseam.youtube.playerui.HideEndScreenSuggestedVideo") {
-    val setAutoplayStatus by static(Type.Boolean)
-    val hideEndScreenSuggestedVideo by static(returns = Type.Boolean)
 }

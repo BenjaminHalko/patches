@@ -1,0 +1,50 @@
+// SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+package app.reseam.x.settings
+
+import app.reseam.patch.settings.Choice
+import app.reseam.patch.settings.SettingsGroup
+import app.reseam.patch.settings.choice
+import app.reseam.patch.settings.toggle
+import app.reseam.patches.bundle.lucide
+
+object XSettings : SettingsGroup(XStrings) {
+    val defaultToFollowing by toggle(default = true, icon = lucide("users"))
+    val hidePromotionPrompts by toggle(default = true, icon = lucide("rocket"))
+    val hideAds by toggle(default = true, icon = lucide("megaphone-off"))
+    val hidePremiumUpsells by toggle(default = true, icon = lucide("gem"))
+    val hideAppOpenPaywall by toggle(default = true, icon = lucide("lock"))
+    val unlockPremium by toggle(default = true, icon = lucide("badge-check"))
+    val downloadAnyVideo by toggle(default = true, icon = lucide("download"))
+    val downloadWithoutWatermark by toggle(default = true, icon = lucide("droplet-off"))
+
+    val hideGrokTab by toggle(default = true, icon = lucide("bot-off"))
+    val hideGrokPostButton by toggle(default = true, icon = lucide("sparkles"))
+    val hideGrokDrawerEntry by toggle(default = true, icon = lucide("panel-left"))
+    val hideGrokPrompts by toggle(default = true, icon = lucide("message-square-dashed"))
+    val hideGrokImageTools by toggle(default = true, icon = lucide("image-off"))
+    val hideGrokComposer by toggle(default = true, icon = lucide("pen-off"))
+    val disableGrokTranslations by toggle(default = false, icon = lucide("languages"))
+    val hideLiveBar by toggle(default = true, icon = lucide("radio"))
+    val hideLiveAvatarRings by toggle(default = false, icon = lucide("circle-dot"))
+    val hideRecommendations by toggle(default = false, icon = lucide("user-plus"))
+    val hideViewCounts by toggle(default = false, icon = lucide("chart-no-axes-column"))
+    val hideNotificationPrompts by toggle(default = true, icon = lucide("bell-off"))
+    val blockInstalledAppsScan by toggle(default = true, icon = lucide("scan-search"))
+    val disableAdTracking by toggle(default = true, icon = lucide("eye-off"))
+
+    val shareLinkProvider by
+        choice(
+            default = "fixvx.com",
+            choices =
+                listOf(
+                    Choice("fixvx.com", XStrings.shareLinkProviderFixvxCom),
+                    Choice("fxtwitter.com", XStrings.shareLinkProviderFxtwitterCom),
+                    Choice("vxtwitter.com", XStrings.shareLinkProviderVxtwitterCom),
+                    Choice("fixupx.com", XStrings.shareLinkProviderFixupxCom),
+                    Choice("off", XStrings.shareLinkProviderOff),
+                ),
+            icon = lucide("share-2"),
+        )
+}

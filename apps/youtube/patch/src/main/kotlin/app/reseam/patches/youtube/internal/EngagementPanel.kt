@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.internal
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.before
 import app.reseam.patch.classTarget
@@ -15,6 +14,7 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patches.youtube.core.YOUTUBE
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.player.bindings.EngagementPanel
 
 private const val CONTROLLER_UNINITIALISED =
     "EngagementPanelController: cannot show EngagementPanel before EngagementPanelController.init() has been called."
@@ -35,14 +35,9 @@ val engagementPanelHook = patch {
 
     execute {
         // Past the null check on the resolved panel, so the identifier is always there to read.
-        engagementPanelShown.before { call(EngagementPanel.open, capture("panel").field(engagementPanelId)) }
-        engagementPanelDismissed.before { call(EngagementPanel.close) }
+        engagementPanelShown.before { EngagementPanel.open(capture("panel").field(engagementPanelId)) }
+        engagementPanelDismissed.before { EngagementPanel.close() }
     }
-}
-
-object EngagementPanel : ExtClass("app.reseam.youtube.player.EngagementPanel") {
-    val open by static(Type.String)
-    val close by static()
 }
 
 // The controller refuses to show a panel before it is initialised, and says so.

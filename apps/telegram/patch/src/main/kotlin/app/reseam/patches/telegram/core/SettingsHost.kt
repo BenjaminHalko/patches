@@ -5,11 +5,11 @@ package app.reseam.patches.telegram.core
 
 import app.reseam.patch.Type
 import app.reseam.patch.after
-import app.reseam.patch.appEntry
 import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.settings.settingsHost
 import app.reseam.patches.bundle.reseamBrand
+import app.reseam.telegram.settings.bindings.TelegramSettingsEntry
 
 private const val ARRAY_LIST_ADD = "(Ljava/lang/Object;)Z"
 
@@ -26,15 +26,15 @@ val telegramSettings = settingsHost("telegram") {
         TelegramSettingsEntry.reseamItem.implement {
             val activity = param(0)
             val cell = newInstance(textCell.descriptor, "(Landroid/content/Context;)V", activity)
-            cell.call(setTextAndIcon, string("Reseam"), call(TelegramSettingsEntry.logo, activity), bool(false))
-            cell.callVirtual("android.view.View", "setOnClickListener", "(Landroid/view/View\$OnClickListener;)V", call(TelegramSettingsEntry.opener))
+            cell.call(setTextAndIcon, string("Reseam"), TelegramSettingsEntry.logo(activity), bool(false))
+            cell.callVirtual("android.view.View", "setOnClickListener", "(Landroid/view/View\$OnClickListener;)V", TelegramSettingsEntry.opener())
             returnValue(call(asCustomItem, int(0), cell))
         }
 
         settingsFillItems.after {
             val activity = param(0).call(getParentActivity)
             whenNotNull(activity) {
-                paramOfType(Type.ArrayList).callVirtual("java.util.ArrayList", "add", ARRAY_LIST_ADD, call(TelegramSettingsEntry.reseamItem, activity))
+                paramOfType(Type.ArrayList).callVirtual("java.util.ArrayList", "add", ARRAY_LIST_ADD, TelegramSettingsEntry.reseamItem(activity))
             }
         }
     }

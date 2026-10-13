@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.video.speed
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.alwaysReturn
@@ -24,27 +23,19 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.hookLithoText
-import app.reseam.patches.youtubecommon.setPlaybackRate
-import app.reseam.patches.youtubecommon.lithoFilter
-import app.reseam.patches.youtube.internal.lithoTextHook
 import app.reseam.patches.youtube.internal.lithoRecyclerViewBinder
-import app.reseam.patches.youtubecommon.registerLithoFilter
+import app.reseam.patches.youtube.internal.lithoTextHook
 import app.reseam.patches.youtube.internal.videoInformationHook
-
-object CustomPlaybackSpeed : ExtClass("app.reseam.youtube.speed.CustomPlaybackSpeed") {
-    val getTapAndHoldSpeed by static(returns = Type.Float)
-    val onLithoTextLoaded by static("java.lang.StringBuilder", Type.CharSequence, returns = Type.CharSequence)
-    val customPlaybackSpeedCount by static(returns = Type.Int)
-    val onFlyoutMenuCreate by static(Type.View)
-    val openOldPlaybackSpeedMenu by static()
-    val customPlaybackSpeeds by field("[F")
-    val maximumSpeed by field(Type.Float, name = "PLAYBACK_SPEED_MAXIMUM")
-    val minimumSpeed by field(Type.Float, name = "SPEED_LIMIT_MINIMUM")
-}
+import app.reseam.patches.youtubecommon.lithoFilter
+import app.reseam.patches.youtubecommon.registerLithoFilter
+import app.reseam.patches.youtubecommon.setPlaybackRate
+import app.reseam.youtube.settings.VideoSettings
+import app.reseam.youtube.settings.YouTubeStrings
+import app.reseam.youtube.speed.bindings.CustomPlaybackSpeed
+import app.reseam.youtube.speed.bindings.PlaybackSpeedMenuFilter
 
 /** YouTube's old speed menu, which builds its list from the speed values it is given. */
 internal val oldPlaybackSpeedMenu = method("old playback speed menu") {
@@ -57,8 +48,6 @@ internal val oldPlaybackSpeedMenu = method("old playback speed menu") {
 private val oldPlaybackSpeedMenuClass = classTarget("old playback speed menu class") {
     bytecode.findClass(oldPlaybackSpeedMenu.owner) ?: error("The old playback speed menu class is missing")
 }
-
-private object PlaybackSpeedMenuFilter : ExtClass("app.reseam.youtube.speed.PlaybackSpeedMenuFilter")
 
 private val serverSideMaxSpeedFlag = method("server side maximum speed flag") {
     flags(AccessFlags.PUBLIC or AccessFlags.FINAL)
@@ -118,11 +107,11 @@ val customPlaybackSpeed = patch("Custom playback speed") {
         youTubeSettings,
         section(
             YouTubeSettingsPages.Video,
-            "Playback speed",
-            YouTubeSettings.customPlaybackSpeedMenu,
-            YouTubeSettings.restoreOldPlaybackSpeedMenu,
-            YouTubeSettings.customPlaybackSpeeds,
-            YouTubeSettings.playbackSpeedTapAndHold,
+            YouTubeStrings.sectionPlaybackSpeed,
+            VideoSettings.customPlaybackSpeedMenu,
+            VideoSettings.restoreOldPlaybackSpeedMenu,
+            VideoSettings.customPlaybackSpeeds,
+            VideoSettings.playbackSpeedTapAndHold,
         ),
     )
 
@@ -145,7 +134,7 @@ val customPlaybackSpeed = patch("Custom playback speed") {
         // its own, which then takes its length and values from the custom array.
         serverSpeedCount.captureAs("serverSpeeds", Type.Int).after { capture("serverSpeeds").assign(int(0)) }
         generatedSpeedCount.captureAs("generatedSpeeds", Type.Int).after {
-            capture("generatedSpeeds").assign(call(CustomPlaybackSpeed.customPlaybackSpeedCount))
+            capture("generatedSpeeds").assign(CustomPlaybackSpeed.customPlaybackSpeedCount())
         }
         speedArray.captureAs("playbackSpeeds", "[F").after {
             capture("playbackSpeeds").assign(staticField(CustomPlaybackSpeed.customPlaybackSpeeds))
@@ -176,12 +165,12 @@ val customPlaybackSpeed = patch("Custom playback speed") {
         }
 
         tapAndHoldSpeedLiteral.after {
-            capture("tapSpeed").assign(call(CustomPlaybackSpeed.getTapAndHoldSpeed))
+            capture("tapSpeed").assign(CustomPlaybackSpeed.getTapAndHoldSpeed())
         }
         hookLithoText(CustomPlaybackSpeed.onLithoTextLoaded)
 
         playbackSpeedRecyclerViewAttached.before {
-            call(CustomPlaybackSpeed.onFlyoutMenuCreate, param(1))
+            CustomPlaybackSpeed.onFlyoutMenuCreate(param(1))
         }
         registerLithoFilter(PlaybackSpeedMenuFilter)
     }

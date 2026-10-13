@@ -11,14 +11,15 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
-import app.reseam.patches.youtubemusic.core.YouTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicSettings
 import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
 import app.reseam.patches.youtubemusic.core.youTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicStrings
 
 val audioOnlyPlayback = patch("Audio-only playback") {
     description("Unlocks the \"Don't play music videos\" setting, which plays songs without their video.")
     compatibleWith(YOUTUBE_MUSIC)
-    settings(youTubeMusicSettings, section(YouTubeMusicSettingsPages.Playback, "Audio", YouTubeMusicSettings.audioOnlyPlayback))
+    settings(youTubeMusicSettings, section(YouTubeMusicSettingsPages.Playback, YouTubeMusicStrings.sectionAudio, YouTubeMusicSettings.audioOnlyPlayback))
 
     execute {
         gate(YouTubeMusicSettings.audioOnlyPlayback) {

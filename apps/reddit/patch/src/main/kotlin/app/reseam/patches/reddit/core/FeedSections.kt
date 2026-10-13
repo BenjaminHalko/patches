@@ -7,8 +7,9 @@ import app.reseam.patch.Type
 import app.reseam.patch.className
 import app.reseam.patch.klass
 import app.reseam.patch.method
-import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.ToggleSetting
+import app.reseam.patch.settings.gate
+import app.reseam.reddit.feed.bindings.FeedElements
 
 fun feedSectionContent(label: String) = method("$label content") {
     inClass(klass(label) { strings(label) })
@@ -26,7 +27,7 @@ fun hideFeedElements(setting: ToggleSetting, labels: List<String>) {
     val classNames = feedElementClassNames(labels)
     gate(setting) {
         cellGroupMapper.after {
-            whenTrue(call(FeedElements.isAny, capture("result"), string(classNames))) { returnNull() }
+            whenTrue(FeedElements.isAny(capture("result"), string(classNames))) { returnNull() }
         }
     }
 }

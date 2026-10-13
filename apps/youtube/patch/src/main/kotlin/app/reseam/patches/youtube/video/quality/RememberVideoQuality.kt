@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.video.quality
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.before
 import app.reseam.patch.dex.AccessFlags
@@ -15,19 +14,15 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.onCreateHook
 import app.reseam.patches.youtube.internal.setPlaybackSpeedMethod
 import app.reseam.patches.youtube.internal.videoInformationHook
 import app.reseam.patches.youtube.internal.videoQualityClass
-
-object RememberVideoQuality : ExtClass("app.reseam.youtube.quality.RememberVideoQuality") {
-    val newVideoStarted by static("app.reseam.youtube.video.VideoInformation\$PlaybackController")
-    val userChangedQuality by static(Type.Int)
-    val userChangedShortsQuality by static(Type.Int)
-}
+import app.reseam.youtube.quality.bindings.RememberVideoQuality
+import app.reseam.youtube.settings.VideoSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 private val qualityMenuParent = method("video quality menu parent") {
     strings("VIDEO_QUALITIES_MENU_BOTTOM_SHEET_FRAGMENT")
@@ -69,11 +64,11 @@ val rememberVideoQuality = patch("Remember video quality") {
     description("Remembers the selected video quality and applies the configured default.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings, videoInformationHook)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Video, "Video quality", YouTubeSettings.videoQualityDefault, YouTubeSettings.rememberVideoQuality))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Video, YouTubeStrings.sectionVideoQuality, VideoSettings.videoQualityDefault, VideoSettings.rememberVideoQuality))
 
     execute {
         onCreateHook(RememberVideoQuality.newVideoStarted)
-        qualityChangedValue.before { call(RememberVideoQuality.userChangedQuality, capture("quality")) }
-        qualityItemClick.before { call(RememberVideoQuality.userChangedShortsQuality, param(2)) }
+        qualityChangedValue.before { RememberVideoQuality.userChangedQuality(capture("quality")) }
+        qualityItemClick.before { RememberVideoQuality.userChangedShortsQuality(param(2)) }
     }
 }

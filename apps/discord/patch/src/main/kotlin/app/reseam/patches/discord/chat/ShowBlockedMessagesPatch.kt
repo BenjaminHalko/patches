@@ -3,19 +3,20 @@
 
 package app.reseam.patches.discord.chat
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val showBlockedMessages = patch("Show blocked messages") {
     description("Expand received messages from blocked users without unblocking them.")
     compatibleWith(DISCORD)
     enabledByDefault(false)
-    settings(discordSettings, section("Chat", DiscordSettings.showBlockedMessages))
+    settings(discordSettings, section(DiscordStrings.sectionChat, DiscordSettings.showBlockedMessages))
 
     execute {
         gate(DiscordSettings.showBlockedMessages) {

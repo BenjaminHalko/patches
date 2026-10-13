@@ -8,14 +8,15 @@ import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtubecommon.playableInBackground
 import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
-import app.reseam.patches.youtubemusic.core.YouTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicSettings
 import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
 import app.reseam.patches.youtubemusic.core.youTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicStrings
 
 val backgroundPlayback = patch("Background playback") {
     description("Keeps playing when the app is in the background or the screen is off.")
     compatibleWith(YOUTUBE_MUSIC)
-    settings(youTubeMusicSettings, section(YouTubeMusicSettingsPages.Playback, "Background", YouTubeMusicSettings.backgroundPlayback))
+    settings(youTubeMusicSettings, section(YouTubeMusicSettingsPages.Playback, YouTubeMusicStrings.sectionBackground, YouTubeMusicSettings.backgroundPlayback))
 
     execute {
         gate(YouTubeMusicSettings.backgroundPlayback) {

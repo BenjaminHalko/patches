@@ -4,7 +4,6 @@
 package app.reseam.patches.youtubespoof
 
 import app.reseam.patch.CodeScope
-import app.reseam.patch.ExtClass
 import app.reseam.patch.MethodTarget
 import app.reseam.patch.PatchRuntime
 import app.reseam.patch.Type
@@ -18,6 +17,9 @@ import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.point
 import app.reseam.patches.youtubecommon.videoIdGetter
+import app.reseam.youtube.spoof.bindings.SabrPlayback
+import app.reseam.youtube.spoof.bindings.SpoofVideoStreams
+import app.reseam.youtubespoof.settings.SpoofSettings
 
 internal const val STREAMING_DATA = "com.google.protos.youtube.api.innertube.StreamingDataOuterClass\$StreamingData"
 internal const val BYTE_BUFFER = "java.nio.ByteBuffer"
@@ -31,27 +33,6 @@ private val WEB_ASSETS = listOf(
 )
 
 private object WebAssets
-
-object SpoofVideoStreams : ExtClass("app.reseam.youtube.spoof.SpoofVideoStreams") {
-    val setClientOrderToUse by static()
-    val isSpoofingEnabled by static(returns = Type.Boolean)
-    val rewriteClientContextOsName by static(Type.String, returns = Type.String)
-    val fetchStreams by static(Type.String, Type.Map, "[B")
-    val getStreamingData by static(Type.String, returns = SPOOFED_STREAMS)
-    val getStreamingDataBytes by static(SPOOFED_STREAMS, returns = "[B")
-    val onStreamingDataInstalled by static(Type.String, SPOOFED_STREAMS)
-    val onNativeStreamingDataInstalled by static(Type.String)
-    val onVideoChanged by static(Type.String)
-    val rewriteVideoPlaybackMethod by static("android.net.Uri", Type.Int, returns = Type.Int)
-    val removeVideoPlaybackPostBody by static(
-        "android.net.Uri",
-        Type.Int,
-        "[B",
-        returns = "[B",
-    )
-    val appendSpoofedClient by static(Type.String, returns = Type.String)
-}
-
 /**
  * Fetches each player request's streams from the client chosen in [SpoofSettings] and installs them
  * in place of the app's own, played through the app's native SABR engine. [activityOnCreate] applies
@@ -66,14 +47,14 @@ fun PatchRuntime.spoofStreams(activityOnCreate: MethodTarget) {
 
     hookSabrPlayback()
 
-    activityOnCreate.before { call(SpoofVideoStreams.setClientOrderToUse) }
+    activityOnCreate.before { SpoofVideoStreams.setClientOrderToUse() }
 
     cronetUrl.before {
-        call(SpoofVideoStreams.fetchStreams, capture("requestUrl"), param(1), paramOfType("[B"))
+        SpoofVideoStreams.fetchStreams(capture("requestUrl"), param(1), paramOfType("[B"))
     }
 
     createStreamingData.after {
-        whenFalse(call(SpoofVideoStreams.isSpoofingEnabled)) { returnVoid() }
+        whenFalse(SpoofVideoStreams.isSpoofingEnabled()) { returnVoid() }
         whenNotNull(param(0).field(offlineStateField)) { returnVoid() }
 
         val videoDetails = param(0).field(videoDetailsField)
@@ -81,22 +62,22 @@ fun PatchRuntime.spoofStreams(activityOnCreate: MethodTarget) {
         val videoId = videoDetails.field(videoIdField)
         whenNull(videoId) { returnVoid() }
 
-        val streams = call(SpoofVideoStreams.getStreamingData, videoId)
+        val streams = SpoofVideoStreams.getStreamingData(videoId)
         whenNull(streams) {
-            call(SpoofVideoStreams.onNativeStreamingDataInstalled, videoId)
+            SpoofVideoStreams.onNativeStreamingDataInstalled(videoId)
             returnVoid()
         }
-        val bytes = call(SpoofVideoStreams.getStreamingDataBytes, streams)
+        val bytes = SpoofVideoStreams.getStreamingDataBytes(streams)
 
         val playerResponse = parsePlayerResponse(bytes)
         val replacement = playerResponse.field(streamInputField)
         whenNull(replacement) {
-            call(SpoofVideoStreams.onNativeStreamingDataInstalled, videoId)
+            SpoofVideoStreams.onNativeStreamingDataInstalled(videoId)
             returnVoid()
         }
         thisObject.set(streamResponseField, replacement)
-        call(SabrPlayback.installed, replacement, streams)
-        call(SpoofVideoStreams.onStreamingDataInstalled, videoId, streams)
+        SabrPlayback.installed(replacement, streams)
+        SpoofVideoStreams.onStreamingDataInstalled(videoId, streams)
     }
 
     val mediaUriStore = buildMediaDataSource.point("media request URI store") {
@@ -115,20 +96,11 @@ fun PatchRuntime.spoofStreams(activityOnCreate: MethodTarget) {
     val mediaMethodField = mediaMethodStore.field("media request method field")
     val mediaPostDataField = mediaPostDataStore.field("media request POST body field")
     buildMediaDataSource.after {
-        val replacement = call(
-            SpoofVideoStreams.removeVideoPlaybackPostBody,
-            thisObject.field(mediaUriField),
-            thisObject.field(mediaMethodField),
-            thisObject.field(mediaPostDataField),
-        )
+        val replacement = SpoofVideoStreams.removeVideoPlaybackPostBody(thisObject.field(mediaUriField), thisObject.field(mediaMethodField), thisObject.field(mediaPostDataField))
         thisObject.set(mediaPostDataField, replacement)
         thisObject.set(
             mediaMethodField,
-            call(
-                SpoofVideoStreams.rewriteVideoPlaybackMethod,
-                thisObject.field(mediaUriField),
-                thisObject.field(mediaMethodField),
-            ),
+            SpoofVideoStreams.rewriteVideoPlaybackMethod(thisObject.field(mediaUriField), thisObject.field(mediaMethodField)),
         )
     }
 }
@@ -188,16 +160,19 @@ internal val playerResponseModel = klass("player response model") {
     hasInstanceField(playerResponseClass.descriptor)
     implements(videoIdGetter.owner)
 }
+
 private val responseVideoId = method("player response video ID") {
     inClass(playerResponseModel)
     name(videoIdGetter.name)
     params()
     returns(Type.String)
 }
+
 private val videoDetailsRead = responseVideoId.point("video details read") {
     opcode(Opcode.IGET_OBJECT)
     field { owner(playerResponseClass.descriptor) }
 }
+
 private val videoDetailsField = videoDetailsRead.field("video details field")
 private val videoIdField = videoDetailsRead.next {
     opcode(Opcode.IGET_OBJECT)

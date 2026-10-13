@@ -3,25 +3,26 @@
 
 package app.reseam.patches.discord.chat
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
-import app.reseam.patches.discord.core.discordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.channelMemberStore
+import app.reseam.patches.discord.core.discordSettings
 import app.reseam.patches.discord.core.guildMemberStore
 import app.reseam.patches.discord.core.guildRoleStore
-import app.reseam.patches.discord.core.reactNative
 import app.reseam.patches.discord.core.react
+import app.reseam.patches.discord.core.reactNative
 import app.reseam.patches.discord.core.userStore
 
 val coloredNames = patch("Colored names") {
     description("Color members' names with their role color in mentions, the typing indicator, voice channels and member list headers.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Chat", DiscordSettings.coloredNames))
+    settings(discordSettings, section(DiscordStrings.sectionChat, DiscordSettings.coloredNames))
 
     execute {
         gate(DiscordSettings.coloredNames) {

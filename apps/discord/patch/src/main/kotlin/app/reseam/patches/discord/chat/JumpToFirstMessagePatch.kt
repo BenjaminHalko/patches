@@ -3,13 +3,14 @@
 
 package app.reseam.patches.discord.chat
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 import app.reseam.patches.discord.core.messageActions
 import app.reseam.patches.discord.core.react
@@ -17,7 +18,7 @@ import app.reseam.patches.discord.core.react
 val jumpToFirstMessage = patch("Jump to first message") {
     description("Add a button above Jump to present that jumps to the first message.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Chat", DiscordSettings.jumpToFirstMessage))
+    settings(discordSettings, section(DiscordStrings.sectionChat, DiscordSettings.jumpToFirstMessage))
 
     execute {
         gate(DiscordSettings.jumpToFirstMessage) {

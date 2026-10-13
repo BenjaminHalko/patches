@@ -11,15 +11,16 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.reddit.core.REDDIT
-import app.reseam.patches.reddit.core.RedditSettings
+import app.reseam.reddit.settings.RedditSettings
 import app.reseam.patches.reddit.core.redditSettings
+import app.reseam.reddit.settings.RedditStrings
 
 private const val BOOLEAN = "java.lang.Boolean"
 
 val disableScreenshotBanner = patch("Disable screenshot banner") {
     description("Stops Reddit from detecting screenshots, so neither its share prompt nor the system's screenshot notice appears.")
     compatibleWith(REDDIT)
-    settings(redditSettings, section("Sharing", RedditSettings.disableScreenshotBanner))
+    settings(redditSettings, section(RedditStrings.sectionSharing, RedditSettings.disableScreenshotBanner))
 
     execute {
         gate(RedditSettings.disableScreenshotBanner) {

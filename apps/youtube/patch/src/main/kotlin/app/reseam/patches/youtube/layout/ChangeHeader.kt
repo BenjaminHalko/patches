@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.layout
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.methods
@@ -12,10 +11,12 @@ import app.reseam.patch.patch
 import app.reseam.patch.points
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtubecommon.reseamMark
+import app.reseam.youtube.settings.AppearanceSettings
+import app.reseam.youtube.settings.YouTubeStrings
+import app.reseam.youtube.theme.bindings.ChangeHeader
 
 private object ChangeHeaderResources
 private const val HEADER_ATTRIBUTE = "reseam_header"
@@ -35,7 +36,7 @@ val changeHeader = patch("Change header") {
     description("Adds an option to change the logo in YouTube's top-left header.")
     compatibleWith(YOUTUBE)
     dependsOn(reseamMark)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Appearance, "General", YouTubeSettings.changeHeaderLogo))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Appearance, YouTubeStrings.sectionGeneral, AppearanceSettings.changeHeaderLogo))
 
     execute {
         // No typed attr helper exists; this reference-format entry backs the style item.
@@ -59,14 +60,10 @@ val changeHeader = patch("Change header") {
                     .captureAs("headerAttribute", Type.Int)
                     .after {
                         capture("headerAttribute").assign(
-                            call(ChangeHeader.getHeaderAttributeId, capture("headerAttribute")),
+                            ChangeHeader.headerAttribute(capture("headerAttribute")),
                         )
                     }
             }
         }
     }
-}
-
-object ChangeHeader : ExtClass("app.reseam.youtube.theme.ChangeHeader") {
-    val getHeaderAttributeId by static(Type.Int, returns = Type.Int)
 }

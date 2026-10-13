@@ -7,17 +7,18 @@ import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
-import app.reseam.patches.youtubemusic.core.YouTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicSettings
 import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
 import app.reseam.patches.youtubemusic.core.musicActivityOnCreate
 import app.reseam.patches.youtubemusic.core.youTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicStrings
 
 private const val SCREEN_ORIENTATION_PORTRAIT = 1
 
 val forcePortrait = patch("Force portrait") {
     description("Keeps the app in portrait when the device is rotated.")
     compatibleWith(YOUTUBE_MUSIC)
-    settings(youTubeMusicSettings, section(YouTubeMusicSettingsPages.Interface, "Orientation", YouTubeMusicSettings.forcePortrait))
+    settings(youTubeMusicSettings, section(YouTubeMusicSettingsPages.Interface, YouTubeMusicStrings.sectionOrientation, YouTubeMusicSettings.forcePortrait))
 
     execute {
         gate(YouTubeMusicSettings.forcePortrait) {

@@ -7,12 +7,9 @@ package app.reseam.patches.youtubecommon
 import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.appEntry
-import app.reseam.patch.after
-import app.reseam.patch.before
 import app.reseam.patch.classTarget
 import app.reseam.patch.dex.AccessFlags
 import app.reseam.patch.dex.Opcode
-import app.reseam.patch.dex.fieldRef
 import app.reseam.patch.dex.ref
 import app.reseam.patch.fieldOfType
 import app.reseam.patch.fieldTarget
@@ -21,7 +18,7 @@ import app.reseam.patch.method
 import app.reseam.patch.methods
 import app.reseam.patch.patch
 import app.reseam.patch.point
-import app.reseam.patch.reserveLocal
+import app.reseam.youtube.litho.bindings.LithoFilter
 
 /**
  * Hands every litho component to the extension as it is built, and swaps in an empty component
@@ -30,60 +27,7 @@ import app.reseam.patch.reserveLocal
 // Not pinned to an app: YouTube Music builds its UI with the same library. It runs only as a
 // dependency, so the dependent's own settings host is already in place.
 val lithoFilter = patch {
-    execute {
-        // Observe both providers without changing their model representation. Some components
-        // (notably expandable community posts) serialize UPB models back to protobuf; the
-        // FlatBuffer implementation of the same interface cannot perform that operation.
-        // YouTube Music has dropped the FlatBuffer one.
-        flatbufferElementParsers.all.forEach { it.before { call(LithoFilter.setProtoBuffer, param(0)) } }
-        upbElementParser.before { call(LithoFilter.setProtoBuffer, param(0)) }
-
-        // A tree's components take its root's own bytes. Templates are materialized into new
-        // elements natively, so a parsed buffer cannot be traced to the tree built from it, and the
-        // materialized root does not carry its identifier; the conversion context does.
-        val outerTree = elementTreeBuild.reserveLocal("outerTree", Type.Object)
-        elementTreeBuild.before {
-            local(outerTree).assign(call(LithoFilter.enterTree, param(2), param(1).field(conversionContextIdentifier)))
-        }
-        elementTreeBuild.after { call(LithoFilter.exitTree, local(outerTree)) }
-        LithoFilter.encodeElement.implement {
-            whenInstanceOf(param(0), upbElementEncode.owner) {
-                returnValue(param(0).cast(upbElementEncode.owner).call(upbElementEncode))
-            }
-            returnNull()
-        }
-
-        lithoLayoutExecutor.before {
-            param(0).assign(call(LithoFilter.layoutThreadCount, param(0)))
-            param(1).assign(call(LithoFilter.layoutThreadCount, param(1)))
-        }
-
-        // Keep the optional accessibility properties in method locals: recursive component
-        // creation must not overwrite a parent's values through shared extension state.
-        val accessibilityId = componentCreate.reserveLocal("accessibilityId", Type.String)
-        val accessibilityText = componentCreate.reserveLocal("accessibilityText", Type.String)
-        componentCreate.point("componentAccessibility") {
-            invokeStatic { owner(accessibilityProperties.owner); returns(Type.Void) }
-        }.captureArgumentAs("accessibility", 0).before {
-            local(accessibilityId).assign(capture("accessibility").call(accessibilityIdentifier))
-            local(accessibilityText).assign(capture("accessibility").call(accessibilityDescription))
-        }
-
-        // Filtering happens at the return, after the component is fully built. Returning earlier
-        // leaves the litho tree half-constructed, which costs memory and stalls layout.
-        componentCreateReturn.before {
-            val filtered = call(
-                LithoFilter.isFiltered,
-                param(1).field(conversionContextIdentifier),
-                local(accessibilityId),
-                local(accessibilityText),
-                param(1).field(conversionContextPath),
-            )
-            whenTrue(filtered) {
-                returnValue(call(emptyComponentBuilder, param(0)).field(emptyComponentField))
-            }
-        }
-    }
+    execute { installLithoHooks() }
 }
 
 /**
@@ -92,23 +36,7 @@ val lithoFilter = patch {
  * selected patches are ever searched.
  */
 fun registerLithoFilter(filter: ExtClass) {
-    appEntry { call(LithoFilter.register, newInstance(filter.descriptor)) }
-}
-
-object LithoFilter : ExtClass("app.reseam.youtube.litho.LithoFilter") {
-    val register by static("app.reseam.youtube.litho.Filter")
-    val setProtoBuffer by static("[B")
-    val enterTree by static(Type.Object, Type.String, returns = Type.Object)
-    val exitTree by static(Type.Object)
-    val encodeElement by static(Type.Object, returns = "[B")
-    val layoutThreadCount by static(Type.Int, returns = Type.Int)
-    val isFiltered by static(
-        Type.String,
-        Type.String,
-        Type.String,
-        "java.lang.StringBuilder",
-        returns = Type.Boolean,
-    )
+    appEntry { LithoFilter.register(newInstance(filter.descriptor)) }
 }
 
 // The one method that turns a parsed element into a litho component; it throws both of these.
@@ -219,18 +147,3 @@ val lithoLayoutExecutor = method("lithoLayoutExecutor") {
     returns(Type.Void)
     flags(AccessFlags.PUBLIC or AccessFlags.CONSTRUCTOR)
 }
-
-// Accessibility roles are mapped to Android widgets here. The first two empty checks guard
-// the identifier and spoken description; follow their producers instead of obfuscated names.
-private val accessibilityProperties = method("accessibilityProperties") {
-    strings("android.widget.ToggleButton", "android.widget.Spinner")
-    returns(Type.Void)
-}
-private val accessibilityIdentifierCheck = accessibilityProperties.point {
-    invokeStatic { owner("android.text.TextUtils"); name("isEmpty") }
-}
-private val accessibilityIdentifier = accessibilityIdentifierCheck.writer(0)
-    .previous { invokeInterface { returns(Type.String) } }.callee("accessibilityIdentifier")
-private val accessibilityDescription = accessibilityIdentifierCheck
-    .next { invokeStatic { owner("android.text.TextUtils"); name("isEmpty") } }
-    .writer(0).previous { invokeInterface { returns(Type.String) } }.callee("accessibilityDescription")

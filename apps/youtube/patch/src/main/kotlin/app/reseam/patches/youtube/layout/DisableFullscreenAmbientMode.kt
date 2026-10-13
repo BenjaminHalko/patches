@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.youtube.layout
 
@@ -13,9 +12,10 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.settings.PlayerSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 // The colour the player view falls back to when ambient mode is off, and the one the divider
 // attributes call the system default.
@@ -24,10 +24,10 @@ private const val OPAQUE_BLACK = -16777216
 val disableFullscreenAmbientMode = patch("Disable fullscreen ambient mode") {
     description("Stops the fullscreen background from glowing with the video's colours.")
     compatibleWith(YOUTUBE)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Player, "Ambient mode", YouTubeSettings.disableFullscreenAmbientMode))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Player, YouTubeStrings.sectionAmbientMode, PlayerSettings.disableFullscreenAmbientMode))
 
     execute {
-        gate(YouTubeSettings.disableFullscreenAmbientMode) {
+        gate(PlayerSettings.disableFullscreenAmbientMode) {
             ambientBackgroundColor.after {
                 capture("ambientColor").assign(int(OPAQUE_BLACK))
             }

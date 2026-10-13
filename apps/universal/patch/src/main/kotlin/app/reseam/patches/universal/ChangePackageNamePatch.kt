@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.universal
 
@@ -17,7 +16,7 @@ private val PERMISSION_ATTRIBUTES = listOf("android:permission", "android:readPe
 val changePackageName = patch("Change package name") {
     description(
         "Installs the app under a new package name, so a clone runs alongside the original. " +
-            "Appends \".reseam\" by default. Some apps misbehave under a changed package name.",
+            "Without a chosen name, \".reseam\" is added to the original one. Not every app works under a different name.",
     )
 
     val packageNameOption = stringOption(

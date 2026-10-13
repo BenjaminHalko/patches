@@ -3,15 +3,16 @@
 
 package app.reseam.patches.instagram.links
 
+import app.reseam.instagram.links.bindings.ExternalLinks
+import app.reseam.instagram.settings.InstagramStrings
+import app.reseam.instagram.settings.LinkSettings
 import app.reseam.patch.Type
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
-import app.reseam.patches.instagram.core.ExternalLinks
 import app.reseam.patches.instagram.core.INSTAGRAM
-import app.reseam.patches.instagram.core.LinkSettings
 import app.reseam.patches.instagram.core.instagramSettings
 import app.reseam.patches.instagram.core.signatureCheck
 
@@ -19,13 +20,13 @@ val openLinksExternally = patch("Open links in external browser") {
     description("Opens web links in your default browser instead of Instagram's in-app browser.")
     compatibleWith(INSTAGRAM)
     dependsOn(signatureCheck)
-    settings(instagramSettings, section("Links", LinkSettings.openExternally))
+    settings(instagramSettings, section(InstagramStrings.sectionLinks, LinkSettings.openExternally))
 
     execute {
         gate(LinkSettings.openExternally) {
             browserLaunch.before {
                 val launcher = paramOfType(browserLaunch.owner)
-                whenTrue(call(ExternalLinks.open, launcher.fieldOfType(Type.Context), launcher.field(launcherUrl))) { returnTrue() }
+                whenTrue(ExternalLinks.open(launcher.fieldOfType(Type.Context), launcher.field(launcherUrl))) { returnTrue() }
             }
         }
     }

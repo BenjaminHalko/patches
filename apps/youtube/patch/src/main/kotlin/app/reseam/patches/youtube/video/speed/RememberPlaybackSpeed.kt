@@ -4,34 +4,28 @@
 
 package app.reseam.patches.youtube.video.speed
 
-import app.reseam.patch.ExtClass
-import app.reseam.patch.Type
 import app.reseam.patch.before
 import app.reseam.patch.patch
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.onCreateHook
 import app.reseam.patches.youtube.internal.userSelectedPlaybackSpeedHook
 import app.reseam.patches.youtube.internal.videoInformationHook
-
-object RememberPlaybackSpeed : ExtClass("app.reseam.youtube.speed.RememberPlaybackSpeed") {
-    val newVideoStarted by static("app.reseam.youtube.video.VideoInformation\$PlaybackController")
-    val applyDefaultPlaybackSpeed by static()
-    val userSelectedPlaybackSpeed by static(Type.Float)
-}
+import app.reseam.youtube.settings.VideoSettings
+import app.reseam.youtube.settings.YouTubeStrings
+import app.reseam.youtube.speed.bindings.RememberPlaybackSpeed
 
 val rememberPlaybackSpeed = patch("Remember playback speed") {
     description("Applies a default playback speed and remembers explicit selections.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings, videoInformationHook, customPlaybackSpeed)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Video, "Playback speed", YouTubeSettings.playbackSpeedDefault, YouTubeSettings.rememberPlaybackSpeed))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Video, YouTubeStrings.sectionPlaybackSpeed, VideoSettings.playbackSpeedDefault, VideoSettings.rememberPlaybackSpeed))
 
     execute {
         onCreateHook(RememberPlaybackSpeed.newVideoStarted)
         userSelectedPlaybackSpeedHook(RememberPlaybackSpeed.userSelectedPlaybackSpeed)
-        oldPlaybackSpeedMenu.before { call(RememberPlaybackSpeed.applyDefaultPlaybackSpeed) }
+        oldPlaybackSpeedMenu.before { RememberPlaybackSpeed.applyDefaultPlaybackSpeed() }
     }
 }

@@ -3,12 +3,13 @@
 
 package app.reseam.patches.discord.layout
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.createMessageContent
 import app.reseam.patches.discord.core.discordSettings
 
@@ -16,7 +17,7 @@ val hideLinkCards = patch("Hide link cards") {
     description("Hide message preview cards while keeping text links, attachments and emoji or sticker images.")
     compatibleWith(DISCORD)
     enabledByDefault(false)
-    settings(discordSettings, section("Layout", DiscordSettings.hideLinkCards))
+    settings(discordSettings, section(DiscordStrings.sectionLayout, DiscordSettings.hideLinkCards))
 
     execute {
         gate(DiscordSettings.hideLinkCards) {

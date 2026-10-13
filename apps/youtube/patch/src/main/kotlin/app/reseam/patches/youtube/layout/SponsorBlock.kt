@@ -9,34 +9,40 @@ import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.*
 import app.reseam.patches.youtube.interaction.seekbarOnDraw
 import app.reseam.patches.youtube.internal.*
+import app.reseam.youtube.settings.AppearanceSettings
+import app.reseam.youtube.settings.VideoSettings
+import app.reseam.youtube.settings.YouTubeStrings
+import app.reseam.youtube.sponsorblock.bindings.SponsorBlock
+import app.reseam.youtube.sponsorblock.bindings.SponsorBlockPlayback
+import app.reseam.youtube.sponsorblock.bindings.SponsorBlockSession
 
 val sponsorBlock = patch("SponsorBlock") {
     description("Skips crowdsourced segments, marks the seekbar, and supports segment voting and submissions.")
     compatibleWith(YOUTUBE)
     dependsOn(videoInformationHook, playerTypeHook, playerControls)
     settings(youTubeSettings,
-        section(YouTubeSettingsPages.Video, "SponsorBlock", YouTubeSettings.sbEnabled,
-            YouTubeSettings.sbSponsor, YouTubeSettings.sbSelfpromo, YouTubeSettings.sbInteraction,
-            YouTubeSettings.sbPoiHighlight, YouTubeSettings.sbIntro, YouTubeSettings.sbOutro,
-            YouTubeSettings.sbPreview, YouTubeSettings.sbHook, YouTubeSettings.sbFiller, YouTubeSettings.sbMusicOfftopic,
-            YouTubeSettings.sbVotingButton, YouTubeSettings.sbCreateNewSegment,
-            YouTubeSettings.sbCompactSkipButton, YouTubeSettings.sbSquareLayout,
-            YouTubeSettings.sbAutoHideSkipButton, YouTubeSettings.sbAutoHideSkipButtonDuration,
-            YouTubeSettings.sbToastOnSkip, YouTubeSettings.sbToastOnConnectionError,
-            YouTubeSettings.sbTrackSkipCount, YouTubeSettings.sbMinSegmentDuration,
-            YouTubeSettings.sbVideoLengthWithoutSegments, YouTubeSettings.sbApiUrl),
-        section(YouTubeSettingsPages.Appearance, "SponsorBlock colors", YouTubeSettings.sbSponsorColor,
-            YouTubeSettings.sbSelfpromoColor, YouTubeSettings.sbInteractionColor, YouTubeSettings.sbPoiHighlightColor,
-            YouTubeSettings.sbIntroColor, YouTubeSettings.sbOutroColor, YouTubeSettings.sbPreviewColor,
-            YouTubeSettings.sbHookColor, YouTubeSettings.sbFillerColor, YouTubeSettings.sbMusicOfftopicColor))
+        section(YouTubeSettingsPages.Video, YouTubeStrings.sectionSponsorblock, VideoSettings.sbEnabled,
+            VideoSettings.sbSponsor, VideoSettings.sbSelfpromo, VideoSettings.sbInteraction,
+            VideoSettings.sbPoiHighlight, VideoSettings.sbIntro, VideoSettings.sbOutro,
+            VideoSettings.sbPreview, VideoSettings.sbHook, VideoSettings.sbFiller, VideoSettings.sbMusicOfftopic,
+            VideoSettings.sbVotingButton, VideoSettings.sbCreateNewSegment,
+            VideoSettings.sbCompactSkipButton, VideoSettings.sbSquareLayout,
+            VideoSettings.sbAutoHideSkipButton, VideoSettings.sbAutoHideSkipButtonDuration,
+            VideoSettings.sbToastOnSkip, VideoSettings.sbToastOnConnectionError,
+            VideoSettings.sbTrackSkipCount, VideoSettings.sbMinSegmentDuration,
+            VideoSettings.sbVideoLengthWithoutSegments, VideoSettings.sbApiUrl),
+        section(YouTubeSettingsPages.Appearance, YouTubeStrings.sectionSponsorblockColors, AppearanceSettings.sbSponsorColor,
+            AppearanceSettings.sbSelfpromoColor, AppearanceSettings.sbInteractionColor, AppearanceSettings.sbPoiHighlightColor,
+            AppearanceSettings.sbIntroColor, AppearanceSettings.sbOutroColor, AppearanceSettings.sbPreviewColor,
+            AppearanceSettings.sbHookColor, AppearanceSettings.sbFillerColor, AppearanceSettings.sbMusicOfftopicColor))
 
     execute {
-        hookVideoId(SponsorBlock.newVideoLoaded)
-        hookBackgroundPlayVideoId(SponsorBlock.newVideoLoaded)
-        onCreateHook(SponsorBlock.initialize)
-        videoTimeHook(SponsorBlock.setVideoTime)
-        mainActivityOnCreate.after { call(SponsorBlock.attach, thisObject) }
-        nativePlayerTypeSetter.before { call(SponsorBlock.playerView, thisObject) }
+        hookVideoId(SponsorBlockSession.newVideoLoaded)
+        hookBackgroundPlayVideoId(SponsorBlockSession.newVideoLoaded)
+        onCreateHook(SponsorBlockPlayback.initialize)
+        videoTimeHook(SponsorBlockPlayback.setVideoTime)
+        mainActivityOnCreate.after { SponsorBlock.attach(thisObject) }
+        nativePlayerTypeSetter.before { SponsorBlock.playerView(thisObject) }
 
         // onDraw sets this Rect to the bar YouTube draws in this frame. Its height follows the
         // controls' fade, so it is empty while the seekbar is hidden.
@@ -50,7 +56,7 @@ val sponsorBlock = patch("SponsorBlock") {
                 params(Type.Float, Type.Float, Type.Float, "android.graphics.Paint") }
         }.all.last()
         thumb.captureArgumentAs("canvas", 0, "android.graphics.Canvas").before {
-            call(SponsorBlock.drawSegments, capture("canvas"), local(rect))
+            SponsorBlock.drawSegments(capture("canvas"), local(rect))
         }
 
         val totalTime = resources.id("string", "total_time")?.toLong() ?: error("string/total_time is missing")
@@ -63,20 +69,9 @@ val sponsorBlock = patch("SponsorBlock") {
                 params(Type.Int, "[Ljava/lang/Object;"); returns(Type.String) }
             argument(1) { literal(totalTime) }
         }.next { resultOf(Type.String) }.captureAs("time", Type.String).after {
-            capture("time").assign(call(SponsorBlock.appendTime, capture("time")))
+            capture("time").assign(SponsorBlock.appendTime(capture("time")))
         }
 
-        hookAdVisibility(SponsorBlock.setAdVisibility)
+        hookAdVisibility(SponsorBlockPlayback.setAdVisibility)
     }
-}
-
-private object SponsorBlock : ExtClass("app.reseam.youtube.sponsorblock.SponsorBlock") {
-    val attach by static(Type.Activity)
-    val playerView by static(Type.View)
-    val initialize by static("app.reseam.youtube.video.VideoInformation\$PlaybackController")
-    val newVideoLoaded by static(Type.String)
-    val setVideoTime by static(Type.Long)
-    val setAdVisibility by static(Type.Int)
-    val drawSegments by static("android.graphics.Canvas", "android.graphics.Rect")
-    val appendTime by static(Type.String, returns = Type.String)
 }

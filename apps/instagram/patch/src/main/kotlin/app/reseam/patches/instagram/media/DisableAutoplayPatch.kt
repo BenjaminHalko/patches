@@ -3,13 +3,14 @@
 
 package app.reseam.patches.instagram.media
 
+import app.reseam.instagram.settings.InstagramStrings
 import app.reseam.patch.Type
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.instagram.core.INSTAGRAM
-import app.reseam.patches.instagram.core.PlaybackSettings
+import app.reseam.instagram.settings.PlaybackSettings
 import app.reseam.patches.instagram.core.instagramSettings
 import app.reseam.patches.instagram.core.signatureCheck
 
@@ -17,7 +18,7 @@ val disableAutoplay = patch("Disable video autoplay") {
     description("Stops feed and reels videos from auto-playing.")
     compatibleWith(INSTAGRAM)
     dependsOn(signatureCheck)
-    settings(instagramSettings, section("Playback", PlaybackSettings.disableVideoAutoplay))
+    settings(instagramSettings, section(InstagramStrings.sectionPlayback, PlaybackSettings.disableVideoAutoplay))
 
     execute {
         gate(PlaybackSettings.disableVideoAutoplay) {

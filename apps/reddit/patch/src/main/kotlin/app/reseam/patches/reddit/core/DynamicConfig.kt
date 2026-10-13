@@ -8,8 +8,9 @@ import app.reseam.patch.MethodTarget
 import app.reseam.patch.Type
 import app.reseam.patch.klass
 import app.reseam.patch.method
-import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.ToggleSetting
+import app.reseam.patch.settings.gate
+import app.reseam.reddit.flags.bindings.DynamicConfigOverrides
 
 // The startup store persists what these getters return, so an override also reaches it on the next launch.
 private val dynamicConfig = klass("dynamicConfig") { strings("Illegal DynamicVariableType (NONE) cannot be converted to a DynamicType") }

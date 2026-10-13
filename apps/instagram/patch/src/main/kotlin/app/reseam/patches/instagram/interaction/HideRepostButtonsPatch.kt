@@ -3,6 +3,7 @@
 
 package app.reseam.patches.instagram.interaction
 
+import app.reseam.instagram.settings.InstagramStrings
 import app.reseam.patch.MethodTarget
 import app.reseam.patch.Type
 import app.reseam.patch.after
@@ -12,7 +13,7 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
-import app.reseam.patches.instagram.core.AppearanceSettings
+import app.reseam.instagram.settings.AppearanceSettings
 import app.reseam.patches.instagram.core.INSTAGRAM
 import app.reseam.patches.instagram.core.instagramSettings
 import app.reseam.patches.instagram.core.signatureCheck
@@ -21,7 +22,7 @@ val hideRepostButtons = patch("Hide repost buttons") {
     description("Hides repost controls in Instagram's feed and reels.")
     compatibleWith(INSTAGRAM)
     dependsOn(signatureCheck)
-    settings(instagramSettings, section("Appearance", AppearanceSettings.hideRepostButtons))
+    settings(instagramSettings, section(InstagramStrings.sectionAppearance, AppearanceSettings.hideRepostButtons))
 
     execute {
         gate(AppearanceSettings.hideRepostButtons) {

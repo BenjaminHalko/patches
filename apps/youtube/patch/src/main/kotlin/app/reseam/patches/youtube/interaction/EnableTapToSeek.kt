@@ -15,16 +15,17 @@ import app.reseam.patch.reserveLocal
 import app.reseam.patch.settings.section
 import app.reseam.patch.settings.whenEnabled
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
+import app.reseam.youtube.settings.PlayerControlsSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 private const val POINT = "android.graphics.Point"
 private const val OPTIONAL = "j\$.util.Optional"
 
 val enableTapToSeek = patch {
     compatibleWith(YOUTUBE)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Controls, "Seekbar", YouTubeSettings.tapToSeek))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Controls, YouTubeStrings.sectionSeekbar, PlayerControlsSettings.tapToSeek))
 
     execute {
         val hitTest = tapToSeekHandler.point("seekbarHitTest") {
@@ -48,7 +49,7 @@ val enableTapToSeek = patch {
             .next { invokeVirtual { } }
             .captureArgumentAs("seekbar", 0)
             .after {
-                whenEnabled(YouTubeSettings.tapToSeek) {
+                whenEnabled(PlayerControlsSettings.tapToSeek) {
                     capture("seekbar").call(original, local(tapX))
                     capture("seekbar").call(replacement, local(tapX))
                 }
@@ -60,12 +61,15 @@ val enableTapToSeek = patch {
 internal val seekbarClass = classTarget("seekbarClass") {
     bytecode.findClass(seekbarOnDraw.owner) ?: error("The seekbar class is missing")
 }
+
 private val baseSeekbarClass = classTarget("baseSeekbar") {
     bytecode.findClass(seekbarClass.classDef.superclass!!) ?: error("The base seekbar class is missing")
 }
+
 private val tapToSeekHandler = baseSeekbarClass.method("onTouchEvent", inherited = true) {
     params("android.view.MotionEvent")
 }
+
 private val tapToSeekMethod = seekbarClass.method("onTouchEvent") {
     params("android.view.MotionEvent")
 }

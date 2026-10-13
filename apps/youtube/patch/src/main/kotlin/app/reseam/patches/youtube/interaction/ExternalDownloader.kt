@@ -4,14 +4,12 @@
 
 package app.reseam.patches.youtube.interaction
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.before
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.mainActivityOnCreate
 import app.reseam.patches.youtube.core.youTubeSettings
@@ -19,13 +17,9 @@ import app.reseam.patches.youtube.internal.playerControls
 import app.reseam.patches.youtube.internal.registerPlayerControlInitializer
 import app.reseam.patches.youtube.internal.registerPlayerControlLayout
 import app.reseam.patches.youtube.internal.videoPlaybackStateHook
-
-object ExternalDownloader : ExtClass("app.reseam.youtube.buttons.ExternalDownloader") {
-    val setMainActivity by static(Type.Activity)
-    val initialize by static(Type.View)
-    val inAppDownloadButtonOnClick by static(Type.String, returns = Type.Boolean)
-}
-
+import app.reseam.youtube.buttons.bindings.ExternalDownloader
+import app.reseam.youtube.settings.DownloadSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 private val offlineVideoEndpoint = method("offline video endpoint") {
     returns(Type.Void)
@@ -39,8 +33,8 @@ val externalDownloader = patch("External downloader") {
     dependsOn(youTubeSettings, videoPlaybackStateHook, playerControls)
     settings(
         youTubeSettings,
-        section(YouTubeSettingsPages.Downloads, "External downloader", YouTubeSettings.externalDownloader,
-            YouTubeSettings.externalDownloaderActionButton, YouTubeSettings.externalDownloaderPackageName),
+        section(YouTubeSettingsPages.Downloads, YouTubeStrings.sectionExternalDownloader, DownloadSettings.externalDownloader,
+            DownloadSettings.externalDownloaderActionButton, DownloadSettings.externalDownloaderPackageName),
     )
     execute {
         resources.addId("reseam_external_download_button")
@@ -49,12 +43,12 @@ val externalDownloader = patch("External downloader") {
         registerPlayerControlLayout("/buttons/download.xml", "reseam_external_download_button", position = 2)
         registerPlayerControlInitializer(ExternalDownloader.initialize)
 
-        mainActivityOnCreate.before { call(ExternalDownloader.setMainActivity, thisObject) }
+        mainActivityOnCreate.before { ExternalDownloader.setMainActivity(thisObject) }
 
         // This target is the four-parameter offline endpoint; parameter 2 is the video id
         // (the app's p3 register because p0 is `this`).
         offlineVideoEndpoint.before {
-            whenTrue(call(ExternalDownloader.inAppDownloadButtonOnClick, param(2))) { returnVoid() }
+            whenTrue(ExternalDownloader.inAppDownloadButtonOnClick(param(2))) { returnVoid() }
         }
     }
 }

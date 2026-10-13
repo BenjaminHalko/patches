@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.player
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.before
@@ -18,14 +17,16 @@ import app.reseam.patch.methods
 import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.points
-import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.ToggleSetting
+import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.overrideBooleanFeature
+import app.reseam.youtube.playerui.bindings.HidePlayerOverlayButtons
+import app.reseam.youtube.settings.PlayerOverlaySettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 /** The initializer is shared with HideAutoplayPreview; both patches must edit the same method. */
 val playerLayoutInitializer = methodTarget("player layout initializer") {
@@ -70,14 +71,14 @@ val hidePlayerOverlayButtons = patch("Hide player overlay buttons") {
         youTubeSettings,
         section(
             YouTubeSettingsPages.Overlay,
-            "Player overlay",
-            YouTubeSettings.hideAutoplayButton,
-            YouTubeSettings.hideCaptionsButton,
-            YouTubeSettings.hideCastButton,
-            YouTubeSettings.hideCollapseButton,
-            YouTubeSettings.hideFullscreenButton,
-            YouTubeSettings.hidePlayerControlButtonsBackground,
-            YouTubeSettings.hidePlayerPreviousNextButtons,
+            YouTubeStrings.sectionPlayerOverlay,
+            PlayerOverlaySettings.hideAutoplayButton,
+            PlayerOverlaySettings.hideCaptionsButton,
+            PlayerOverlaySettings.hideCastButton,
+            PlayerOverlaySettings.hideCollapseButton,
+            PlayerOverlaySettings.hideFullscreenButton,
+            PlayerOverlaySettings.hidePlayerControlButtonsBackground,
+            PlayerOverlaySettings.hidePlayerPreviousNextButtons,
         ),
     )
 
@@ -87,7 +88,7 @@ val hidePlayerOverlayButtons = patch("Hide player overlay buttons") {
             params(Type.Int)
             returns(Type.Void)
         }.before {
-            param(0).assign(call(HidePlayerOverlayButtons.castVisibility, param(0)))
+            param(0).assign(HidePlayerOverlayButtons.castVisibility(param(0)))
         }
 
         overrideBooleanFeature(45690091L, HidePlayerOverlayButtons.castEnabled)
@@ -98,7 +99,7 @@ val hidePlayerOverlayButtons = patch("Hide player overlay buttons") {
             opcode(Opcode.IGET_OBJECT)
             field { type("com.google.android.libraries.youtube.common.ui.TouchImageView") }
         }.captureAs("captionsButton", "android.widget.ImageView").after {
-            call(HidePlayerOverlayButtons.hideCaptionsButton, capture("captionsButton"))
+            HidePlayerOverlayButtons.hideCaptionsButton(capture("captionsButton"))
         }
 
         val previous = resources.id("id", "player_control_previous_button_touch_area")!!.toLong()
@@ -107,13 +108,13 @@ val hidePlayerOverlayButtons = patch("Hide player overlay buttons") {
                 invokeStatic { params(Type.View, Type.Int) }
                 argument(1) { literal(previous) }
             }.captureArgumentAs("parent", 0, Type.View)
-            .before { call(HidePlayerOverlayButtons.hidePreviousNextButtons, capture("parent")) }
+            .before { HidePlayerOverlayButtons.hidePreviousNextButtons(capture("parent")) }
 
         val autoplayToggle = resources.id("id", "autonav_toggle")?.toLong()
             ?: error("id/autonav_toggle is missing")
         playerLayoutInitializer.skipInflationWhen(
             autoplayToggle,
-            YouTubeSettings.hideAutoplayButton,
+            PlayerOverlaySettings.hideAutoplayButton,
         )
 
         val controlsGroup = resources.id("id", "youtube_controls_button_group_layout_stub")?.toLong()
@@ -130,7 +131,7 @@ val hidePlayerOverlayButtons = patch("Hide player overlay buttons") {
                 }
             }
             .next { resultOf(Type.View) }.captureAs("controls", Type.View).after {
-                call(HidePlayerOverlayButtons.hidePlayerControlButtonsBackground, capture("controls"))
+                HidePlayerOverlayButtons.hidePlayerControlButtonsBackground(capture("controls"))
             }
 
         val collapse = resources.id("id", "player_collapse_button")?.toLong()
@@ -147,13 +148,13 @@ val hidePlayerOverlayButtons = patch("Hide player overlay buttons") {
                 checkCast("com.google.android.libraries.youtube.common.ui.TouchImageView")
             }
             .captureAs("collapseButton", "android.widget.ImageView")
-            .after { call(HidePlayerOverlayButtons.hideCollapseButton, capture("collapseButton")) }
+            .after { HidePlayerOverlayButtons.hideCollapseButton(capture("collapseButton")) }
 
         titleAnchor
             .point("title anchor") { literal(title) }
             .next { resultOf(Type.View) }
             .captureAs("titleAnchor", Type.View)
-            .after { call(HidePlayerOverlayButtons.setTitleAnchorStartMargin, capture("titleAnchor")) }
+            .after { HidePlayerOverlayButtons.setTitleAnchorStartMargin(capture("titleAnchor")) }
 
         val fullscreen = resources.id("id", "fullscreen_button")?.toLong()
             ?: error("id/fullscreen_button is missing")
@@ -170,22 +171,9 @@ val hidePlayerOverlayButtons = patch("Hide player overlay buttons") {
             argument(1) { literal(fullscreen) }
         }.forEach {
             next { resultOf(Type.View) }.captureAs("fullscreen", Type.View).after {
-                capture("fullscreen").assign(call(HidePlayerOverlayButtons.hideFullscreenButton, capture("fullscreen")))
+                capture("fullscreen").assign(HidePlayerOverlayButtons.hideFullscreenButton(capture("fullscreen")))
                 whenNull(capture("fullscreen")) { returnVoid() }
             }
         }
     }
-}
-
-object HidePlayerOverlayButtons : ExtClass("app.reseam.youtube.playerui.HidePlayerOverlayButtons") {
-    val castVisibility by static(Type.Int, returns = Type.Int, name = "getCastButtonOverrideV2")
-    val castEnabled by static(Type.Boolean, returns = Type.Boolean, name = "getCastButtonOverrideV2")
-    val hideCaptionsButton by static("android.widget.ImageView")
-    val hideCollapseButton by static("android.widget.ImageView")
-    val setTitleAnchorStartMargin by static(Type.View)
-    val hidePreviousNextButtons by static(Type.View)
-    val hideFullscreenButton by static(Type.View, returns = Type.View)
-    val hidePlayerControlButtonsBackground by static(
-        Type.View,
-    )
 }

@@ -11,9 +11,10 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.section
 import app.reseam.patch.settings.whenEnabled
 import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
-import app.reseam.patches.youtubemusic.core.YouTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicSettings
 import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
 import app.reseam.patches.youtubemusic.core.youTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicStrings
 
 internal const val VIEW_GONE = 8
 
@@ -30,7 +31,7 @@ private val TABS = listOf(
 val navigationBar = patch("Navigation bar") {
     description("Adds options to hide tabs from the bottom navigation bar.")
     compatibleWith(YOUTUBE_MUSIC)
-    settings(youTubeMusicSettings, section(YouTubeMusicSettingsPages.Interface, "Navigation bar", *TABS.map { it.first }.toTypedArray()))
+    settings(youTubeMusicSettings, section(YouTubeMusicSettingsPages.Interface, YouTubeMusicStrings.sectionNavigationBar, *TABS.map { it.first }.toTypedArray()))
 
     execute {
         val tabLayout = resources.id("layout", "image_with_text_tab")?.toLong() ?: error("layout/image_with_text_tab is missing")

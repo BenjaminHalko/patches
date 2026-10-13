@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Cossale <hello@auna.li>
-// SPDX-FileCopyrightText: 2026 ReVanced contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package app.reseam.patches.youtube.video
 
@@ -11,14 +10,15 @@ import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.mainActivityOnCreate
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.videoInformationHook
-import app.reseam.patches.youtubecommon.YouTubeCommonSettings
+import app.reseam.youtubecommon.settings.YouTubeCommonSettings
 import app.reseam.patches.youtubecommon.preferOriginalAudio
+import app.reseam.youtube.settings.YouTubeStrings
 
 val forceOriginalAudio = patch("Force original audio") {
     description("Prefers the original audio stream when YouTube offers a dubbed track.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings, videoInformationHook)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Video, "Audio", YouTubeCommonSettings.forceOriginalAudio))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Video, YouTubeStrings.sectionAudio, YouTubeCommonSettings.forceOriginalAudio))
 
     execute { preferOriginalAudio(mainActivityOnCreate) }
 }

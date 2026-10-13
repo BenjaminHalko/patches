@@ -3,24 +3,25 @@
 
 package app.reseam.patches.x.privacy
 
+import app.reseam.patch.dex.methodRef
 import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.point
-import app.reseam.patch.dex.methodRef
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.x.core.X
-import app.reseam.patches.x.core.XSettings
+import app.reseam.x.settings.XSettings
 import app.reseam.patches.x.core.xSettings
 import app.reseam.patches.x.featureswitches.disableFeatureSwitches
 import app.reseam.patches.x.featureswitches.featureSwitchOverrides
+import app.reseam.x.settings.XStrings
 
 val privacy = patch("Privacy") {
     description("Stops the installed-apps report used for ad targeting and turns off ad tracking switches.")
     compatibleWith(X)
     dependsOn(featureSwitchOverrides)
-    settings(xSettings, section("Privacy", XSettings.blockInstalledAppsScan, XSettings.disableAdTracking))
+    settings(xSettings, section(XStrings.sectionPrivacy, XSettings.blockInstalledAppsScan, XSettings.disableAdTracking))
 
     execute {
         gate(XSettings.blockInstalledAppsScan) {

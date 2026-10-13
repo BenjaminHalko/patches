@@ -3,19 +3,20 @@
 
 package app.reseam.patches.discord.layout
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val hideShopEntry = patch("Hide shop entry") {
     description("Remove Shop buttons from profiles and the Shop entry in settings.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Layout", DiscordSettings.hideShopEntry))
+    settings(discordSettings, section(DiscordStrings.sectionLayout, DiscordSettings.hideShopEntry))
 
     execute {
         gate(DiscordSettings.hideShopEntry) {

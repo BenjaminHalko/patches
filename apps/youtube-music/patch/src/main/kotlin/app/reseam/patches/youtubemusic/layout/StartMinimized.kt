@@ -10,14 +10,15 @@ import app.reseam.patch.point
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
-import app.reseam.patches.youtubemusic.core.YouTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicSettings
 import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
 import app.reseam.patches.youtubemusic.core.youTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicStrings
 
 val startMinimized = patch("Start in miniplayer") {
     description("Keeps the player in the miniplayer when a new song starts, instead of opening it full screen.")
     compatibleWith(YOUTUBE_MUSIC)
-    settings(youTubeMusicSettings, section(YouTubeMusicSettingsPages.Player, "Miniplayer", YouTubeMusicSettings.startMinimized))
+    settings(youTubeMusicSettings, section(YouTubeMusicSettingsPages.Player, YouTubeMusicStrings.sectionMiniplayer, YouTubeMusicSettings.startMinimized))
 
     execute {
         gate(YouTubeMusicSettings.startMinimized) {

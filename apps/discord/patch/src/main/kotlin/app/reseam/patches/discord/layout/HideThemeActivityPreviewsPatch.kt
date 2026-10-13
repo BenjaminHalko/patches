@@ -3,18 +3,19 @@
 
 package app.reseam.patches.discord.layout
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val hideThemeActivityPreviews = patch("Hide theme activity previews") {
     description("Remove activity cards from the Appearance preview.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Layout", DiscordSettings.hideThemeActivityPreviews))
+    settings(discordSettings, section(DiscordStrings.sectionLayout, DiscordSettings.hideThemeActivityPreviews))
 
     execute {
         gate(DiscordSettings.hideThemeActivityPreviews) {

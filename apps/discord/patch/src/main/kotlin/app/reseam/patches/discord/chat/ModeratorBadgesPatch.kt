@@ -3,13 +3,14 @@
 
 package app.reseam.patches.discord.chat
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 import app.reseam.patches.discord.core.guildStore
 import app.reseam.patches.discord.core.permissionHelpers
@@ -17,7 +18,7 @@ import app.reseam.patches.discord.core.permissionHelpers
 val moderatorBadges = patch("Moderator badges") {
     description("Tag the server owner, admins, managers and moderators next to their names in chat.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Chat", DiscordSettings.moderatorBadges))
+    settings(discordSettings, section(DiscordStrings.sectionChat, DiscordSettings.moderatorBadges))
 
     execute {
         gate(DiscordSettings.moderatorBadges) {

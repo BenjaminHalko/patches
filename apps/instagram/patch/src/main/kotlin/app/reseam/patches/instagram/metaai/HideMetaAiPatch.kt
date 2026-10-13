@@ -3,6 +3,7 @@
 
 package app.reseam.patches.instagram.metaai
 
+import app.reseam.instagram.settings.InstagramStrings
 import app.reseam.patch.Type
 import app.reseam.patch.dex.Opcode
 import app.reseam.patch.dex.literal
@@ -16,7 +17,7 @@ import app.reseam.patch.points
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.instagram.core.INSTAGRAM
-import app.reseam.patches.instagram.core.MetaAiSettings
+import app.reseam.instagram.settings.MetaAiSettings
 import app.reseam.patches.instagram.core.USER_SESSION
 import app.reseam.patches.instagram.core.instagramSettings
 import app.reseam.patches.instagram.core.signatureCheck
@@ -27,7 +28,7 @@ val hideMetaAi = patch("Hide Meta AI") {
     dependsOn(signatureCheck)
     settings(
         instagramSettings,
-        section("Meta AI", MetaAiSettings.hideInExploreSearch, MetaAiSettings.hideInDirect, MetaAiSettings.hideInPosts),
+        section(InstagramStrings.sectionMetaAi, MetaAiSettings.hideInExploreSearch, MetaAiSettings.hideInDirect, MetaAiSettings.hideInPosts),
     )
 
     execute {

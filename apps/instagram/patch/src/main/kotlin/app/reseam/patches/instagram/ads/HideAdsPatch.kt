@@ -3,12 +3,13 @@
 
 package app.reseam.patches.instagram.ads
 
+import app.reseam.instagram.settings.InstagramStrings
 import app.reseam.patch.Type
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
-import app.reseam.patches.instagram.core.FeedSettings
+import app.reseam.instagram.settings.FeedSettings
 import app.reseam.patches.instagram.core.INSTAGRAM
 import app.reseam.patches.instagram.core.instagramSettings
 import app.reseam.patches.instagram.core.signatureCheck
@@ -17,7 +18,7 @@ val hideAds = patch("Hide ads") {
     description("Stops Instagram from inserting sponsored posts into feed, stories, explore, reels and search.")
     compatibleWith(INSTAGRAM)
     dependsOn(signatureCheck)
-    settings(instagramSettings, section("Feed", FeedSettings.hideAds))
+    settings(instagramSettings, section(InstagramStrings.sectionFeed, FeedSettings.hideAds))
 
     execute {
         gate(FeedSettings.hideAds) {

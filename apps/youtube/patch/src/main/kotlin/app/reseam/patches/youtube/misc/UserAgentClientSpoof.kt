@@ -9,13 +9,14 @@ import app.reseam.patches.youtube.core.YOUTUBE
 import app.reseam.patches.youtube.core.YOUTUBE_PACKAGE
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
-import app.reseam.patches.youtubespoof.SpoofSettings
+import app.reseam.youtubespoof.settings.SpoofSettings
 import app.reseam.patches.youtubespoof.spoofUserAgentPackageName
+import app.reseam.youtube.settings.YouTubeStrings
 
 val userAgentClientSpoof = patch("User-agent client spoof") {
     description("Keeps client user-agent package names compatible with YouTube's original package.")
     compatibleWith(YOUTUBE)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Advanced, "Stream compatibility", SpoofSettings.userAgentClientSpoof))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Advanced, YouTubeStrings.sectionStreamCompatibility, SpoofSettings.userAgentClientSpoof))
 
     execute { spoofUserAgentPackageName(YOUTUBE_PACKAGE) }
 }

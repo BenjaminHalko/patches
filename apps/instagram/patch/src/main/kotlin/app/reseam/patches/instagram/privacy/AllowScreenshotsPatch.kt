@@ -3,13 +3,14 @@
 
 package app.reseam.patches.instagram.privacy
 
+import app.reseam.instagram.settings.InstagramStrings
 import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.instagram.core.INSTAGRAM
-import app.reseam.patches.instagram.core.PrivacySettings
+import app.reseam.instagram.settings.PrivacySettings
 import app.reseam.patches.instagram.core.instagramSettings
 import app.reseam.patches.instagram.core.signatureCheck
 
@@ -17,7 +18,7 @@ val allowScreenshots = patch("Allow screenshots in DMs") {
     description("Allows screenshots of chats, view-once media and vanish mode. Pair with ghost mode's screenshot setting so the sender is not notified.")
     compatibleWith(INSTAGRAM)
     dependsOn(signatureCheck)
-    settings(instagramSettings, section("Privacy", PrivacySettings.allowScreenshots))
+    settings(instagramSettings, section(InstagramStrings.sectionPrivacy, PrivacySettings.allowScreenshots))
 
     execute {
         gate(PrivacySettings.allowScreenshots) {

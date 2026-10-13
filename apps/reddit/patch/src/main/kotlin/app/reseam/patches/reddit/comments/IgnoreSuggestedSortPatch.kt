@@ -9,13 +9,14 @@ import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.reddit.core.REDDIT
-import app.reseam.patches.reddit.core.RedditSettings
+import app.reseam.reddit.settings.RedditSettings
 import app.reseam.patches.reddit.core.redditSettings
+import app.reseam.reddit.settings.RedditStrings
 
 val ignoreSuggestedSort = patch("Always use my default comment sort") {
     description("Ignores the comment sort a post or community suggests and uses your default sort.")
     compatibleWith(REDDIT)
-    settings(redditSettings, section("Comments", RedditSettings.ignoreSuggestedSort))
+    settings(redditSettings, section(RedditStrings.sectionComments, RedditSettings.ignoreSuggestedSort))
 
     execute {
         gate(RedditSettings.ignoreSuggestedSort) {

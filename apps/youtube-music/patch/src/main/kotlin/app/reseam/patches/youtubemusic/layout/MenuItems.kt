@@ -3,7 +3,6 @@
 
 package app.reseam.patches.youtubemusic.layout
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.classTarget
@@ -13,13 +12,16 @@ import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.reserveLocal
-import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
-import app.reseam.patches.youtubemusic.core.YouTubeMusicSettings
-import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
-import app.reseam.patches.youtubemusic.core.youTubeMusicSettings
+import app.reseam.patch.settings.section
 import app.reseam.patches.youtubecommon.lithoFilter
 import app.reseam.patches.youtubecommon.registerLithoFilter
-import app.reseam.patch.settings.section
+import app.reseam.patches.youtubemusic.core.YOUTUBE_MUSIC
+import app.reseam.patches.youtubemusic.core.YouTubeMusicSettingsPages
+import app.reseam.patches.youtubemusic.core.youTubeMusicSettings
+import app.reseam.youtubemusic.layout.bindings.MenuItems
+import app.reseam.youtubemusic.layout.bindings.MenuTilesFilter
+import app.reseam.youtubemusic.settings.YouTubeMusicSettings
+import app.reseam.youtubemusic.settings.YouTubeMusicStrings
 
 val hideMenuItems = patch("Hide menu items") {
     description("Adds options to hide items from the long-press and three-dot menus.")
@@ -29,7 +31,7 @@ val hideMenuItems = patch("Hide menu items") {
         youTubeMusicSettings,
         with(YouTubeMusicSettings) {
             section(
-                YouTubeMusicSettingsPages.Menus, "Menu items",
+                YouTubeMusicSettingsPages.Menus, YouTubeMusicStrings.sectionMenuItems,
                 hideMenuPlayNext, hideMenuSaveToPlaylist, hideMenuShare, hideMenuStartMix, hideMenuAddToQueue,
                 hideMenuDownload, hideMenuLibrary, hideMenuGoToAlbum, hideMenuGoToArtist, hideMenuSongCredits,
                 hideMenuSpeedDial, hideMenuNotInterested, hideMenuDontRecommendArtist, hideMenuDismissQueue,
@@ -45,7 +47,7 @@ val hideMenuItems = patch("Hide menu items") {
             .next { resultOf() }.captureAs("icon").after { local(icon).assign(capture("icon")) }
         bindMenuRow.after {
             whenNotNull(local(icon)) {
-                call(MenuItems.bind, thisObject.call(menuRowView), local(icon).cast("java.lang.Enum"))
+                MenuItems.bind(thisObject.call(menuRowView), local(icon).cast("java.lang.Enum"))
             }
         }
     }
@@ -71,9 +73,3 @@ private val menuRowView = method("menuRowView") {
     params()
     returns(Type.View)
 }
-
-private object MenuItems : ExtClass("app.reseam.youtubemusic.layout.MenuItems") {
-    val bind by static(Type.View, "java.lang.Enum")
-}
-
-private object MenuTilesFilter : ExtClass("app.reseam.youtubemusic.layout.MenuTilesFilter")

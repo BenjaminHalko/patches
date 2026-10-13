@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.layout
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.dex.AccessFlags
@@ -16,11 +15,9 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.ClientContextEndpoint
-import app.reseam.patches.youtube.internal.NavigationBar
 import app.reseam.patches.youtube.internal.clientContextHook
 import app.reseam.patches.youtube.internal.hookNavigationTabCreated
 import app.reseam.patches.youtube.internal.navigationBarHook
@@ -28,10 +25,13 @@ import app.reseam.patches.youtube.internal.overrideBooleanFeature
 import app.reseam.patches.youtube.internal.overrideClientContextOsName
 import app.reseam.patches.youtube.internal.toolbarButtonIcon
 import app.reseam.patches.youtube.internal.toolbarButtonIdentified
+import app.reseam.youtube.navbuttons.bindings.NavigationButtons
+import app.reseam.youtube.navigation.bindings.NavigationBar
+import app.reseam.youtube.settings.AppearanceSettings
+import app.reseam.youtube.settings.YouTubeStrings
 
 private const val PIVOT_BAR = "com.google.android.libraries.youtube.rendering.ui.pivotbar.PivotBar"
 private const val TEXT_VIEW = "android.widget.TextView"
-private const val CHAR_SEQUENCE = "java.lang.CharSequence"
 private const val NAVIGATION_BUTTON =
     "app.reseam.youtube.navigation.NavigationBar\$NavigationButton"
 
@@ -48,31 +48,31 @@ val navigationButtons = patch("Navigation bar") {
         youTubeSettings,
         section(
             YouTubeSettingsPages.Appearance,
-            "Navigation bar",
-            YouTubeSettings.hideHomeButton,
-            YouTubeSettings.hideShortsButton,
-            YouTubeSettings.hideCreateButton,
-            YouTubeSettings.hideSubscriptionsButton,
-            YouTubeSettings.hideNotificationsButton,
-            YouTubeSettings.hideLibraryButton,
-            YouTubeSettings.switchCreateWithNotificationsButton,
-            YouTubeSettings.hideNavigationButtonLabels,
-            YouTubeSettings.narrowNavigationButtons,
-            YouTubeSettings.navigationBarAnimations,
-            YouTubeSettings.disableTranslucentStatusBar,
-            YouTubeSettings.disableTranslucentNavigationBarLight,
-            YouTubeSettings.disableTranslucentNavigationBarDark,
-            YouTubeSettings.hideToolbarCreateButton,
-            YouTubeSettings.hideToolbarNotificationButton,
-            YouTubeSettings.hideToolbarSearchButton,
-            YouTubeSettings.hideToolbarMessagesButton,
+            YouTubeStrings.sectionNavigationBar,
+            AppearanceSettings.hideHomeButton,
+            AppearanceSettings.hideShortsButton,
+            AppearanceSettings.hideCreateButton,
+            AppearanceSettings.hideSubscriptionsButton,
+            AppearanceSettings.hideNotificationsButton,
+            AppearanceSettings.hideLibraryButton,
+            AppearanceSettings.switchCreateWithNotificationsButton,
+            AppearanceSettings.hideNavigationButtonLabels,
+            AppearanceSettings.narrowNavigationButtons,
+            AppearanceSettings.navigationBarAnimations,
+            AppearanceSettings.disableTranslucentStatusBar,
+            AppearanceSettings.disableTranslucentNavigationBarLight,
+            AppearanceSettings.disableTranslucentNavigationBarDark,
+            AppearanceSettings.hideToolbarCreateButton,
+            AppearanceSettings.hideToolbarNotificationButton,
+            AppearanceSettings.hideToolbarSearchButton,
+            AppearanceSettings.hideToolbarMessagesButton,
         ),
     )
 
     execute {
         overrideClientContextOsName(
             ClientContextEndpoint.GUIDE,
-            YouTubeSettings.switchCreateWithNotificationsButton,
+            AppearanceSettings.switchCreateWithNotificationsButton,
             "Android Automotive",
         )
 
@@ -92,30 +92,14 @@ val navigationButtons = patch("Navigation bar") {
                 returns(Type.Void)
             }
         }.captureArgumentAs("label", 0, TEXT_VIEW).after {
-            call(NavigationButtons.hideNavigationButtonLabels, capture("label"))
+            NavigationButtons.hideNavigationButtonLabels(capture("label"))
         }
 
         toolbarButtonIdentified.after {
-            call(
-                NavigationButtons.hideCreateButton,
-                capture("toolbarButton"),
-                thisObject.field(toolbarButtonIcon),
-            )
-            call(
-                NavigationButtons.hideNotificationButton,
-                capture("toolbarButton"),
-                thisObject.field(toolbarButtonIcon),
-            )
-            call(
-                NavigationButtons.hideSearchButton,
-                capture("toolbarButton"),
-                thisObject.field(toolbarButtonIcon),
-            )
-            call(
-                NavigationButtons.hideMessagesButton,
-                capture("toolbarButton"),
-                thisObject.field(toolbarButtonIcon),
-            )
+            NavigationButtons.hideCreateButton(capture("toolbarButton"), thisObject.field(toolbarButtonIcon))
+            NavigationButtons.hideNotificationButton(capture("toolbarButton"), thisObject.field(toolbarButtonIcon))
+            NavigationButtons.hideSearchButton(capture("toolbarButton"), thisObject.field(toolbarButtonIcon))
+            NavigationButtons.hideMessagesButton(capture("toolbarButton"), thisObject.field(toolbarButtonIcon))
         }
 
         overrideBooleanFeature(ANIMATED_NAVIGATION_TABS, NavigationButtons.useAnimatedNavigationButtons)
@@ -134,7 +118,7 @@ val navigationButtons = patch("Navigation bar") {
             then { resultOf(Type.Boolean) }
         }.captureAs("changedWidth", Type.Boolean).after {
             capture("changedWidth").assign(
-                call(NavigationButtons.enableNarrowNavigationButton, capture("changedWidth")),
+                NavigationButtons.enableNarrowNavigationButton(capture("changedWidth")),
             )
         }
 
@@ -150,36 +134,8 @@ val navigationButtons = patch("Navigation bar") {
             then { resultOf(Type.Boolean) }
         }.captureAs("styledWidth", Type.Boolean).after {
             capture("styledWidth").assign(
-                call(NavigationButtons.enableNarrowNavigationButton, capture("styledWidth")),
+                NavigationButtons.enableNarrowNavigationButton(capture("styledWidth")),
             )
         }
     }
-}
-
-object NavigationButtons : ExtClass("app.reseam.youtube.navbuttons.NavigationButtons") {
-    val navigationTabCreated by static(
-        NAVIGATION_BUTTON,
-        Type.View,
-    )
-    val hideNavigationButtonLabels by static(TEXT_VIEW)
-    val useAnimatedNavigationButtons by static(
-        Type.Boolean,
-        returns = Type.Boolean,
-    )
-    val enableNarrowNavigationButton by static(
-        Type.Boolean,
-        returns = Type.Boolean,
-    )
-    val useTranslucentNavigationStatusBar by static(
-        Type.Boolean,
-        returns = Type.Boolean,
-    )
-    val useTranslucentNavigationButtons by static(
-        Type.Boolean,
-        returns = Type.Boolean,
-    )
-    val hideCreateButton by static("java.lang.Enum", Type.View)
-    val hideNotificationButton by static("java.lang.Enum", Type.View)
-    val hideSearchButton by static("java.lang.Enum", Type.View)
-    val hideMessagesButton by static("java.lang.Enum", Type.View)
 }

@@ -3,18 +3,19 @@
 
 package app.reseam.patches.discord.privacy
 
+import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val blockAnalytics = patch("Block analytics") {
     description("Stop Discord from logging usage events.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Privacy", DiscordSettings.blockAnalytics))
+    settings(discordSettings, section(DiscordStrings.sectionPrivacy, DiscordSettings.blockAnalytics))
 
     execute {
         gate(DiscordSettings.blockAnalytics) {

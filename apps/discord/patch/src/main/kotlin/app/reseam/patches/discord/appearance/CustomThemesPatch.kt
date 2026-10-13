@@ -3,7 +3,10 @@
 
 package app.reseam.patches.discord.appearance
 
-import app.reseam.patch.ExtClass
+import app.reseam.discord.settings.DiscordSettings
+import app.reseam.discord.settings.DiscordStrings
+import app.reseam.discord.themes.bindings.ThemeColors
+import app.reseam.discord.themes.bindings.ThemesPackage
 import app.reseam.patch.ExtJsModule
 import app.reseam.patch.MetroModule
 import app.reseam.patch.Type
@@ -17,7 +20,6 @@ import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patch.settings.whenEnabled
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.DiscordSettings
 import app.reseam.patches.discord.core.commit
 import app.reseam.patches.discord.core.createMessageContent
 import app.reseam.patches.discord.core.designSystem
@@ -31,7 +33,7 @@ import app.reseam.patches.discord.core.settingRows
 val customThemes = patch("Custom themes") {
     description("Create, edit, share and use full themes, the Reseam theme included.")
     compatibleWith(DISCORD)
-    settings(discordSettings, section("Appearance", DiscordSettings.customThemes))
+    settings(discordSettings, section(DiscordStrings.sectionAppearance, DiscordSettings.customThemes))
 
     execute {
         gate(DiscordSettings.customThemes) {
@@ -69,14 +71,14 @@ val customThemes = patch("Custom themes") {
             createMessageContent.wrap(CustomThemes.createMessageContent, messageStore)
             formatSharedClientThemeData.wrap(CustomThemes.formatSharedClientThemeData)
             handleTapPreviewSharedClientTheme.wrap(CustomThemes.handleTapPreviewSharedClientTheme, themeActions, designSystem, react, colorTokens, actionSheets)
-            getPackages.after { call(ThemesPackage.addTo, capture("result")) }
+            getPackages.after { ThemesPackage.addTo(capture("result")) }
         }
-        appEntry { whenEnabled(DiscordSettings.customThemes) { call(ThemeColors.init, application) } }
+        appEntry { whenEnabled(DiscordSettings.customThemes) { ThemeColors.init(application) } }
         // One getter per semantic token in each of Discord's native theme classes.
         for ((themeClass, theme) in nativeThemes) {
             klass(themeClass).methods { returns(Type.Int); paramCount(0) }.forEach {
                 val token = nativeToken(name)
-                after { returnValue(call(ThemeColors.color, string(theme), string(token), capture("result"))) }
+                after { returnValue(ThemeColors.color(string(theme), string(token), capture("result"))) }
             }
         }
     }
@@ -102,15 +104,6 @@ private object CustomThemes : ExtJsModule("discord-custom-themes") {
     val createMessageContent by export()
     val formatSharedClientThemeData by export()
     val handleTapPreviewSharedClientTheme by export()
-}
-
-private object ThemesPackage : ExtClass("app.reseam.discord.themes.ThemesPackage") {
-    val addTo by static(Type.List)
-}
-
-private object ThemeColors : ExtClass("app.reseam.discord.themes.ThemeColors") {
-    val init by static(Type.Context)
-    val color by static(Type.String, Type.String, Type.Int, returns = Type.Int)
 }
 
 private val nativeThemes = listOf(

@@ -11,10 +11,11 @@ import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.settings.ToggleSetting
 import app.reseam.patch.settings.section
-import app.reseam.patches.reddit.core.FlagOverrides
 import app.reseam.patches.reddit.core.REDDIT
-import app.reseam.patches.reddit.core.RedditSettings
 import app.reseam.patches.reddit.core.redditSettings
+import app.reseam.reddit.flags.bindings.FlagOverrides
+import app.reseam.reddit.settings.RedditSettings
+import app.reseam.reddit.settings.RedditStrings
 
 private class FlagGroup(val disable: List<String> = emptyList(), val enable: List<String> = emptyList())
 
@@ -82,7 +83,7 @@ private val FLAG_GROUPS: Map<ToggleSetting, FlagGroup> = mapOf(
 val disableFeatures = patch("Disable Reddit features") {
     description("Turns off Reddit Answers, prompts, nudges, upsells, search ads, feed unit requests, ad autoplay, Games and more through Reddit's own feature flags.")
     compatibleWith(REDDIT)
-    settings(redditSettings, section("Features", *FLAG_GROUPS.keys.toTypedArray()))
+    settings(redditSettings, section(RedditStrings.sectionFeatures, *FLAG_GROUPS.keys.toTypedArray()))
 
     execute {
         FlagOverrides.spec.implement {
@@ -92,11 +93,11 @@ val disableFeatures = patch("Disable Reddit features") {
         }
         // A disabled flag reads as no variant, which Reddit treats as off.
         listOf(mainReader, startupReader).forEach { reader ->
-            reader.variant.before { whenTrue(call(FlagOverrides.isDisabled, param(0))) { returnNull() } }
+            reader.variant.before { whenTrue(FlagOverrides.isDisabled(param(0))) { returnNull() } }
             listOf(reader.enabled, reader.enabledUnexposed).forEach { enabled ->
                 enabled.before {
-                    whenTrue(call(FlagOverrides.isDisabled, param(0))) { returnFalse() }
-                    whenTrue(call(FlagOverrides.isForced, param(0))) { returnTrue() }
+                    whenTrue(FlagOverrides.isDisabled(param(0))) { returnFalse() }
+                    whenTrue(FlagOverrides.isForced(param(0))) { returnTrue() }
                 }
             }
         }

@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtubecommon
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.PatchRuntime
 import app.reseam.patch.Type
 import app.reseam.patch.method
@@ -12,6 +11,7 @@ import app.reseam.patch.methods
 import app.reseam.patch.points
 import app.reseam.patch.settings.ToggleSetting
 import app.reseam.patch.settings.gate
+import app.reseam.youtube.links.bindings.SharingLinks
 
 fun PatchRuntime.sanitizeSharedLinks(setting: ToggleSetting) {
     val copies = shareSheetCopies.all
@@ -20,7 +20,7 @@ fun PatchRuntime.sanitizeSharedLinks(setting: ToggleSetting) {
         gate(setting) {
             it.captureArgumentAs("shareUrl", 1, Type.CharSequence)
                 .before {
-                    capture("shareUrl").assign(call(SharingLinks.sanitize, capture("shareUrl").cast(Type.String)))
+                    capture("shareUrl").assign(SharingLinks.sanitize(capture("shareUrl").cast(Type.String)))
                 }
         }
     }
@@ -30,7 +30,7 @@ fun PatchRuntime.sanitizeSharedLinks(setting: ToggleSetting) {
         gate(setting) {
             it.captureArgumentAs("key", 1, Type.String).captureArgumentAs("value", 2, Type.String)
                 .before {
-                    capture("value").assign(call(SharingLinks.sanitizeExtra, capture("key"), capture("value")))
+                    capture("value").assign(SharingLinks.sanitizeExtra(capture("key"), capture("value")))
                 }
         }
     }
@@ -69,9 +69,4 @@ private val shareChooserExtras = methods("share chooser extras") {
     calls { owner(INTENT); name("putExtra"); params(Type.String, Type.String) }
 }.points("share text extra") {
     invokeVirtual { owner(INTENT); name("putExtra"); params(Type.String, Type.String) }
-}
-
-private object SharingLinks : ExtClass("app.reseam.youtube.links.SharingLinks") {
-    val sanitize by static(Type.String, returns = Type.String)
-    val sanitizeExtra by static(Type.String, Type.String, returns = Type.String)
 }

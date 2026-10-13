@@ -4,12 +4,9 @@
 
 package app.reseam.patches.youtube.video.speed
 
-import app.reseam.patch.ExtClass
-import app.reseam.patch.Type
 import app.reseam.patch.patch
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.playerControls
@@ -18,17 +15,15 @@ import app.reseam.patches.youtube.internal.registerPlayerControlLayout
 import app.reseam.patches.youtube.internal.userSelectedPlaybackSpeedHook
 import app.reseam.patches.youtube.internal.videoInformationHook
 import app.reseam.patches.youtube.internal.videoSpeedChangedHook
-
-object PlaybackSpeedDialogButton : ExtClass("app.reseam.youtube.speed.PlaybackSpeedDialogButton") {
-    val initialize by static(Type.View)
-    val videoSpeedChanged by static(Type.Float)
-}
+import app.reseam.youtube.settings.PlayerControlsSettings
+import app.reseam.youtube.settings.YouTubeStrings
+import app.reseam.youtube.speed.bindings.PlaybackSpeedDialogButton
 
 val playbackSpeedDialogButton = patch("Playback speed player button") {
     description("Adds a button that opens the configured playback-speed picker.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings, playerControls, customPlaybackSpeed, videoInformationHook)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Controls, "Player buttons", YouTubeSettings.playbackSpeedDialogButton))
+    settings(youTubeSettings, section(YouTubeSettingsPages.Controls, YouTubeStrings.sectionPlayerButtons, PlayerControlsSettings.playbackSpeedDialogButton))
 
     execute {
         resources.addId("reseam_playback_speed_button")

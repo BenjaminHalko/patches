@@ -5,35 +5,21 @@
 package app.reseam.patches.youtubecommon
 
 import app.reseam.patch.CompatiblePackage
-import app.reseam.patch.ExtClass
 import app.reseam.patch.MethodTarget
 import app.reseam.patch.OptionPath
 import app.reseam.patch.PatchRuntime
 import app.reseam.patch.ReseamPatch
-import app.reseam.patch.Type
 import app.reseam.patch.XmlElement
 import app.reseam.patch.before
 import app.reseam.patch.patch
-import app.reseam.patch.settings.Choice
 import app.reseam.patch.settings.ChoiceSetting
 import app.reseam.patch.settings.SettingsHost
 import app.reseam.patch.settings.SettingsPage
+import app.reseam.patch.settings.StringRef
+import app.reseam.patch.settings.Verbatim
 import app.reseam.patch.settings.section
-
-private object CustomBrandingResources
-private const val CUSTOM = "custom"
-private val densities = listOf("mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi")
-private val iconLayers = listOf("foreground", "background")
-
-private fun asset(path: String): ByteArray =
-    CustomBrandingResources::class.java.getResourceAsStream("/reseam-branding/$path")?.use { it.readBytes() }
-        ?: error("reseam-branding resource is missing: $path")
-
-private fun ChoiceSetting.withCustom(title: String?) =
-    if (title == null) this else copy(default = CUSTOM, choices = choices + Choice(CUSTOM, title))
-
-/** The value an alias stands for when its setting offers it, and the setting's default otherwise. */
-private fun ChoiceSetting.offered(value: String) = value.takeIf { choices.any { it.value == value } } ?: default
+import app.reseam.youtube.branding.bindings.CustomBranding
+import app.reseam.youtubecommon.settings.YouTubeCommonStrings
 
 /** The launcher entry the branded aliases replace. */
 class Launcher(
@@ -55,7 +41,7 @@ fun customBrandingFor(
     app: CompatiblePackage,
     host: SettingsHost,
     page: SettingsPage,
-    section: String,
+    section: StringRef,
     nameSetting: ChoiceSetting,
     iconSetting: ChoiceSetting,
     launcher: Launcher,
@@ -78,8 +64,8 @@ fun customBrandingFor(
             "at mdpi, 162 px at hdpi, 216 px at xhdpi, 324 px at xxhdpi, 432 px at xxxhdpi. Adds it to the " +
             "App icon setting and makes it the default.",
     )
-    fun names(name: String?) = nameSetting.withCustom(name)
-    fun icons(icon: OptionPath?) = iconSetting.withCustom(icon?.let { "Custom" })
+    fun names(name: String?) = nameSetting.withCustom(name?.let(::Verbatim))
+    fun icons(icon: OptionPath?) = iconSetting.withCustom(icon?.let { YouTubeCommonStrings.customBrandingIconCustom })
     fun iconResource(style: String) = when (style) {
         "reseam" -> "@mipmap/reseam_launcher"
         CUSTOM -> "@mipmap/reseam_launcher_custom"
@@ -93,44 +79,10 @@ fun customBrandingFor(
         val icon = options.getOrNull(customIcon)
         val names = names(options.getOrNull(customName))
         val icons = icons(icon)
-        names.choices.forEach { resources.addString("reseam_branding_name_${it.value}", it.title) }
+        // A launcher name is the app's own name, so its choices are shown as written.
+        names.choices.forEach { resources.addString("reseam_branding_name_${it.value}", (it.title as Verbatim).text) }
 
-        listOf(
-            "reseam_adaptive_background.xml",
-            "reseam_adaptive_monochrome.xml",
-            "reseam_notification_icon.xml",
-        ).forEach { file ->
-            val name = file.removeSuffix(".xml")
-            val path = "res/drawable/$file"
-            resources.addFile("drawable", name, path, asset("drawable/$file"))
-        }
-
-        val adaptiveIconPath = "res/mipmap-anydpi-v26/reseam_launcher.xml"
-        resources.addFile("mipmap", "reseam_launcher", adaptiveIconPath, asset("mipmap-anydpi-v26/reseam_launcher.xml"), "anydpi-v26")
-
-        densities.forEach { density ->
-            val path = "res/mipmap-$density/reseam_launcher.png"
-            resources.addFile(
-                "mipmap",
-                "reseam_launcher",
-                path,
-                asset("mipmap-$density/reseam_launcher.png"),
-                density,
-            )
-        }
-
-        if (icon != null) {
-            val folders = icon.listContents()
-            val provided = densities.filter { "mipmap-$it" in folders }
-            check(provided.isNotEmpty()) { "The custom icon folder $icon has no mipmap-<density> folder" }
-            for (density in provided) for (layer in iconLayers) {
-                val file = "mipmap-$density/$layer.png"
-                val data = icon.readFile(file) ?: error("The custom icon folder $icon is missing $file")
-                resources.addFile("mipmap", "reseam_custom_$layer", "res/mipmap-$density/reseam_custom_$layer.png", data, density)
-            }
-            val customIconPath = "res/mipmap-anydpi-v26/reseam_launcher_custom.xml"
-            resources.addFile("mipmap", "reseam_launcher_custom", customIconPath, asset("mipmap-anydpi-v26/reseam_launcher_custom.xml"), "anydpi-v26")
-        }
+        addBrandingIcons(icon)
 
         manifest.setAttributeString("application", "label", "@string/reseam_branding_name_${names.default}")
         val nameValues = nameSetting.choices.map { it.value } + CUSTOM
@@ -176,12 +128,7 @@ fun customBrandingFor(
                 ?.remove()
         }
 
-        activityOnCreate.before { call(CustomBranding.setBranding, string(nameSetting.key), string(iconSetting.key)) }
+        activityOnCreate.before { CustomBranding.setBranding(string(nameSetting.key), string(iconSetting.key)) }
         extra()
     }
-}
-
-object CustomBranding : ExtClass("app.reseam.youtube.branding.CustomBranding") {
-    val setBranding by static(Type.String, Type.String)
-    val setNotificationIcon by static("android.app.Notification\$Builder", Type.String)
 }

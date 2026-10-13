@@ -4,7 +4,6 @@
 
 package app.reseam.patches.youtube.shorts
 
-import app.reseam.patch.ExtClass
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.method
@@ -12,12 +11,14 @@ import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.settings.section
 import app.reseam.patches.youtube.core.YOUTUBE
-import app.reseam.patches.youtube.core.YouTubeSettings
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.playerTypeHook
 import app.reseam.patches.youtube.internal.toolbarButtonIcon
 import app.reseam.patches.youtube.internal.toolbarButtonIdentified
+import app.reseam.youtube.settings.ShortsSettings
+import app.reseam.youtube.settings.YouTubeStrings
+import app.reseam.youtube.shorts.bindings.DimShortsOverlay
 
 val dimShortsOverlay = patch("Dim Shorts overlay") {
     description("Dims the Shorts overlay and toolbar, with an optional immersive status bar.")
@@ -27,9 +28,9 @@ val dimShortsOverlay = patch("Dim Shorts overlay") {
         youTubeSettings,
         section(
             YouTubeSettingsPages.Shorts,
-            "Shorts",
-            YouTubeSettings.dimShortsOverlayOpacity,
-            YouTubeSettings.dimShortsOverlayImmersiveMode,
+            YouTubeStrings.sectionShorts,
+            ShortsSettings.dimShortsOverlayOpacity,
+            ShortsSettings.dimShortsOverlayImmersiveMode,
         ),
     )
 
@@ -44,21 +45,12 @@ val dimShortsOverlay = patch("Dim Shorts overlay") {
             argument(1) { literal(reelWatchPlayer) }
         }.next { resultOf(Type.View) }
             .captureAs("shortsOverlay", Type.View)
-            .after { call(DimShortsOverlay.dimShortsPlayerOverlay, capture("shortsOverlay")) }
+            .after { DimShortsOverlay.dimShortsPlayerOverlay(capture("shortsOverlay")) }
 
         // The existing toolbar seam captures the enum used to identify each button and follows
         // the branch join to the ImageView field.
         toolbarButtonIdentified.after {
-            call(
-                DimShortsOverlay.dimShortsToolbarButton,
-                capture("toolbarButton"),
-                thisObject.field(toolbarButtonIcon),
-            )
+            DimShortsOverlay.dimShortsToolbarButton(capture("toolbarButton"), thisObject.field(toolbarButtonIcon))
         }
     }
-}
-
-object DimShortsOverlay : ExtClass("app.reseam.youtube.shorts.DimShortsOverlay") {
-    val dimShortsPlayerOverlay by static(Type.View)
-    val dimShortsToolbarButton by static("java.lang.Enum", Type.View)
 }
