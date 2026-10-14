@@ -47,7 +47,7 @@ val spoofVideoStreams = patch("Spoof video streams") {
         hookVideoId(SpoofVideoStreams.onVideoChanged)
         hookBackgroundPlayVideoId(SpoofVideoStreams.onVideoChanged)
         nerdsStatsVideoFormatBuilder.after {
-            capture("result").assign(SpoofVideoStreams.appendSpoofedClient(capture("result")))
+            result.assign(SpoofVideoStreams.appendSpoofedClient(result))
         }
 
         hookClientContextOsName(ClientContextEndpoint.BROWSE, SpoofVideoStreams.rewriteClientContextOsName)

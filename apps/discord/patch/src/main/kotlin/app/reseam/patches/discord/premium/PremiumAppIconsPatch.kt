@@ -3,14 +3,14 @@
 
 package app.reseam.patches.discord.premium
 
+import app.reseam.discord.bindings.AppIcons
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val premiumAppIcons = patch("Premium app icons") {
@@ -20,17 +20,11 @@ val premiumAppIcons = patch("Premium app icons") {
 
     execute {
         gate(DiscordSettings.premiumAppIcons) {
-            getOfficialAlternateIcons.wrap(PremiumAppIcons.getOfficialAlternateIcons)
-            getLimitedAlternateIcons.wrap(PremiumAppIcons.getLimitedAlternateIcons)
-            getIconById.wrap(PremiumAppIcons.getIconById)
+            getOfficialAlternateIcons.after { returnValue(AppIcons.allFree(result)) }
+            getLimitedAlternateIcons.after { returnValue(AppIcons.allFree(result)) }
+            getIconById.after { returnValue(AppIcons.asFree(result)) }
         }
     }
-}
-
-private object PremiumAppIcons : ExtJsModule("discord-app-icons") {
-    val getOfficialAlternateIcons by export()
-    val getLimitedAlternateIcons by export()
-    val getIconById by export()
 }
 
 private val getOfficialAlternateIcons = function {

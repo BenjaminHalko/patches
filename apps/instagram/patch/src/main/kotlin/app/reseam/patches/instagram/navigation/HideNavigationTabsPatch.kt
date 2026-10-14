@@ -26,7 +26,7 @@ val hideNavigationTabs = patch("Hide navigation tabs") {
 
     execute {
         tabListBuilder.after {
-            returnValue(NavigationTabs.filter(capture("result"), valueOf(AppearanceSettings.hideReelsTab), valueOf(AppearanceSettings.hideCreateTab)))
+            returnValue(NavigationTabs.filter(result, valueOf(AppearanceSettings.hideReelsTab), valueOf(AppearanceSettings.hideCreateTab)))
         }
     }
 }

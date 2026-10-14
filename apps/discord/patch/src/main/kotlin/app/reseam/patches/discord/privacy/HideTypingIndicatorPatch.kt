@@ -3,13 +3,13 @@
 
 package app.reseam.patches.discord.privacy
 
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val hideTypingIndicator = patch("Hide typing indicator") {

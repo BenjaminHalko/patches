@@ -74,7 +74,7 @@ val videoInformationHook = patch {
             returnVoid()
         }
 
-        playbackSpeedFactory.after { setStatic(playbackSpeedField, capture("result")) }
+        playbackSpeedFactory.after { setStatic(playbackSpeedField, result) }
 
         // The engine runs afterDependents only for patches that have dependents. These are the
         // core callbacks, so emit them here; consumer callbacks are appended below when needed.

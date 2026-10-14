@@ -3,34 +3,35 @@
 
 package app.reseam.patches.discord.premium
 
+import app.reseam.discord.bindings.StickerLinks
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
+import app.reseam.patches.discord.core.discordModules
 import app.reseam.patches.discord.core.discordSettings
 
 val stickerLinks = patch("Sticker links") {
     description("Send locked PNG, APNG and GIF stickers as image links.")
     compatibleWith(DISCORD)
+    dependsOn(discordModules)
     settings(discordSettings, section(DiscordStrings.sectionNitro, DiscordSettings.stickerLinks))
 
     execute {
         gate(DiscordSettings.stickerLinks) {
-            getStickerSendability.wrap(StickerLinks.getStickerSendability)
-            getStickerAssetUrl.wrap(StickerLinks.getStickerAssetUrl)
-            sendStickers.wrap(StickerLinks.sendStickers)
+            getStickerSendability.after {
+                returnValue(StickerLinks.sendability(result, param(0), param(2)))
+            }
+            sendStickers.before {
+                val content = StickerLinks.withStickerLinks(param(0), param(1), param(2))
+                param(1).assign(StickerLinks.unlinkedStickers(param(0), param(1)))
+                param(2).assign(content)
+            }
         }
     }
-}
-
-private object StickerLinks : ExtJsModule("discord-sticker-links") {
-    val getStickerSendability by export()
-    val getStickerAssetUrl by export()
-    val sendStickers by export()
 }
 
 private val getStickerSendability = function {

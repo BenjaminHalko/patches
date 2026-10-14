@@ -3,14 +3,14 @@
 
 package app.reseam.patches.discord.privacy
 
+import app.reseam.discord.bindings.ReadState
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val localReadState = patch("Local read state") {
@@ -21,15 +21,10 @@ val localReadState = patch("Local read state") {
 
     execute {
         gate(DiscordSettings.localReadState) {
-            ack.wrap(LocalReadState.ack)
-            handleBulkAck.wrap(LocalReadState.handleBulkAck)
+            ack.before { param(0).assign(ReadState.localAck(param(0))) }
+            handleBulkAck.before { param(0).assign(ReadState.localBulkAck(param(0))) }
         }
     }
-}
-
-private object LocalReadState : ExtJsModule("discord-read-state") {
-    val ack by export()
-    val handleBulkAck by export()
 }
 
 private val ack = function {

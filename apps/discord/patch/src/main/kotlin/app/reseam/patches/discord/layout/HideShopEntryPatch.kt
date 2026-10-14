@@ -3,14 +3,14 @@
 
 package app.reseam.patches.discord.layout
 
+import app.reseam.discord.bindings.Shop
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val hideShopEntry = patch("Hide shop entry") {
@@ -21,15 +21,10 @@ val hideShopEntry = patch("Hide shop entry") {
     execute {
         gate(DiscordSettings.hideShopEntry) {
             shopEntryButton.alwaysReturnNull()
-            nitroCard.wrap(HideShopEntry.nitroCard)
-            createRoute.wrap(HideShopEntry.createRoute)
+            nitroCard.after { returnValue(Shop.withoutShop(result)) }
+            createRoute.before { param(0).assign(Shop.withoutShopRoute(param(0))) }
         }
     }
-}
-
-private object HideShopEntry : ExtJsModule("discord-shop") {
-    val nitroCard by export()
-    val createRoute by export()
 }
 
 private val shopEntryButton = function {

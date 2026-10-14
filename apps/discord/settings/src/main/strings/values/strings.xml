@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="add_source_cards">Add source cards</string>
+    <string name="add_source_cards_summary">Show shared patch source links as a card with an Add to Reseam Manager button.</string>
     <string name="better_stream_quality">Better stream quality</string>
     <string name="better_stream_quality_summary">Stream your screen at the resolutions and frame rates Nitro unlocks.</string>
     <string name="better_video_quality">Better video quality</string>

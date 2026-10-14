@@ -3,7 +3,7 @@
 
 package app.reseam.patches.discord.core
 
-import app.reseam.patch.ExtJsModule
+import app.reseam.discord.bindings.SettingsRow
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.function
@@ -11,23 +11,18 @@ import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.settings.ReseamReactPackage
 import app.reseam.patch.settings.settingsHost
-import app.reseam.patch.wrap
 import app.reseam.patches.bundle.reseamBrand
 
 val discordSettings = settingsHost("discord") {
     compatibleWith(DISCORD)
+    dependsOn(discordModules)
     brand(reseamBrand)
 
     install {
-        getPackages.after { ReseamReactPackage.addTo(capture("result")) }
-        settingRows.wrap(SettingsRow.settingRows)
-        settingsList.wrap(SettingsRow.settingsList)
+        getPackages.after { ReseamReactPackage.addTo(result) }
+        settingRows.after { SettingsRow.addReseamRow(moduleExports) }
+        settingsList.after { returnValue(SettingsRow.withReseamSection(result)) }
     }
-}
-
-private object SettingsRow : ExtJsModule("discord-settings-row") {
-    val settingRows by export()
-    val settingsList by export()
 }
 
 /** The module that defines every row in Discord's settings, keyed by setting. */

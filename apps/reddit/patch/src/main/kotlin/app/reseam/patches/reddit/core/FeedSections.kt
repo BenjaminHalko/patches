@@ -27,7 +27,7 @@ fun hideFeedElements(setting: ToggleSetting, labels: List<String>) {
     val classNames = feedElementClassNames(labels)
     gate(setting) {
         cellGroupMapper.after {
-            whenTrue(FeedElements.isAny(capture("result"), string(classNames))) { returnNull() }
+            whenTrue(FeedElements.isAny(result, string(classNames))) { returnNull() }
         }
     }
 }

@@ -3,14 +3,14 @@
 
 package app.reseam.patches.discord.media
 
+import app.reseam.discord.bindings.AnimationSwitch
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.createMessageContent
 import app.reseam.patches.discord.core.discordSettings
 
@@ -22,15 +22,12 @@ val chatAnimationSwitch = patch("Chat animation switch") {
 
     execute {
         gate(DiscordSettings.chatAnimationSwitch) {
-            gifAutoplayTitle.wrap(ChatAnimationSwitch.useTitle)
-            createMessageContent.wrap(ChatAnimationSwitch.createMessageContent)
+            gifAutoplayTitle.alwaysReturn("Animate chat GIFs and emoji")
+            createMessageContent.before {
+                param(0).assign(AnimationSwitch.withoutEmojiAnimation(param(0)))
+            }
         }
     }
-}
-
-private object ChatAnimationSwitch : ExtJsModule("discord-animation-switch") {
-    val useTitle by export()
-    val createMessageContent by export()
 }
 
 private val gifAutoplayTitle = function {

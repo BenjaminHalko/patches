@@ -72,8 +72,8 @@ val lithoTextHook = patch {
         textFormatter.after {
             whenNotNull(param(0)) {
                 val formatterPath = param(0).cast(conversionContext.descriptor).field(conversionContextPath)
-                hooks.forEach { capture("result").assign(call(it, formatterPath, capture("result"))) }
-                returnValue(capture("result"))
+                hooks.forEach { result.assign(call(it, formatterPath, result)) }
+                returnValue(result)
             }
         }
     }

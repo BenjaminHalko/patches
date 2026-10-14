@@ -83,7 +83,7 @@ private fun PatchRuntime.installFeedMenuItem() {
 
 private fun PatchRuntime.installFeedSimplifiedMenu() {
     InstagramMediaGraph.feedSimplifiedAllowedOptions.after {
-        returnValue(MediaDownloader.withDownloadOption(capture("result"), enumValue(MEDIA_OPTION, "DOWNLOAD")))
+        returnValue(MediaDownloader.withDownloadOption(result, enumValue(MEDIA_OPTION, "DOWNLOAD")))
     }
 }
 
@@ -112,7 +112,7 @@ private fun PatchRuntime.installReelsMenuItem() {
 private fun PatchRuntime.installStoryMenu() {
     val graph = InstagramMediaGraph
     graph.storyLabelArrays.forEach {
-        after { returnValue(MediaDownloader.appendStoryDownload(capture("result"))) }
+        after { returnValue(MediaDownloader.appendStoryDownload(result)) }
     }
     graph.storyDispatchers.forEach {
         before {

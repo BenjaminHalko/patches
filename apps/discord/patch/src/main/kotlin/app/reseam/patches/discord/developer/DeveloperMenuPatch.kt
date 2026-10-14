@@ -3,14 +3,14 @@
 
 package app.reseam.patches.discord.developer
 
+import app.reseam.discord.bindings.DeveloperMenu
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val developerMenu = patch("Developer menu") {
@@ -21,13 +21,9 @@ val developerMenu = patch("Developer menu") {
 
     execute {
         gate(DiscordSettings.developerMenu) {
-            createPressable.wrap(DeveloperMenu.createPressable)
+            createPressable.before { param(0).assign(DeveloperMenu.withDevTools(param(0))) }
         }
     }
-}
-
-private object DeveloperMenu : ExtJsModule("discord-developer-menu") {
-    val createPressable by export()
 }
 
 private val createPressable = function {

@@ -3,36 +3,35 @@
 
 package app.reseam.patches.discord.premium
 
+import app.reseam.discord.bindings.Freemoji
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
+import app.reseam.patches.discord.core.discordModules
 import app.reseam.patches.discord.core.discordSettings
 
 val freemoji = patch("Freemoji") {
     description("Send locked custom emoji as image links.")
     compatibleWith(DISCORD)
+    dependsOn(discordModules)
     settings(discordSettings, section(DiscordStrings.sectionNitro, DiscordSettings.freemoji))
 
     execute {
         gate(DiscordSettings.freemoji) {
-            canUseEmojisEverywhere.wrap(Freemoji.canUseEmojisEverywhere)
-            canUseAnimatedEmojis.wrap(Freemoji.canUseAnimatedEmojis)
-            getEmojiUnavailableReason.wrap(Freemoji.getEmojiUnavailableReason)
-            parseMessage.wrap(Freemoji.parse)
+            canUseEmojisEverywhere.before { whenFalse(Freemoji.isCheckingRealNitro()) { returnTrue() } }
+            canUseAnimatedEmojis.before { whenFalse(Freemoji.isCheckingRealNitro()) { returnTrue() } }
+            getEmojiUnavailableReason.before { Freemoji.checkRealNitro() }
+            getEmojiUnavailableReason.after {
+                returnValue(Freemoji.unlessNitroLocked(result, param(0)))
+            }
+            parseMessage.before { Freemoji.beginParse() }
+            parseMessage.after { returnValue(Freemoji.withEmojiLinks(result)) }
         }
     }
-}
-
-private object Freemoji : ExtJsModule("discord-freemoji") {
-    val canUseEmojisEverywhere by export()
-    val canUseAnimatedEmojis by export()
-    val getEmojiUnavailableReason by export()
-    val parse by export()
 }
 
 private val canUseEmojisEverywhere = function {

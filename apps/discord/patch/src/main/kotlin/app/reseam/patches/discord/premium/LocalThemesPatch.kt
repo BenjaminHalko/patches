@@ -3,14 +3,14 @@
 
 package app.reseam.patches.discord.premium
 
+import app.reseam.discord.bindings.LocalThemes
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val localThemes = patch("Local themes") {
@@ -23,15 +23,10 @@ val localThemes = patch("Local themes") {
             canUseClientThemes.alwaysReturn(true)
             isPreview.alwaysReturn(false)
             initialize.setArgument(0, "canUseClientThemes", true)
-            themePicker.wrap(LocalThemes.ThemePicker)
-            shouldSync.wrap(LocalThemes.shouldSync)
+            themePicker.before { param(0).assign(LocalThemes.withoutPreview(param(0))) }
+            shouldSync.before { whenEqual(param(0), string("appearance")) { returnFalse() } }
         }
     }
-}
-
-private object LocalThemes : ExtJsModule("discord-local-themes") {
-    val ThemePicker by export()
-    val shouldSync by export()
 }
 
 private val canUseClientThemes = function {

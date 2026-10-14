@@ -120,7 +120,7 @@ val hideShortsComponents = patch("Hide Shorts components") {
                 calls { owner("Ljava/util/Collections;"); name("nCopies"); returns(Type.List) }
             }
             resultListMethod.after {
-                ShortsFilter.hideActionButtons(param(1).cast(conversionContextPath.owner).field(conversionContextPath), capture("result"))
+                ShortsFilter.hideActionButtons(param(1).cast(conversionContextPath.owner).field(conversionContextPath), result)
             }
         }
 

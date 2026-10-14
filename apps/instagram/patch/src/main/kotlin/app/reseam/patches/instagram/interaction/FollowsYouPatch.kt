@@ -33,7 +33,7 @@ val followsYou = patch("Follows you indicator") {
 
     execute {
         searchSubtitleBuilder.after {
-            val updated = FollowsYouIndicator.appendFromSession(capture("result"), param(1), param(3))
+            val updated = FollowsYouIndicator.appendFromSession(result, param(1), param(3))
             returnValue(updated)
         }
 

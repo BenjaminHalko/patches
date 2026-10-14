@@ -3,12 +3,11 @@
 
 package app.reseam.patches.discord.appearance
 
+import app.reseam.discord.bindings.CustomThemes
 import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
 import app.reseam.discord.themes.bindings.ThemeColors
 import app.reseam.discord.themes.bindings.ThemesPackage
-import app.reseam.patch.ExtJsModule
-import app.reseam.patch.MetroModule
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.appEntry
@@ -20,90 +19,60 @@ import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patch.settings.whenEnabled
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.patches.discord.core.commit
 import app.reseam.patches.discord.core.createMessageContent
-import app.reseam.patches.discord.core.designSystem
+import app.reseam.patches.discord.core.discordModules
 import app.reseam.patches.discord.core.discordSettings
-import app.reseam.patches.discord.core.getOrCreate
 import app.reseam.patches.discord.core.getPackages
-import app.reseam.patches.discord.core.react
-import app.reseam.patches.discord.core.reactNative
+import app.reseam.patches.discord.core.moduleExports
 import app.reseam.patches.discord.core.settingRows
 
 val customThemes = patch("Custom themes") {
     description("Create, edit, share and use full themes, the Reseam theme included.")
     compatibleWith(DISCORD)
+    dependsOn(discordModules)
     settings(discordSettings, section(DiscordStrings.sectionAppearance, DiscordSettings.customThemes))
 
     execute {
         gate(DiscordSettings.customThemes) {
-            colorTokensModule.wrap(CustomThemes.colorTokensModule)
-            colorExperimentsModule.wrap(CustomThemes.colorExperimentsModule)
-            rootThemeContextProvider.wrap(CustomThemes.RootThemeContextProvider, react)
-            semanticColorContext.wrap(CustomThemes.getSemanticColorContextFromThemeContext)
-            createNativeStyleProperties.wrap(CustomThemes.createNativeStyleProperties)
-            resolveTheme.wrap(CustomThemes.resolveTheme)
-            useColorThemeBackground.wrap(CustomThemes.useColorThemeBackground, react)
-            getCustomBackgroundGradient.wrap(CustomThemes.getCustomBackgroundGradient)
-            gradientPreset.wrap(CustomThemes.gradientPreset)
-            useActiveThemeType.wrap(CustomThemes.useActiveThemeType, react)
-            useCustomThemeDisplaySettings.wrap(CustomThemes.useCustomThemeDisplaySettings, react)
-            useRoutedActiveGuildTheme.wrap(CustomThemes.useRoutedActiveGuildTheme, react)
-            settingRows.wrap(
-                CustomThemes.settingRows,
-                react,
-                reactNative,
-                designSystem,
-                colorTokens,
-                colorPicker,
-                checkmarkIcon,
-                plusIcon,
-                shareIcon,
-                copyIcon,
-                trashIcon,
-                paintbrushIcon,
-                pencilIcon,
-                themeActions,
-            )
-            appearanceSettings.wrap(CustomThemes.appearanceSettings)
-            getOrCreate.wrap(CustomThemes.getOrCreate)
-            commit.wrap(CustomThemes.commit)
-            createMessageContent.wrap(CustomThemes.createMessageContent, messageStore)
-            formatSharedClientThemeData.wrap(CustomThemes.formatSharedClientThemeData)
-            handleTapPreviewSharedClientTheme.wrap(CustomThemes.handleTapPreviewSharedClientTheme, themeActions, designSystem, react, colorTokens, actionSheets)
-            getPackages.after { ThemesPackage.addTo(capture("result")) }
+            colorTokensModule.after { CustomThemes.tokensLoaded(moduleExports) }
+            colorExperimentsModule.after { CustomThemes.experimentsLoaded(moduleExports) }
+            rootThemeContextProvider.before { param(0).assign(CustomThemes.useThemeContextProps(param(0))) }
+            semanticColorContext.after { returnValue(CustomThemes.withThemeVariants(result)) }
+            createNativeStyleProperties.after { returnValue(CustomThemes.keyedByTheme(result)) }
+            resolveTheme.before {
+                val base = CustomThemes.shownBase()
+                whenNotNull(base) { returnValue(base) }
+            }
+            useColorThemeBackground.after { returnValue(CustomThemes.useThemeBackground(result)) }
+            getCustomBackgroundGradient.before {
+                whenTrue(CustomThemes.isThemeShown()) { returnValue(CustomThemes.shownBackground()) }
+            }
+            gradientPreset.before { whenTrue(CustomThemes.isThemeShown()) { returnUndefined() } }
+            useActiveThemeType.after { returnValue(CustomThemes.useThemeType(result)) }
+            useCustomThemeDisplaySettings.after {
+                returnValue(CustomThemes.useDisplaySettings(result, param(0)))
+            }
+            useRoutedActiveGuildTheme.after { returnValue(CustomThemes.useGuildTheme(result)) }
+            settingRows.after { CustomThemes.addThemeRows(moduleExports) }
+            appearanceSettings.after { returnValue(CustomThemes.withThemesRow(result)) }
+            createMessageContent.before { param(0).assign(CustomThemes.withSharedTheme(param(0))) }
+            formatSharedClientThemeData.after {
+                returnValue(CustomThemes.withSharedThemeHeading(result, param(0)))
+            }
+            handleTapPreviewSharedClientTheme.before {
+                whenTrue(CustomThemes.previewSharedTheme(param(0))) { returnUndefined() }
+            }
+            getPackages.after { ThemesPackage.addTo(result) }
         }
         appEntry { whenEnabled(DiscordSettings.customThemes) { ThemeColors.init(application) } }
         // One getter per semantic token in each of Discord's native theme classes.
         for ((themeClass, theme) in nativeThemes) {
             klass(themeClass).methods { returns(Type.Int); paramCount(0) }.forEach {
                 val token = nativeToken(name)
-                after { returnValue(ThemeColors.color(string(theme), string(token), capture("result"))) }
+                after { returnValue(ThemeColors.color(string(theme), string(token), result)) }
             }
         }
     }
-}
-
-private object CustomThemes : ExtJsModule("discord-custom-themes") {
-    val colorTokensModule by export()
-    val colorExperimentsModule by export()
-    val RootThemeContextProvider by export()
-    val getSemanticColorContextFromThemeContext by export()
-    val createNativeStyleProperties by export()
-    val resolveTheme by export()
-    val useColorThemeBackground by export()
-    val getCustomBackgroundGradient by export()
-    val gradientPreset by export()
-    val useActiveThemeType by export()
-    val useCustomThemeDisplaySettings by export()
-    val useRoutedActiveGuildTheme by export()
-    val settingRows by export()
-    val appearanceSettings by export()
-    val getOrCreate by export()
-    val commit by export()
-    val createMessageContent by export()
-    val formatSharedClientThemeData by export()
-    val handleTapPreviewSharedClientTheme by export()
 }
 
 private val nativeThemes = listOf(
@@ -127,12 +96,6 @@ private val colorExperimentsModule = function {
     strings("../discord_common/js/packages/tokens/colors/generated/native/experiment-definitions.tsx")
     paramCount(7)
 }
-
-private val colorTokens: MetroModule = function {
-    name("sanitizeTheme")
-    strings("Invalid theme: ")
-    paramCount(1)
-}.module
 
 private val rootThemeContextProvider = function {
     name("RootThemeContextProvider")
@@ -186,44 +149,11 @@ private val useRoutedActiveGuildTheme = function {
     paramCount(0)
 }
 
-private val themeActions: MetroModule = function {
-    name("refreshTheme")
-    paramCount(0)
-}.module
-
-private val actionSheets: MetroModule = function {
-    name("hideAllActionSheets")
-    paramCount(0)
-}.module
-
-private val colorPicker: MetroModule = function {
-    name("showCustomColorPickerActionSheet")
-    paramCount(2)
-}.module
-
-private val checkmarkIcon = icon("CheckmarkLargeIcon")
-private val plusIcon = icon("PlusMediumIcon")
-private val shareIcon = icon("ShareIcon")
-private val copyIcon = icon("CopyIcon")
-private val trashIcon = icon("TrashIcon")
-private val paintbrushIcon = icon("PaintbrushThinIcon")
-private val pencilIcon = icon("PencilIcon")
-
-private fun icon(name: String): MetroModule = function {
-    name(name)
-    paramCount(1)
-}.module
-
 private val appearanceSettings = function {
     name("")
     strings("SAME_AS_DEVICE_THEME", "APPEARANCE_THEME_PICKER", "DMS_HAPPENING_NOW_CARDS")
     paramCount(0)
 }
-
-private val messageStore: MetroModule = function {
-    name("hasCurrentUserSentMessageSinceAppStart")
-    paramCount(0)
-}.module
 
 private val formatSharedClientThemeData = function {
     name("formatSharedClientThemeData")

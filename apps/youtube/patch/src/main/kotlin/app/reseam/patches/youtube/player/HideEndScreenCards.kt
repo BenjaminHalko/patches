@@ -39,8 +39,8 @@ val hideEndScreenCards = patch("Hide end screen cards") {
                     returns(Type.View)
                     literals(id)
                 }.after {
-                    whenNotNull(capture("result")) {
-                        capture("result").callVirtual(Type.View, "setVisibility", "(I)V", int(8))
+                    whenNotNull(result) {
+                        result.callVirtual(Type.View, "setVisibility", "(I)V", int(8))
                     }
                 }
             }

@@ -3,14 +3,14 @@
 
 package app.reseam.patches.discord.layout
 
+import app.reseam.discord.bindings.PickerPromotions
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val hidePickerPromotions = patch("Hide picker promotions") {
@@ -21,13 +21,11 @@ val hidePickerPromotions = patch("Hide picker promotions") {
     execute {
         gate(DiscordSettings.hidePickerPromotions) {
             premiumExpressionPickerSearchUpsell.alwaysReturnNull()
-            premiumFeatureUpsell.wrap(PickerPromotions.PremiumFeatureUpsell)
+            premiumFeatureUpsell.before {
+                whenTrue(PickerPromotions.isPickerUpsell(param(0))) { returnNull() }
+            }
         }
     }
-}
-
-private object PickerPromotions : ExtJsModule("discord-picker-promotions") {
-    val PremiumFeatureUpsell by export()
 }
 
 private val premiumExpressionPickerSearchUpsell = function {

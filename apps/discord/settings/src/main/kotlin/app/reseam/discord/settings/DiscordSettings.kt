@@ -8,6 +8,7 @@ import app.reseam.patch.settings.toggle
 import app.reseam.patches.bundle.lucide
 
 object DiscordSettings : SettingsGroup(DiscordStrings) {
+    val addSourceCards by toggle(default = true, icon = lucide("package-plus"))
     val betterStreamQuality by toggle(default = true, icon = lucide("monitor-up"))
     val betterVideoQuality by toggle(default = true, icon = lucide("video"))
     val blockAnalytics by toggle(default = true, icon = lucide("eye-off"))

@@ -3,14 +3,14 @@
 
 package app.reseam.patches.discord.layout
 
+import app.reseam.discord.bindings.Quests
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val hideQuests = patch("Hide quests") {
@@ -24,17 +24,14 @@ val hideQuests = patch("Hide quests") {
             questActivityButton.alwaysReturnNull()
             questsSettingVisible.alwaysReturn(false)
             useIsMobileQuestDockRenderedBase.alwaysReturn(false)
-            useMobileQuestDockHeight.wrap(HideQuests.useMobileQuestDockHeight)
-            profileActions.wrap(HideQuests.profileActions)
-            getIsEligibleForQuests.wrap(HideQuests.getIsEligibleForQuests)
+            useMobileQuestDockHeight.alwaysReturn(0)
+            profileActions.before { Quests.enterProfileActions() }
+            profileActions.after { Quests.leaveProfileActions() }
+            getIsEligibleForQuests.before {
+                whenTrue(Quests.isRenderingProfileActions()) { returnFalse() }
+            }
         }
     }
-}
-
-private object HideQuests : ExtJsModule("discord-quests") {
-    val useMobileQuestDockHeight by export()
-    val profileActions by export()
-    val getIsEligibleForQuests by export()
 }
 
 private val questDock = function {

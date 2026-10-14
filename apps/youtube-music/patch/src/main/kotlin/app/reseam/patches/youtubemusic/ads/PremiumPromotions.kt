@@ -35,7 +35,7 @@ val premiumPromotions = patch("Premium promotions") {
             membershipLabel.alwaysReturnNull()
             // The account menu's upgrade footer; the app fills its texts but never touches the panel.
             method("accountMenuView") { literals(avatarMenu); returns(Type.View) }.after {
-                capture("result")
+                result
                     .callVirtual("android.view.View", "findViewById", "(I)Landroid/view/View;", int(upgradePanel))
                     .callVirtual("android.view.View", "setVisibility", "(I)V", int(VIEW_GONE))
             }

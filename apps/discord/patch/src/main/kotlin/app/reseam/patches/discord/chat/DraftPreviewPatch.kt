@@ -3,38 +3,36 @@
 
 package app.reseam.patches.discord.chat
 
+import app.reseam.discord.bindings.DraftPreview
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
+import app.reseam.patches.discord.core.discordModules
 import app.reseam.patches.discord.core.discordSettings
-import app.reseam.patches.discord.core.draftStore
-import app.reseam.patches.discord.core.messageActions
-import app.reseam.patches.discord.core.react
-import app.reseam.patches.discord.core.userStore
 
 val draftPreview = patch("Draft preview") {
     description("Long press the send button to see your message in the chat before sending it.")
     compatibleWith(DISCORD)
+    dependsOn(discordModules)
     settings(discordSettings, section(DiscordStrings.sectionChat, DiscordSettings.draftPreview))
 
     execute {
         gate(DiscordSettings.draftPreview) {
-            chatInputActionButton.wrap(DraftPreview.chatInputActionButton, react)
-            sendButton.wrap(DraftPreview.sendButton, react, draftStore, userStore, messageActions)
-            sendButtonItem.wrap(DraftPreview.sendButtonItem, react, draftStore, userStore, messageActions)
+            chatInputActionButton.after {
+                returnValue(DraftPreview.withLongPress(result, param(0)))
+            }
+            sendButton.after {
+                returnValue(DraftPreview.sendButtonWithPreview(result, param(0)))
+            }
+            sendButtonItem.after {
+                returnValue(DraftPreview.sendButtonItemWithPreview(result, param(0)))
+            }
         }
     }
-}
-
-private object DraftPreview : ExtJsModule("discord-draft-preview") {
-    val chatInputActionButton by export()
-    val sendButton by export()
-    val sendButtonItem by export()
 }
 
 /** A round button beside the message box, such as send or attach. */

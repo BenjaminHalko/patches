@@ -1,3 +1,6 @@
+# Type packages the build installs
+node_modules/
+
 # Gradle / Kotlin build outputs
 build/
 .gradle/

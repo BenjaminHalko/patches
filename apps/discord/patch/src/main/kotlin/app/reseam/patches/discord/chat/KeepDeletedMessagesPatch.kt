@@ -3,13 +3,14 @@
 
 package app.reseam.patches.discord.chat
 
+import app.reseam.discord.bindings.MessageHistory
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.discordSettings
 
 val keepDeletedMessages = patch("Keep deleted messages") {
@@ -21,8 +22,13 @@ val keepDeletedMessages = patch("Keep deleted messages") {
 
     execute {
         gate(DiscordSettings.keepDeletedMessages) {
-            handleMessageDelete.wrap(MessageHistory.handleMessageDelete)
-            handleMessageDeleteBulk.wrap(MessageHistory.handleMessageDeleteBulk)
+            handleMessageDelete.before {
+                whenTrue(MessageHistory.keepDeletedMessage(param(0))) { returnTrue() }
+            }
+            handleMessageDeleteBulk.before {
+                param(0).assign(MessageHistory.withoutKeptMessages(param(0)))
+            }
+            handleMessageDeleteBulk.after { returnValue(MessageHistory.bulkDeleteResult(result)) }
         }
     }
 }

@@ -44,7 +44,7 @@ val hideEndScreenSuggestedVideo = patch("Hide end-screen suggested video") {
         }
 
         autoNavStatus.after {
-            HideEndScreenSuggestedVideo.setAutoplayStatus(capture("result"))
+            HideEndScreenSuggestedVideo.setAutoplayStatus(result)
         }
 
         val removeListener = method("remove end-screen layout listener") {

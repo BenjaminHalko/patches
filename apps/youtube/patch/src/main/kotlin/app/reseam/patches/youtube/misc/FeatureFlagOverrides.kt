@@ -34,14 +34,14 @@ val featureFlagOverrides = patch("Feature flag overrides") {
             param(0, Type.Long)
             returns(Type.Boolean)
         }.forEach {
-            after { returnValue(FeatureFlags.booleanOverride(param(0), capture("result"))) }
+            after { returnValue(FeatureFlags.booleanOverride(param(0), result)) }
         }
         methods("stringFeatureFlag") {
             inClass(accessors)
             param(0, Type.Long)
             returns(Type.String)
         }.forEach {
-            after { returnValue(FeatureFlags.stringOverride(param(0), capture("result"))) }
+            after { returnValue(FeatureFlags.stringOverride(param(0), result)) }
         }
     }
 }

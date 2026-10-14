@@ -3,13 +3,13 @@
 
 package app.reseam.patches.discord.layout
 
+import app.reseam.discord.bindings.LinkCards
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
 import app.reseam.patches.discord.core.createMessageContent
 import app.reseam.patches.discord.core.discordSettings
 
@@ -21,11 +21,7 @@ val hideLinkCards = patch("Hide link cards") {
 
     execute {
         gate(DiscordSettings.hideLinkCards) {
-            createMessageContent.wrap(HideLinkCards.createMessageContent)
+            createMessageContent.before { param(0).assign(LinkCards.withoutLinkCards(param(0))) }
         }
     }
-}
-
-private object HideLinkCards : ExtJsModule("discord-link-cards") {
-    val createMessageContent by export()
 }

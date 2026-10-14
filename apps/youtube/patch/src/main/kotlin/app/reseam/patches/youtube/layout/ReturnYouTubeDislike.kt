@@ -32,7 +32,7 @@ val returnYouTubeDislike = patch("Return YouTube Dislike") {
         componentCreate.after {
             val span = DislikeLabel.create(param(1).field(conversionContextPath))
             whenNotNull(span) {
-                val button = capture("result").cast(nativeGesture.descriptor)
+                val button = result.cast(nativeGesture.descriptor)
                 val icon = button.field(nativeGesture.fieldOfType(componentCreate.returnType))
                 val layout = icon.call(nativeCommonProperties).call(nativeLayoutProperties).cast(nativeHeight.owner)
                 layout.set(nativeHeight, DislikeLabel.iconHeight())
@@ -90,7 +90,7 @@ val returnYouTubeDislike = patch("Return YouTube Dislike") {
             params(Type.String)
             returns(Type.Float)
         }.forEach {
-            after { returnValue(DislikeRollingNumbers.onRollingNumberMeasured(param(0), capture("result"))) }
+            after { returnValue(DislikeRollingNumbers.onRollingNumberMeasured(param(0), result)) }
         }
 
         // Stable platform call + the view superclass pins this class without a whole-DEX scan.

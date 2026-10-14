@@ -42,8 +42,8 @@ val shortsAutoplay = patch("Shorts autoplay") {
     execute {
         mainActivityOnCreate.before { ShortsAutoplay.setMainActivity(thisObject) }
         shortsRepeatPolicy.after {
-            capture("result").assign(
-                ShortsAutoplay.changeRepeatBehavior(capture("result")).cast(repeatBehavior.descriptor),
+            result.assign(
+                ShortsAutoplay.changeRepeatBehavior(result).cast(repeatBehavior.descriptor),
             )
         }
     }

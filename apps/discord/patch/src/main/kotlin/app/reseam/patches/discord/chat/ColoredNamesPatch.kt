@@ -3,42 +3,33 @@
 
 package app.reseam.patches.discord.chat
 
+import app.reseam.discord.bindings.ColoredNames
+import app.reseam.discord.settings.DiscordSettings
 import app.reseam.discord.settings.DiscordStrings
-import app.reseam.patch.ExtJsModule
 import app.reseam.patch.function
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patches.discord.core.DISCORD
-import app.reseam.discord.settings.DiscordSettings
-import app.reseam.patches.discord.core.channelMemberStore
+import app.reseam.patches.discord.core.discordModules
 import app.reseam.patches.discord.core.discordSettings
-import app.reseam.patches.discord.core.guildMemberStore
-import app.reseam.patches.discord.core.guildRoleStore
-import app.reseam.patches.discord.core.react
-import app.reseam.patches.discord.core.reactNative
-import app.reseam.patches.discord.core.userStore
 
 val coloredNames = patch("Colored names") {
     description("Color members' names with their role color in mentions, the typing indicator, voice channels and member list headers.")
     compatibleWith(DISCORD)
+    dependsOn(discordModules)
     settings(discordSettings, section(DiscordStrings.sectionChat, DiscordSettings.coloredNames))
 
     execute {
         gate(DiscordSettings.coloredNames) {
-            hydrateUserMention.wrap(ColoredNames.hydrateUserMention, guildMemberStore)
-            useTypingText.wrap(ColoredNames.useTypingText, react, userStore, guildMemberStore)
-            voiceUserNameItem.wrap(ColoredNames.VoiceUserNameItem, react)
-            guildChannelUserList.wrap(ColoredNames.GuildChannelUserList, react, reactNative, channelMemberStore, guildRoleStore)
+            hydrateUserMention.after { returnValue(ColoredNames.colorMention(result)) }
+            useTypingText.after { returnValue(ColoredNames.colorTypingText(result, param(0))) }
+            voiceUserNameItem.after { returnValue(ColoredNames.colorVoiceName(result, param(0))) }
+            guildChannelUserList.after {
+                returnValue(ColoredNames.colorMemberListHeaders(result, param(0)))
+            }
         }
     }
-}
-
-private object ColoredNames : ExtJsModule("discord-colored-names") {
-    val hydrateUserMention by export()
-    val useTypingText by export()
-    val VoiceUserNameItem by export()
-    val GuildChannelUserList by export()
 }
 
 /** Turns a parsed `<@id>` into the mention node chat and replies render. */

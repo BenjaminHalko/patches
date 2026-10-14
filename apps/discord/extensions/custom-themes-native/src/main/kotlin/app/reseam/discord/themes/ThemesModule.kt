@@ -9,6 +9,7 @@ import androidx.core.content.FileProvider
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.module.annotations.ReactModule
 import java.io.File
 import java.io.IOException
 import org.json.JSONException
@@ -16,6 +17,7 @@ import org.json.JSONException
 internal const val THEMES_MODULE_NAME = "ReseamDiscordThemes"
 private const val MIME_TYPE = "application/json"
 
+@ReactModule(name = THEMES_MODULE_NAME)
 class ThemesModule(context: ReactApplicationContext) : ReactContextBaseJavaModule(context) {
     override fun getName(): String = THEMES_MODULE_NAME
 

@@ -25,7 +25,7 @@ internal fun PatchRuntime.hideFeedSubtitle() {
         .captureArgumentAs("dimension", 1, Type.Float)
         .before { local(subtitleDimension).assign(capture("dimension")) }
     subtitle.after {
-        capture("result").assign(LayoutFeedSubtitle.modifyFeedSubtitleSpan(capture("result"), local(subtitleDimension)))
+        result.assign(LayoutFeedSubtitle.modifyFeedSubtitleSpan(result, local(subtitleDimension)))
     }
 }
 

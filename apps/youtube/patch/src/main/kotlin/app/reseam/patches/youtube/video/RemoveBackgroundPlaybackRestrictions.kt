@@ -60,12 +60,12 @@ val removeBackgroundPlaybackRestrictions = patch("Remove background playback res
 
         gate(VideoSettings.removeBackgroundPlaybackRestrictions) {
             playableInBackground.after {
-                capture("result").assign(bool(true))
+                result.assign(bool(true))
             }
         }
         backgroundPlaybackManagerShorts.after {
-            whenEnabled(VideoSettings.removeBackgroundPlaybackRestrictions) { capture("result").assign(bool(true)) }
-            whenEnabled(VideoSettings.allowShortsBackgroundPlayback) { capture("result").assign(bool(true)) }
+            whenEnabled(VideoSettings.removeBackgroundPlaybackRestrictions) { result.assign(bool(true)) }
+            whenEnabled(VideoSettings.allowShortsBackgroundPlayback) { result.assign(bool(true)) }
         }
         gate(VideoSettings.removeBackgroundPlaybackRestrictions) {
             settingsBoolean.alwaysReturn(true)

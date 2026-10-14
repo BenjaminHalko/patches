@@ -26,7 +26,7 @@ val hideRecommendedPosts = patch("Hide recommended posts") {
         gate(RedditSettings.hideRecommendedPosts) {
             cellGroupMapper.after {
                 whenNotNull(paramOfType(recommendationContext.descriptor)) {
-                    whenTrue(FeedElements.isAny(capture("result"), string(postElement))) { returnNull() }
+                    whenTrue(FeedElements.isAny(result, string(postElement))) { returnNull() }
                 }
             }
         }
