@@ -19,13 +19,14 @@ val settingsEntry = patch("Reseam entry in YouTube Music settings") {
             val row = createElement("Preference").apply {
                 this["android:key"] = "reseam_settings"
                 this["android:title"] = "Reseam Settings"
+                this["android:order"] = "-1"
                 this["android:persistent"] = "false"
                 appendChild(
                     createElement("intent").apply { opensSettings() },
                 )
             }
-            val about = root.children.firstOrNull { it["android:key"] == "settings_header_about_youtube_music" }
-            if (about != null) root.insertBefore(row, about) else root.appendChild(row)
+            val first = root.children.firstOrNull()
+            if (first != null) root.insertBefore(row, first) else root.appendChild(row)
         }
     }
 }

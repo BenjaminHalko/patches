@@ -4,14 +4,17 @@
 package app.reseam.patches.telegram.core
 
 import app.reseam.patch.Type
-import app.reseam.patch.after
+import app.reseam.patch.before
 import app.reseam.patch.klass
 import app.reseam.patch.method
+import app.reseam.patch.point
+import app.reseam.patch.reserveLocal
 import app.reseam.patch.settings.settingsHost
 import app.reseam.patches.bundle.reseamBrand
 import app.reseam.telegram.settings.bindings.TelegramSettingsEntry
 
-private const val ARRAY_LIST_ADD = "(Ljava/lang/Object;)Z"
+private const val ARRAY_LIST = "java.util.ArrayList"
+private const val R_STRING = "org.telegram.messenger.R\$string"
 
 val telegramSettings = settingsHost("telegram") {
     compatibleWith(TELEGRAM)
@@ -31,12 +34,16 @@ val telegramSettings = settingsHost("telegram") {
             returnValue(call(asCustomItem, int(0), cell))
         }
 
-        settingsFillItems.after {
-            val activity = param(0).call(getParentActivity)
-            whenNotNull(activity) {
-                paramOfType(Type.ArrayList).callVirtual("java.util.ArrayList", "add", ARRAY_LIST_ADD, TelegramSettingsEntry.reseamItem(activity))
+        val activity = settingsFillItems.reserveLocal("parentActivity", "android.app.Activity")
+        settingsFillItems.before { local(activity).assign(param(0).call(getParentActivity)) }
+        settingsFillItems.point { field { owner(R_STRING); name("SettingsAccount") } }
+            .next { invokeVirtual { owner(ARRAY_LIST); name("add"); params(Type.Object) } }
+            .captureArgumentAs("items", 0)
+            .before {
+                whenNotNull(local(activity)) {
+                    capture("items").callVirtual(ARRAY_LIST, "add", "(Ljava/lang/Object;)Z", TelegramSettingsEntry.reseamItem(local(activity)))
+                }
             }
-        }
     }
 }
 

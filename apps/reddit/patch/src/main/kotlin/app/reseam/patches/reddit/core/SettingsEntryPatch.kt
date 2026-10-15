@@ -35,7 +35,7 @@ private const val CONTRIBUTION_EXCEPTION = "com.reddit.settings.usersettings.Use
 private const val LOGO_PATH = "res/drawable/reseam_logo.png"
 
 // Account settings has order 0 in General.
-private const val GENERAL_ORDER = 1
+private const val GENERAL_ORDER = -1
 
 // Compose defaults mask: every row parameter except title, click and the leading icon.
 private const val ROW_DEFAULTS = 0b111011100

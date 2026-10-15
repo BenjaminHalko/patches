@@ -44,20 +44,21 @@ val settingsEntry = patch("Reseam entry in YouTube settings") {
             val group = root.children.firstOrNull { it.tag == "PreferenceCategory" } ?: root
             // Reuse the current screen's row layout.
             val iconRow = group.children.firstOrNull { it.tag == "Preference" && it["android:icon"] != null }
-            group.appendChild(
-                createElement("Preference").apply {
-                    this["android:key"] = ROW_KEY
-                    this["android:title"] = ROW_TITLE
-                    if (iconRow != null) {
-                        this["android:icon"] = "@drawable/$ICON"
-                        this["android:layout"] = iconRow["android:layout"] ?: error("Settings icon row has no layout")
-                        this["app:iconSpaceReserved"] = "true"
-                    }
-                    appendChild(
-                        createElement("intent").apply { opensSettings() },
-                    )
-                },
-            )
+            val row = createElement("Preference").apply {
+                this["android:key"] = ROW_KEY
+                this["android:title"] = ROW_TITLE
+                this["android:order"] = "-1"
+                if (iconRow != null) {
+                    this["android:icon"] = "@drawable/$ICON"
+                    this["android:layout"] = iconRow["android:layout"] ?: error("Settings icon row has no layout")
+                    this["app:iconSpaceReserved"] = "true"
+                }
+                appendChild(
+                    createElement("intent").apply { opensSettings() },
+                )
+            }
+            val first = group.children.firstOrNull()
+            if (first != null) group.insertBefore(row, first) else group.appendChild(row)
         }
     }
 }

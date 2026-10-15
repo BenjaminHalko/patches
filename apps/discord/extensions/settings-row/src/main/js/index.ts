@@ -23,9 +23,5 @@ export function addReseamRow(settings: { SETTING_RENDERER_CONFIG: Record<string,
 }
 
 export function withReseamSection<List extends { sections: { settings: string[] }[] }>(list: List): List {
-    const sections = [...list.sections];
-    const appSettings = sections.findIndex(section => section.settings.includes("ADVANCED"));
-    if (appSettings === -1) throw new Error("Discord settings have no App Settings section");
-    sections.splice(appSettings + 1, 0, { label: "Reseam", settings: [RESEAM_SETTINGS] } as List["sections"][number]);
-    return { ...list, sections };
+    return { ...list, sections: [{ label: "Reseam", settings: [RESEAM_SETTINGS] }, ...list.sections] };
 }

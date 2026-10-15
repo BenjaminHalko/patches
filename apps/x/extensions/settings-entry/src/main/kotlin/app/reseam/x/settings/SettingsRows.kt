@@ -16,6 +16,6 @@ import app.reseam.runtime.Export
 fun withSection(sections: List<Any>, section: Any): MutableList<Any> =
     // A data-class copy passes the list back in, and it already has the section.
     if (sections is WithReseamSection) sections
-    else WithReseamSection(sections).apply { add(section) }
+    else WithReseamSection(sections).apply { add(0, section) }
 
 private class WithReseamSection(sections: List<Any>) : ArrayList<Any>(sections)
