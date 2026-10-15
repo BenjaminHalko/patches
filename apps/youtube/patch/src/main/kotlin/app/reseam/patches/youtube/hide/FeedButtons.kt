@@ -9,33 +9,27 @@ import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.before
 import app.reseam.patch.dex.AccessFlags
-import app.reseam.patch.dex.Opcode
-import app.reseam.patch.dex.opcode
-import app.reseam.patch.dex.typeRef
 import app.reseam.patch.method
+import app.reseam.patch.methods
 import app.reseam.patch.point
+import app.reseam.patch.points
 import app.reseam.patch.settings.gate
 import app.reseam.youtube.hidelayout.bindings.LayoutViews
 import app.reseam.youtube.settings.FeedSettings
 
 internal fun PatchRuntime.hideFeedButtons() {
-    val fab = requireNotNull(resources.id("id", "fab")) { "id/fab is missing" }.toLong()
-    val floatingMicrophone = method("floatingMicrophone") {
-        flags(AccessFlags.PUBLIC or AccessFlags.FINAL)
-        params()
-        returns(Type.Void)
-        literals(fab)
-    }
+    // The shared FAB controller hides the FAB when a search screen hands it no voice search state.
+    val voiceSearch = requireNotNull(resources.id("string", "action_bar_voice_search")) {
+        "string/action_bar_voice_search is missing"
+    }.toLong()
+    val voiceSearchFabs = methods("voiceSearchFab") { literals(voiceSearch) }
+        .points("voiceSearchFabLabel") { literal(voiceSearch) }
+        .all.also { check(it.isNotEmpty()) { "No voice search button state" } }
     gate(FeedSettings.hideFloatingMicrophoneButton) {
-        floatingMicrophone.point("floatingMicrophoneResource") { literal(fab) }
-            .next {
-                opcode(Opcode.CHECK_CAST)
-                where { typeRef?.endsWith("/FloatingActionButton;") == true }
-            }
-            .next { opcode(Opcode.IGET_BOOLEAN) }
-            .captureAs("visible", Type.Boolean)
-            .after {
-            capture("visible").assign(bool(true))
+        voiceSearchFabs.forEach { label ->
+            label.next { invokeDirect { name("<init>") } }
+                .captureArgumentAs("voiceSearchFab", 0)
+                .after { capture("voiceSearchFab").assign(nullObject) }
         }
     }
 
