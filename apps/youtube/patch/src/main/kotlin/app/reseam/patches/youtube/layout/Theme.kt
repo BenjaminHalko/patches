@@ -47,28 +47,27 @@ val theme = patch("Theme") {
         description = "The background color used by YouTube's light theme.",
         default = LIGHT_DEFAULT,
     )
+    val materialYou = boolOption(
+        "materialYou",
+        title = "Material You",
+        description = "Uses the system's wallpaper-based background colors on Android 12 and newer, in place of the colors above.",
+        default = false,
+    )
 
     execute {
-        val dark = options[darkThemeBackgroundColor]
-        val light = options[lightThemeBackgroundColor]
+        val materialYouColors = options[materialYou] == true
+        mapOf(DARK to options[darkThemeBackgroundColor], LIGHT to options[lightThemeBackgroundColor])
+            .forEach { (background, color) ->
+                resources.addColor(background.color, color)
+                if (materialYouColors) resources.addColor(background.color, "@android:color/${background.systemColor}", DYNAMIC_COLORS)
+                background.paletteStyles.forEach { style ->
+                    resources.style(style) { PALETTE_BACKGROUNDS.forEach { this[it] = "@color/${background.color}" } }
+                }
+            }
 
-        listOf(
-            "yt_black0", "yt_black1", "yt_black1_opacity95", "yt_black1_opacity98",
-            "yt_black2", "yt_black3", "yt_black4", "yt_status_bar_background_dark",
-            "material_grey_850",
-            "yt_sys_color_baseline_dark_menu_background",
-            "yt_sys_color_baseline_dark_static_black",
-            "yt_sys_color_baseline_dark_raised_background",
-            "yt_sys_color_baseline_dark_base_background",
-            "yt_sys_color_baseline_light_inverted_background",
-            "yt_sys_color_baseline_light_static_black",
-        ).forEach { resources.addColor(it, dark) }
-        listOf("yt_white1", "yt_white1_opacity95", "yt_white1_opacity98", "yt_white2", "yt_white3", "yt_white4",
-            "yt_sys_color_baseline_light_base_background", "yt_sys_color_baseline_light_raised_background")
-            .forEach { resources.addColor(it, light) }
         // File-backed color selectors let Android select the night variant before app startup.
         // A default-only splash color produces a white flash even when the app uses a dark theme.
-        listOf("" to "yt_white1", "night" to "yt_black1").forEach { (qualifier, color) ->
+        listOf("" to LIGHT.color, "night" to DARK.color).forEach { (qualifier, color) ->
             val directory = if (qualifier.isEmpty()) "color" else "color-$qualifier"
             resources.addFile("color", SPLASH_COLOR, "res/$directory/$SPLASH_COLOR.xml",
                 """<selector xmlns:android="http://schemas.android.com/apk/res/android"><item android:color="@color/$color" /></selector>""".toByteArray(),
@@ -119,9 +118,37 @@ val theme = patch("Theme") {
         splashStartupCheck.writer(0, "splashStartupState")
             .captureAs("startupState", Type.Int)
             .after { capture("startupState").assign(ThemePatch.splashStartupState(capture("startupState"))) }
-
     }
 }
+
+private class Background(
+    val color: String,
+    val systemColor: String,
+    val paletteStyles: List<String>,
+)
+
+private val DARK = Background(
+    color = "reseam_theme_dark_background",
+    systemColor = "system_neutral1_900",
+    paletteStyles = listOf("yt.sys.color.baseline.dark", "yt.sys.color.baseline.dark.cooler"),
+)
+
+private val LIGHT = Background(
+    color = "reseam_theme_light_background",
+    systemColor = "system_neutral1_50",
+    paletteStyles = listOf("yt.sys.color.baseline"),
+)
+
+// The palette styles feed the theme's surface attributes.
+private val PALETTE_BACKGROUNDS = listOf(
+    "yt_sys_color_baseline_base_background",
+    "yt_sys_color_baseline_raised_background",
+    "yt_sys_color_baseline_menu_background",
+)
+
+// System dynamic colors exist from Android 12. A plain value, unlike a selector file, also reaches
+// views that read the theme attribute's raw color.
+private const val DYNAMIC_COLORS = "v31"
 
 private const val GRADIENT_LOADING_SCREEN = 45412406L
 private const val SPLASH_STYLE_RESOURCE = 1074339245L

@@ -36,10 +36,10 @@ fun isDarkMode(context: Context): Boolean {
 }
 
 fun dialogBackgroundColor(context: Context): Int {
-    if (!isDarkMode(context)) return appColor(context, "yt_white1", Color.WHITE)
-    val dark = appColor(context, "yt_black1", Color.BLACK)
+    val surface = themeColor(context, "yt_sys_color_baseline_menu_background")
+        ?: if (isDarkMode(context)) appColor(context, "yt_black1", Color.BLACK) else appColor(context, "yt_white1", Color.WHITE)
     // Lift pure black so the dialog remains visible on the AMOLED theme.
-    return if (dark == Color.BLACK) 0xFF080808.toInt() else dark
+    return if (surface == Color.BLACK) 0xFF080808.toInt() else surface
 }
 
 fun foregroundColor(context: Context): Int =
@@ -71,6 +71,13 @@ fun adjustBrightness(context: Context, color: Int, lightFactor: Float, darkFacto
 fun fadeInDuration(): Int {
     val context = YouTubeContext.applicationContext
     return context.resources.getInteger(context.identifier("fade_duration_fast", "integer"))
+}
+
+private fun themeColor(context: Context, attr: String): Int? {
+    val id = context.identifier(attr, "attr")
+    val value = TypedValue()
+    val resolved = id != 0 && context.theme.resolveAttribute(id, value, true)
+    return value.data.takeIf { resolved && value.type in TypedValue.TYPE_FIRST_COLOR_INT..TypedValue.TYPE_LAST_COLOR_INT }
 }
 
 private fun appColor(context: Context, name: String, fallback: Int): Int {

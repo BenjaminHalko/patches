@@ -15,14 +15,14 @@ import app.reseam.youtube.settings.AppearanceSettings
 
 private enum class ThemeColor(val resourceName: String, vararg val originals: Int) {
     DARK(
-        "yt_black1",
+        "reseam_theme_dark_background",
         0xFF282828.toInt(),
         0xFF212121.toInt(),
         0xFF181818.toInt(),
         0xFF0F0F0F.toInt(),
         0xFA212121.toInt(),
     ),
-    LIGHT("yt_white1", 0xFFFFFFFF.toInt(), 0xFFF9F9F9.toInt(), 0xFAFFFFFF.toInt());
+    LIGHT("reseam_theme_light_background", 0xFFFFFFFF.toInt(), 0xFFF9F9F9.toInt(), 0xFAFFFFFF.toInt());
 
     @Volatile private var resourceId = 0
 
