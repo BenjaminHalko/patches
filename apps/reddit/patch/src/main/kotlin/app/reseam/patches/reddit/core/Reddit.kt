@@ -9,4 +9,4 @@ import app.reseam.patch.invoke
 const val REDDIT_PACKAGE = "com.reddit.frontpage"
 
 // Pinned: newer versions change code the targets were not read against.
-val REDDIT: CompatiblePackage = REDDIT_PACKAGE("2026.39.0")
+val REDDIT: CompatiblePackage = REDDIT_PACKAGE("2026.39.0", "2026.41.0")

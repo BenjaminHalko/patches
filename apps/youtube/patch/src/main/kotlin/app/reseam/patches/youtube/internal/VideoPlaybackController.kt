@@ -10,7 +10,6 @@ import app.reseam.patch.dex.AccessFlags
 import app.reseam.patch.dex.DexClass
 import app.reseam.patch.dex.Opcode
 import app.reseam.patch.enumConstant
-import app.reseam.patch.dex.opcode
 import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.methods
@@ -44,10 +43,10 @@ internal val mdxPlayerConstructor = mdxPlayerDirectorClass.methods("mdxPlayerCon
 
 private val seekSourceEnum = klass("seekSource") { enumConstants("SEEK_SOURCE_UNKNOWN") }
 
+// The return type differs between releases.
 internal val playerSeekRelativeMethod = method("playerRelativeSeek") {
     inClass(playerParameterBuilderVideoClass)
     params(Type.Long, seekSourceEnum.descriptor)
-    returns(Type.Boolean)
     opcode(Opcode.ADD_LONG_2ADDR)
 }
 
@@ -58,7 +57,6 @@ internal val playerSeekMethod = playerSeekRelativeMethod.point("absoluteSeek") {
 internal val mdxSeekRelativeMethod = method("mdxRelativeSeek") {
     inClass(mdxPlayerDirectorClass)
     params(Type.Long, seekSourceEnum.descriptor)
-    returns(Type.Boolean)
     opcode(Opcode.ADD_LONG_2ADDR)
 }
 

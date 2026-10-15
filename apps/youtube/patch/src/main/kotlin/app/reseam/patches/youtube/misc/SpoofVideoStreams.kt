@@ -60,5 +60,5 @@ private val nerdsStatsVideoFormatBuilder = method("stats for nerds video format 
     flags(AccessFlags.PUBLIC or AccessFlags.STATIC)
     paramCount(1)
     returns(Type.String)
-    strings("codecs=\"")
+    strings("codecs=\"", " otf")
 }

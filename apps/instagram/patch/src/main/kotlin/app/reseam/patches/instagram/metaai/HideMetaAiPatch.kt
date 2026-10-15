@@ -32,6 +32,8 @@ val hideMetaAi = patch("Hide Meta AI") {
     )
 
     execute {
+        val flags = metaAiFlags(directSearchView)
+        val exploreMetaAiSearch = method("exploreMetaAiSearch") { literals(flags.exploreSearch) }
         gate(MetaAiSettings.hideInExploreSearch) {
             klass(exploreMetaAiEnabled.owner).method("<init>") { hasParam(Type.List) }.after {
                 thisObject.set(exploreMetaAiEnabled, bool(false))
@@ -43,15 +45,16 @@ val hideMetaAi = patch("Hide Meta AI") {
         }
         // Both DM search hints ("Search or ask Meta AI" and its reverse) follow the hint flag read; the
         // search screen and the inbox bar load them, so each load becomes the platform's "Search".
-        val hintChoice = directSearchView.point { literal(DM_SEARCH_META_AI_HINT); then(within = 6) { resultOf(Type.Boolean) } }
+        val hintChoice = directSearchView.point { literal(flags.searchHint); then(within = 6) { resultOf(Type.Boolean) } }
         val firstHint = hintChoice.next { opcode(Opcode.CONST) }
         val metaAiHints = listOf(firstHint, firstHint.next { opcode(Opcode.CONST) }).map { it.instruction.literal!! }
         for (hint in metaAiHints) {
             methods("metaAiSearchHint$hint") { literals(*metaAiHints.toLongArray()) }
                 .points { literal(hint) }
-                .forEach {
+                .all.also { check(it.isNotEmpty()) { "No Meta AI search hint loads for $hint" } }
+                .forEach { point ->
                     gate(MetaAiSettings.hideInDirect) {
-                        captureAs("metaAiHint", Type.Int)
+                        point.captureAs("metaAiHint", Type.Int)
                             .after { capture("metaAiHint").assign(int(PLATFORM_SEARCH_HINT)) }
                     }
                 }
@@ -68,12 +71,13 @@ val hideMetaAi = patch("Hide Meta AI") {
                 thisObject.field(searchViewHolder).field(shareButton).callVirtual("android.view.View", "setVisibility", "(I)V", int(VIEW_GONE))
             }
         }
-        for (flag in DM_SEARCH_META_AI_FLAGS) {
+        for (flag in flags.directSearch) {
             methods("dmSearchFlag$flag") { literals(flag) }
                 .points { literal(flag); then(within = 6) { resultOf(Type.Boolean) } }
-                .forEach {
+                .all.also { check(it.isNotEmpty()) { "No DM Meta AI flag reads for $flag" } }
+                .forEach { point ->
                     gate(MetaAiSettings.hideInDirect) {
-                        captureAs("metaAiFlag", Type.Boolean)
+                        point.captureAs("metaAiFlag", Type.Boolean)
                             .after { capture("metaAiFlag").assign(bool(false)) }
                     }
                 }
@@ -84,19 +88,8 @@ val hideMetaAi = patch("Hide Meta AI") {
     }
 }
 
-// MobileConfig parameter ids, stable across releases; each is read only where its surface is built.
-// Explore search's Meta AI mode: the answer card in results, the sparkle field and the send-to-AI arrow.
-private const val EXPLORE_META_AI_SEARCH = 0x0081069d00111fe8L
-private const val DM_SEARCH_META_AI_HINT = 0x00810c29000a438cL
 private const val PLATFORM_SEARCH_HINT = 0x0104000c // android.R.string.search_go
 private const val VIEW_GONE = 8
-private val DM_SEARCH_META_AI_FLAGS = listOf(
-    0x00810420000b119dL, // send-to-AI arrow
-    0x008104200004119aL, // "Ask Meta AI" suggestions while typing
-    0x0081042000001199L, // Meta AI prompts on an empty query
-)
-
-private val exploreMetaAiSearch = method("exploreMetaAiSearch") { literals(EXPLORE_META_AI_SEARCH) }
 
 private val directSearchView =
     klass("instagram.features.direct.inbox.fragment.DirectSearchInboxFragment").method("onCreateView")
@@ -114,7 +107,8 @@ private val postMenuMetaAiStoreOf = method("postMenuMetaAiStoreOf") {
 
 private val postMenuMetaAi = method("postMenuMetaAi") {
     calls(postMenuMetaAiStoreOf)
-    params(USER_SESSION, Type.String)
+    param(0, USER_SESSION)
+    param(1, Type.String)
 }
 
 private val exploreMetaAiEnabled = method("exploreSearchBind") {

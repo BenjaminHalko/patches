@@ -64,6 +64,7 @@ private val fullPreviewAvailable = method("fullPreviewAvailable") {
 
 private val fullPreviewScrub = method("fullPreviewScrub") {
     inClass(fullPreview)
+    calls(fullPreviewAvailable)
     params(Type.Int, Type.Long)
     returns(Type.Void)
 }

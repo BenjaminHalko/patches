@@ -1,6 +1,6 @@
 # YouTube
 
-Tested on YouTube 21.37.42, Android 16. Other versions and server-side layout variants are untested.
+Tested on YouTube 21.37.42 and 21.40.166, Android 16. Other versions and server-side layout variants are untested.
 
 ## Constraints
 

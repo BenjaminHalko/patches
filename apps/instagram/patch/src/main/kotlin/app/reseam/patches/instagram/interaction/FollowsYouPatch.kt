@@ -56,7 +56,7 @@ val followsYou = patch("Follows you indicator") {
 }
 
 val searchRowBinder = method("searchRowBinder") {
-    strings("search_navigate_to_user", " • ")
+    strings("new_post_count", " • ")
     returns(Type.Void)
 }
 

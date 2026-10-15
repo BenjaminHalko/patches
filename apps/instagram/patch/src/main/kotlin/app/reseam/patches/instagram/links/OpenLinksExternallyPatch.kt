@@ -33,7 +33,7 @@ val openLinksExternally = patch("Open links in external browser") {
 }
 
 private val browserLaunch = method("browserLaunch") {
-    strings("TrackingInfo.ARG_MODULE_NAME", "BrowserLauncher")
+    strings("Tracking.ARG_CLICK_SOURCE", "BrowserLauncher")
     returns(Type.Boolean)
 }
 

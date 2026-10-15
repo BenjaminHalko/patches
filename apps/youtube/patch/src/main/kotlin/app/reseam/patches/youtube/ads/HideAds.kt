@@ -10,6 +10,7 @@ import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.patch.points
+import app.reseam.patch.reserveLocal
 import app.reseam.patch.settings.gate
 import app.reseam.patch.settings.section
 import app.reseam.patch.settings.whenEnabled
@@ -76,6 +77,9 @@ val hideAds = patch("Hide ads") {
             calls { owner("android.view.Window"); name("setWindowAnimations"); params(Type.Int); returns(Type.Void) }
         }
         gate(AdsSettings.hideFullscreenAds) {
+            // The builder reuses its byte[] parameter register before the dialog is shown.
+            val adBytes = dialogBuilder.reserveLocal("fullscreenAdBytes", "[B")
+            dialogBuilder.before { local(adBytes).assign(param(0)) }
             dialogBuilder.points("fullscreenDialogShown") {
                 invokeVirtual {
                     ownerAssignableTo("android.app.Dialog")
@@ -84,7 +88,7 @@ val hideAds = patch("Hide ads") {
                     returns(Type.Void)
                 }
             }.single().captureArgumentAs("dialog", 0).after {
-                Ads.closeFullscreenAd(capture("dialog"), param(0))
+                Ads.closeFullscreenAd(capture("dialog"), local(adBytes))
             }
         }
 

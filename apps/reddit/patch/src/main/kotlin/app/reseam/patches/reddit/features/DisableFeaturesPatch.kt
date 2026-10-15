@@ -77,7 +77,7 @@ private val FLAG_GROUPS: Map<ToggleSetting, FlagGroup> = mapOf(
         "android_devvit_games_feed_prewarm",
     )),
     RedditSettings.hideAchievementToasts to FlagGroup(enable = listOf("android_achievements_hide_progress_toast")),
-    RedditSettings.hideChatDiscovery to FlagGroup(enable = listOf("android_chat_discovery_hidden_ks")),
+    RedditSettings.hideChatDiscovery to FlagGroup(disable = listOf("android_chat_discovery_hidden_ks")),
 )
 
 val disableFeatures = patch("Disable Reddit features") {
@@ -94,19 +94,22 @@ val disableFeatures = patch("Disable Reddit features") {
         // A disabled flag reads as no variant, which Reddit treats as off.
         listOf(mainReader, startupReader).forEach { reader ->
             reader.variant.before { whenTrue(FlagOverrides.isDisabled(param(0))) { returnNull() } }
-            listOf(reader.enabled, reader.enabledUnexposed).forEach { enabled ->
-                enabled.before {
-                    whenTrue(FlagOverrides.isDisabled(param(0))) { returnFalse() }
-                    whenTrue(FlagOverrides.isForced(param(0))) { returnTrue() }
-                }
+            reader.enabled.before {
+                whenTrue(FlagOverrides.isDisabled(param(0))) { returnFalse() }
+                whenTrue(FlagOverrides.isForced(param(0))) { returnTrue() }
+            }
+            // This reader returns the negated enabled state.
+            reader.disabled.before {
+                whenTrue(FlagOverrides.isDisabled(param(0))) { returnTrue() }
+                whenTrue(FlagOverrides.isForced(param(0))) { returnFalse() }
             }
         }
     }
 }
 
 private class FlagReader(name: String, val enabled: MethodTarget) {
-    val variant = method("$name.variant") { inClass(klass(enabled.owner)); params(Type.String, Type.Boolean); returns(Type.String) }
-    val enabledUnexposed = method("$name.enabledUnexposed") { inClass(klass(enabled.owner)); params(Type.String); returns(Type.Boolean) }
+    val variant = method("$name.variant") { inClass(klass(enabled.owner)); param(0, Type.String); returns(Type.String) }
+    val disabled = method("$name.disabled") { inClass(klass(enabled.owner)); params(Type.String); returns(Type.Boolean) }
 }
 
 private val experimentReader = method("exposeExperiment") {

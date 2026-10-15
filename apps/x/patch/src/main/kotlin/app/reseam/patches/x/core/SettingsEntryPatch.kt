@@ -6,7 +6,6 @@ package app.reseam.patches.x.core
 import app.reseam.patch.Type
 import app.reseam.patch.before
 import app.reseam.patch.descriptor
-import app.reseam.patch.dex.Opcode
 import app.reseam.patch.dex.ref
 import app.reseam.patch.fieldTarget
 import app.reseam.patch.klass
@@ -20,9 +19,6 @@ import app.reseam.x.settings.bindings.SettingsRows
 private const val FUNCTION0 = "kotlin.jvm.functions.Function0"
 private const val LOGO_PATH = "res/drawable/reseam_logo.png"
 
-// Defaulted constructor parameters, as Kotlin's synthetic constructors read them: bit i means "use
-// the default for parameter i".
-private const val ITEM_DEFAULTS_ACTION_AND_TRAILING = 0b1110000
 private const val SECTION_DEFAULTS_HEADER_AND_SUBTITLE = 0b11
 
 val settingsEntry = patch("Reseam entry in X settings") {
@@ -45,10 +41,18 @@ val settingsEntry = patch("Reseam entry in X settings") {
         SettingsRows.section.implement {
             val title = newInstance(literalTextCtor.owner, literalTextCtor.proto, string("Reseam Settings"))
             val subtitle = newInstance(literalTextCtor.owner, literalTextCtor.proto, string("Ads, downloads, Premium, Grok, and privacy toggles."))
+            // R8 drops constructor parameters without renumbering the default bits, so pass every default.
+            val arguments = listOf(title, subtitle, newInstance(iconType, "(I)V", int(logoId.toInt()))) +
+                settingsItemCtor.parameterTypes.drop(3).map { type ->
+                    when (type) {
+                        descriptor(FUNCTION0) -> newInstance(OpenReseamSettings.descriptor)
+                        Type.Boolean -> bool(false)
+                        Type.Int -> int(0)
+                        else -> nullObject
+                    }
+                }
             val item = newInstance(
-                settingsItemCtor.owner, settingsItemCtor.proto,
-                title, subtitle, newInstance(iconType, "(I)V", int(logoId.toInt())), newInstance(OpenReseamSettings.descriptor), nullObject, nullObject,
-                int(ITEM_DEFAULTS_ACTION_AND_TRAILING),
+                settingsItemCtor.owner, settingsItemCtor.proto, *arguments.toTypedArray(),
             )
             returnValue(
                 newInstance(
@@ -59,24 +63,27 @@ val settingsEntry = patch("Reseam entry in X settings") {
         }
 
         val settingsTitle = resources.id("string", "settings") ?: error("string/settings missing")
-        // Every settings page is a SettingsListState; the root page is the one titled Settings.
-        settingsListState.method("<init>").before {
-            whenEqual(paramOfType(resourceText.descriptor).field(resourceTextId), int(settingsTitle.toInt())) {
-                val sections = paramOfType(Type.List)
+        val rootSettings = method("rootSettings") {
+            literals(settingsTitle.toLong())
+            calls(settingsListState.method("<init>"))
+        }
+        // The screen copies its state while filtering rows.
+        val sectionsArgument = settingsListState.method("<init>").parameterTypes.indexOf(Type.List) + 1
+        rootSettings.point {
+            invokeDirect { owner(settingsListState.descriptor); name("<init>") }
+        }.captureArgumentAs("sections", sectionsArgument, Type.List)
+            .before {
+                val sections = capture("sections")
                 sections.assign(SettingsRows.withSection(sections, SettingsRows.section()))
             }
-        }
     }
 }
 
-private val settingsListState = klass("settingsListState") { strings("SettingsListState(onBackClicked=") }
-
-// A title given as a string resource.
-private val resourceText = klass("resourceText") { strings("Resource(id=", ", formatArgs=") }
-private val resourceTextId = resourceText.method("toString")
-    .point { string("Resource(id=") }
-    .next { opcode(Opcode.IGET) }
-    .field("resourceTextId")
+private val settingsListState = klass("settingsListState") {
+    strings("SettingsListState(onBackClicked=")
+    // 12.34 also ships a legacy settings state with a resource-only title.
+    if (Type.Boolean in settingsItemCtor.parameterTypes) hasInstanceField(settingsItemCtor.parameterTypes[0])
+}
 
 // The Additional resources page builds plain rows around stable URLs; its constructors give the model shapes.
 val additionalResourcesRows = method("additionalResourcesRows") {
