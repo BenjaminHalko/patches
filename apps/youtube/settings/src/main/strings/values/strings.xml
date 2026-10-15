@@ -527,6 +527,8 @@
     <string name="narrow_navigation_buttons_summary">Uses narrower spacing for the bottom navigation buttons.</string>
     <string name="navigation_bar_animations">Navigation bar animations</string>
     <string name="navigation_bar_animations_summary">Enables animations when switching bottom navigation buttons.</string>
+    <string name="keep_navigation_bar_visible">Keep navigation bar visible</string>
+    <string name="keep_navigation_bar_visible_summary">Stops the bottom navigation bar from hiding while you scroll.</string>
     <string name="disable_translucent_status_bar">Disable translucent status bar</string>
     <string name="disable_translucent_status_bar_summary">Disables the translucent status bar effect used by the navigation bar.</string>
     <string name="disable_translucent_navigation_bar_light">Disable light navigation bar translucency</string>

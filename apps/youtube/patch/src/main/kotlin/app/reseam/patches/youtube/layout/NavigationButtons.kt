@@ -11,9 +11,13 @@ import app.reseam.patch.dex.Opcode
 import app.reseam.patch.dex.parameterTypes
 import app.reseam.patch.klass
 import app.reseam.patch.method
+import app.reseam.patch.methods
 import app.reseam.patch.patch
 import app.reseam.patch.point
+import app.reseam.patch.points
 import app.reseam.patch.settings.section
+import app.reseam.patch.settings.valueOf
+import app.reseam.patch.skipWhen
 import app.reseam.patches.youtube.core.YOUTUBE
 import app.reseam.patches.youtube.core.YouTubeSettingsPages
 import app.reseam.patches.youtube.core.youTubeSettings
@@ -39,6 +43,8 @@ private const val ANIMATED_NAVIGATION_TABS = 45680008L
 private const val TRANSLUCENT_STATUS_BAR = 45400535L
 private const val TRANSLUCENT_NAVIGATION_BUTTONS = 45630927L
 private const val TRANSLUCENT_SYSTEM_BUTTONS = 45632194L
+private const val SCROLL_HIDES_HEADER = 45649805L
+private const val RECYCLER_VIEW = "android.support.v7.widget.RecyclerView"
 
 val navigationButtons = patch("Navigation bar") {
     description("Adds options to hide and change the bottom navigation bar and upper toolbar buttons.")
@@ -59,6 +65,7 @@ val navigationButtons = patch("Navigation bar") {
             AppearanceSettings.hideNavigationButtonLabels,
             AppearanceSettings.narrowNavigationButtons,
             AppearanceSettings.navigationBarAnimations,
+            AppearanceSettings.keepNavigationBarVisible,
             AppearanceSettings.disableTranslucentStatusBar,
             AppearanceSettings.disableTranslucentNavigationBarLight,
             AppearanceSettings.disableTranslucentNavigationBarDark,
@@ -106,6 +113,16 @@ val navigationButtons = patch("Navigation bar") {
         overrideBooleanFeature(TRANSLUCENT_STATUS_BAR, NavigationButtons.useTranslucentNavigationStatusBar)
         overrideBooleanFeature(TRANSLUCENT_NAVIGATION_BUTTONS, NavigationButtons.useTranslucentNavigationButtons)
         overrideBooleanFeature(TRANSLUCENT_SYSTEM_BUTTONS, NavigationButtons.useTranslucentNavigationButtons)
+
+        // Feeds whose response asks for it hide the bar through the scroll listener's (show, animate) call.
+        methods("feedScrolled") {
+            params(RECYCLER_VIEW, Type.Int, Type.Int)
+            returns(Type.Void)
+            literals(SCROLL_HIDES_HEADER)
+        }.points("navigationBarScrollVisibility") {
+            invokeInterface { params(Type.Boolean, Type.Boolean); returns(Type.Void) }
+        }.all.also { check(it.isNotEmpty()) { "No feed scroll listener toggles the navigation bar" } }
+            .forEach { it.skipWhen { valueOf(AppearanceSettings.keepNavigationBarVisible) } }
 
         val pivotBarChanged = method("navigationPivotBarConfigurationChanged") {
             inClass(pivotBarClass)

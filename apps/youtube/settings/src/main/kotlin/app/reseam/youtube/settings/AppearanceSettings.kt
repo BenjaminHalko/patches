@@ -93,6 +93,7 @@ object AppearanceSettings : SettingsGroup(YouTubeStrings, YOUTUBE_KEYS) {
     val hideNavigationButtonLabels by toggle(default = false)
     val narrowNavigationButtons by toggle(default = false)
     val navigationBarAnimations by toggle(default = false)
+    val keepNavigationBarVisible by toggle(default = false)
     val disableTranslucentStatusBar by toggle(default = false)
     val disableTranslucentNavigationBarLight by toggle(default = false)
     val disableTranslucentNavigationBarDark by toggle(default = false)
