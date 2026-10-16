@@ -10,6 +10,7 @@ import app.reseam.patch.point
 import app.reseam.patches.gmscore.gmsCoreSupportFor
 import app.reseam.patches.youtube.core.YOUTUBE
 import app.reseam.patches.youtube.core.mainActivityOnCreate
+import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.enableBooleanFeature
 
 // GmsCore has no Phenotype service, so until the app's own config sync takes effect (its third
@@ -20,6 +21,7 @@ private val PHENOTYPE_DELIVERED_FLAGS = listOf(45698813L)
 
 val gmsCoreSupport = gmsCoreSupportFor(
     YOUTUBE,
+    youTubeSettings,
     signature = "24bb24c05e47e0aefa68a58a766179d9b613a600",
     defaultPackageName = "app.reseam.android.youtube",
     mainActivityOnCreate,

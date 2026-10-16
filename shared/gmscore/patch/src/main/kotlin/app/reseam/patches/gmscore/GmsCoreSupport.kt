@@ -12,12 +12,17 @@ import app.reseam.patch.after
 import app.reseam.patch.alwaysReturn
 import app.reseam.patch.before
 import app.reseam.patch.patch
+import app.reseam.patch.settings.SettingsHost
 
 private const val GMS_CORE_MISSING_ACTIVITY = "app.reseam.gmscore.GmsCoreMissingActivity"
 
-/** [signature] is the SHA-1 of the certificate Google's servers know the app by. */
+/**
+ * [signature] is the SHA-1 of the certificate Google's servers know the app by. [settings] starts
+ * the app runtime and ships [GmsCoreStrings], which the startup check's dialogs read.
+ */
 fun gmsCoreSupportFor(
     app: CompatiblePackage,
+    settings: SettingsHost,
     signature: String,
     defaultPackageName: String,
     mainActivityOnCreate: MethodTarget,
@@ -30,6 +35,7 @@ fun gmsCoreSupportFor(
         """,
     )
     compatibleWith(app)
+    dependsOn(settings)
     val vendorGroupId = stringOption(
         "gmsCoreVendorGroupId",
         title = "GmsCore vendor group ID",
