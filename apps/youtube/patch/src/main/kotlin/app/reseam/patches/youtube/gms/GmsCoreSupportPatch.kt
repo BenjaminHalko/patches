@@ -5,6 +5,7 @@ package app.reseam.patches.youtube.gms
 
 import app.reseam.patch.Type
 import app.reseam.patch.after
+import app.reseam.patch.before
 import app.reseam.patch.method
 import app.reseam.patch.point
 import app.reseam.patches.gmscore.gmsCoreSupportFor
@@ -12,6 +13,7 @@ import app.reseam.patches.youtube.core.YOUTUBE
 import app.reseam.patches.youtube.core.mainActivityOnCreate
 import app.reseam.patches.youtube.core.youTubeSettings
 import app.reseam.patches.youtube.internal.enableBooleanFeature
+import app.reseam.youtube.misc.bindings.OwnLinks
 
 // GmsCore has no Phenotype service, so until the app's own config sync takes effect (its third
 // launch) every experiment reads its compiled-in default. These flags are on for every client, and
@@ -31,6 +33,13 @@ val gmsCoreSupport = gmsCoreSupportFor(
     // takes its own path that skips the check.
     deviceComplianceCheckEnabled.after { capture("enabled").assign(bool(false)) }
     PHENOTYPE_DELIVERED_FLAGS.forEach(::enableBooleanFeature)
+    ownLinkIntent.before { OwnLinks.keepInApp(param(0), param(1), param(2)) }
+}
+
+// Marks a link YouTube sends to itself with a token proving where it came from.
+private val ownLinkIntent = method("ownLinkIntent") {
+    strings("trusted_application_code_extra")
+    params(Type.Context, "android.content.Intent", "android.net.Uri")
 }
 
 private const val DEVICE_COMPLIANCE_CHECK_FLAG = "failsafe_enable_gms_device_compliance_check"
