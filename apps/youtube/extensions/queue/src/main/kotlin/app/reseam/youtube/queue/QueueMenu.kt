@@ -7,6 +7,7 @@ package app.reseam.youtube.queue
 
 import app.reseam.bundle.Logger
 import app.reseam.runtime.Export
+import app.reseam.youtube.core.Endpoints
 import app.reseam.youtube.core.Proto
 import app.reseam.youtube.core.debug
 
@@ -16,7 +17,6 @@ private const val ITEM_COMMAND = 3
 private const val ITEM_BADGE = 12
 private const val ICON_TYPE = 1
 private const val ICON_QUEUE_PLAY_NEXT = 251L
-private const val BROWSE_ENDPOINT = 48687626
 private const val CAST_PLAY_NEXT = 122330696
 
 @Export
@@ -46,7 +46,7 @@ private fun isUpsell(item: ByteArray): Boolean {
     val command = Proto.bytes(item, ITEM_COMMAND)
     if (icon == null || command == null) return false
     val queueIcon = Proto.number(icon, ICON_TYPE, 0) == ICON_QUEUE_PLAY_NEXT
-    return queueIcon && Proto.bytes(command, BROWSE_ENDPOINT) != null
+    return queueIcon && Proto.bytes(command, Endpoints.BROWSE) != null
 }
 
 private fun queueItem(item: ByteArray, videoId: String): ByteArray {
@@ -54,7 +54,7 @@ private fun queueItem(item: ByteArray, videoId: String): ByteArray {
         Proto.replace(
             checkNotNull(Proto.bytes(item, ITEM_COMMAND)) { "Queue item has no command" },
             mapOf(
-                BROWSE_ENDPOINT to null,
+                Endpoints.BROWSE to null,
                 PLAYER_STATE_COMMAND to playerStateCommand(videoId, POSITION_NEXT),
             ),
         )

@@ -49,4 +49,17 @@ object ShortsSettings : SettingsGroup(YouTubeStrings, YOUTUBE_KEYS) {
     val dimShortsOverlayOpacity by text(default = "90")
     val dimShortsOverlayImmersiveMode by toggle(default = true)
     val disableResumingShortsOnStartup by toggle(default = false)
+    val playShortsAsVideos by toggle(default = false)
+    val turnOffShorts by
+        toggle(
+            default = false,
+            covers =
+                listOf(
+                    hideShortsHome,
+                    hideShortsVideoDescription,
+                    disableResumingShortsOnStartup,
+                    playShortsAsVideos,
+                    AppearanceSettings.hideShortsButton,
+                ),
+        )
 }

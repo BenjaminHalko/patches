@@ -40,7 +40,10 @@ val disableResumingShortsOnStartup = patch("Disable resuming Shorts on startup")
     description("Stops YouTube reopening the last Short when the app starts.")
     compatibleWith(YOUTUBE)
     dependsOn(youTubeSettings)
-    settings(youTubeSettings, section(YouTubeSettingsPages.Shorts, YouTubeStrings.sectionShorts, ShortsSettings.disableResumingShortsOnStartup))
+    settings(
+        youTubeSettings,
+        section(YouTubeSettingsPages.Shorts, YouTubeStrings.sectionShorts, ShortsSettings.turnOffShorts, ShortsSettings.disableResumingShortsOnStartup),
+    )
 
     execute { gate(ShortsSettings.disableResumingShortsOnStartup) { resumeAllowed.alwaysReturn(false) } }
 }

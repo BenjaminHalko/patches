@@ -7,12 +7,11 @@ package app.reseam.youtube.queue
 
 import android.util.LruCache
 import app.reseam.runtime.Export
+import app.reseam.youtube.core.Endpoints
 import app.reseam.youtube.core.Proto
 import app.reseam.youtube.video.VideoInformation
 import com.google.protobuf.MessageLite
 
-private const val WATCH_ENDPOINT = 48687757
-private const val ENDPOINT_VIDEO = 1
 private const val ENDPOINT_PLAYLIST = 2
 private const val ENDPOINT_PLAYLIST_ITEM = 13
 private const val CONTEXT_TYPE = 1
@@ -32,8 +31,8 @@ private val queueItems = LruCache<String, QueueItem>(TRACKED_VIDEOS)
 @Export
 fun watched(currentVideo: MessageLite?) {
     if (currentVideo == null) return
-    val endpoint = Proto.bytes(currentVideo.toByteArray(), WATCH_ENDPOINT) ?: return
-    val videoId = Proto.string(endpoint, ENDPOINT_VIDEO) ?: return
+    val endpoint = Proto.bytes(currentVideo.toByteArray(), Endpoints.WATCH) ?: return
+    val videoId = Proto.string(endpoint, Endpoints.WATCH_VIDEO_ID) ?: return
     val playlistId = Proto.string(endpoint, ENDPOINT_PLAYLIST)
     val itemId = Proto.string(endpoint, ENDPOINT_PLAYLIST_ITEM)
     if (itemId != null && playlistId != null && playlistId.startsWith(QUEUE_PLAYLIST_PREFIX)) {

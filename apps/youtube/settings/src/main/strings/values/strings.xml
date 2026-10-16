@@ -448,6 +448,10 @@
     <string name="dim_shorts_overlay_immersive_mode_summary">Hides the status bar while watching Shorts.</string>
     <string name="disable_resuming_shorts_on_startup">Disable resuming Shorts on startup</string>
     <string name="disable_resuming_shorts_on_startup_summary">Stops YouTube reopening the last Short when it starts.</string>
+    <string name="play_shorts_as_videos">Play Shorts as regular videos</string>
+    <string name="play_shorts_as_videos_summary">Plays Shorts in the regular player. The Shorts tab is unchanged.</string>
+    <string name="turn_off_shorts">Turn off Shorts</string>
+    <string name="turn_off_shorts_summary">Removes Shorts from feeds, search, and the navigation bar, and plays Shorts links in the regular player.</string>
     <string name="open_videos_fullscreen">Open videos fullscreen</string>
     <string name="open_videos_fullscreen_summary">Opens videos in fullscreen portrait mode when YouTube starts them.</string>
     <string name="hide_autoplay_button">Hide autoplay button</string>

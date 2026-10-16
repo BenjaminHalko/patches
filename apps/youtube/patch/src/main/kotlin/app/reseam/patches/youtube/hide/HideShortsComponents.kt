@@ -48,6 +48,7 @@ val hideShortsComponents = patch("Hide Shorts components") {
         section(
             YouTubeSettingsPages.Shorts,
             YouTubeStrings.sectionShorts,
+            ShortsSettings.turnOffShorts,
             ShortsSettings.hideShortsAiButton,
             ShortsSettings.hideShortsAutoDubbedLabel,
             ShortsSettings.hideShortsChannel,

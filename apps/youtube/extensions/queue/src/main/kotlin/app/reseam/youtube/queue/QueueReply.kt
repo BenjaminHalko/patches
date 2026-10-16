@@ -9,6 +9,7 @@ import android.net.Uri
 import android.util.Base64
 import app.reseam.bundle.Logger
 import app.reseam.runtime.Export
+import app.reseam.youtube.core.Endpoints
 import app.reseam.youtube.core.Proto
 import app.reseam.youtube.core.debug
 import com.google.common.util.concurrent.ListenableFuture
@@ -20,8 +21,6 @@ private const val REQUEST_OPERATION = 1
 private const val REQUEST_TARGET = 2
 private const val OPERATION_PLAY_NEXT = 2L
 private const val RESPONSE_COMMAND = 4
-private const val BROWSE_ENDPOINT = 48687626
-private const val WATCH_ENDPOINT = 48687757
 internal const val PLAYER_STATE_COMMAND = 469942096
 private const val QUEUE_INSERT = 465666947
 private const val WATCH_MINIMIZED = 339694216
@@ -61,8 +60,8 @@ private fun queueCommand(params: String?): ByteArray? {
 
 internal fun playerStateCommand(videoId: String, position: Long): ByteArray {
     val insertion = Proto.Writer().string(1, token(videoId, position))
-    val watch = Proto.Writer().string(1, videoId).string(5, QUEUE_WATCH_PARAMS)
-    val minimized = Proto.Writer().message(2, Proto.Writer().message(WATCH_ENDPOINT, watch))
+    val watch = Proto.Writer().string(Endpoints.WATCH_VIDEO_ID, videoId).string(5, QUEUE_WATCH_PARAMS)
+    val minimized = Proto.Writer().message(2, Proto.Writer().message(Endpoints.WATCH, watch))
     return Proto.Writer()
         .message(1, Proto.Writer().message(QUEUE_INSERT, insertion))
         .message(2, Proto.Writer().message(WATCH_MINIMIZED, minimized))
@@ -97,7 +96,7 @@ private class QueueResponse(
         val bytes = (message as MessageLite).toByteArray()
         val current = Proto.bytes(bytes, RESPONSE_COMMAND)
         val result =
-            if (current != null && Proto.bytes(current, BROWSE_ENDPOINT) != null) {
+            if (current != null && Proto.bytes(current, Endpoints.BROWSE) != null) {
                 parse(Proto.replace(bytes, mapOf(RESPONSE_COMMAND to command)))
             } else {
                 message
