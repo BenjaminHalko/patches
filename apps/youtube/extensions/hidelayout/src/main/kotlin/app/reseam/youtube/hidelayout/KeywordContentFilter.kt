@@ -20,21 +20,6 @@ import app.reseam.youtube.player.PlayerType
 import app.reseam.youtube.settings.FilterSettings
 import java.util.concurrent.atomic.AtomicReference
 
-private val rootCards =
-    FilterRule(
-        null,
-        "home_video_with_context.e",
-        "search_video_with_context.e",
-        "video_with_context.e",
-        "related_video_with_context.e",
-        "video_lockup_with_attachment.e",
-        "compact_video.e",
-        "inline_shorts",
-        "shorts_video_cell",
-        "shorts_pivot_item.e",
-    ) {
-        it.index == 0
-    }
 private val nestedCards =
     FilterRule(
         null,

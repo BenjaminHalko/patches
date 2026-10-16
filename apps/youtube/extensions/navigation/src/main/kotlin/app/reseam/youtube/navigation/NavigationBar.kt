@@ -6,10 +6,14 @@ package app.reseam.youtube.navigation
 
 import android.app.Activity
 import android.graphics.drawable.Drawable
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.TextView
 import app.reseam.bundle.Logger
+import app.reseam.bundle.identifier
 import app.reseam.runtime.Export
 import app.reseam.youtube.core.debug
 import java.lang.ref.WeakReference
@@ -37,10 +41,28 @@ object NavigationBar {
     val isBackButtonVisible: Boolean
         get() = toolbar.get()?.patch_getNavigationIcon() != null
 
+    /** The query of the search results on screen, however the search was started. */
+    @Volatile
+    var searchQuery = ""
+        private set
+
     @Export
     @JvmStatic
     fun searchBarResultsViewLoaded(view: View) {
         searchBarResults = WeakReference(view)
+        val query = view.findViewById<TextView>(view.context.identifier("search_query", "id")) ?: return
+        searchQuery = query.text.toString()
+        query.addTextChangedListener(
+            object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+
+                override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+
+                override fun afterTextChanged(s: Editable) {
+                    searchQuery = s.toString()
+                }
+            }
+        )
     }
 
     @Export

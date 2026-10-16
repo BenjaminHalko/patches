@@ -722,6 +722,10 @@
     <string name="section_comments">Comments</string>
     <string name="section_description">Description</string>
     <string name="section_channel">Channel</string>
+    <string name="search_inside_channels">Search inside channels</string>
+    <string name="search_inside_channels_summary">Searching from a channel page shows only that channel\'s videos. Remove the @handle to search all of YouTube.</string>
+    <string name="live_rings_open_channel">Live rings open the channel</string>
+    <string name="live_rings_open_channel_summary">Tapping a channel\'s live ring opens its page instead of the live stream.</string>
     <string name="section_keyword_filter">Keyword filter</string>
     <string name="section_custom_filter">Custom filter</string>
     <string name="section_player_overlay">Player overlay</string>

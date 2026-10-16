@@ -16,4 +16,5 @@ object ChannelSettings : SettingsGroup(YouTubeStrings, YOUTUBE_KEYS) {
     val hideMembersShelf by toggle(default = true)
     val hideStoreButton by toggle(default = true)
     val hideSubscribeButtonInChannelPage by toggle(default = false)
+    val searchInsideChannels by toggle(default = true)
 }

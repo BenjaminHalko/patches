@@ -45,4 +45,5 @@ object FeedSettings : SettingsGroup(YouTubeStrings, YOUTUBE_KEYS) {
     val hideVisualSpacer by toggle(default = true)
     val hideWebSearchResults by toggle(default = true)
     val hideYouMayLikeSection by toggle(default = true)
+    val liveRingsOpenChannel by toggle(default = false)
 }

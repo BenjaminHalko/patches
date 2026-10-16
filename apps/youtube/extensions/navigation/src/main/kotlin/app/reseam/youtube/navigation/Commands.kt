@@ -26,6 +26,13 @@ object Commands {
                 .message(Endpoints.WATCH, Proto.Writer().string(Endpoints.WATCH_VIDEO_ID, videoId))
         )
 
+    /** Opens a channel page. Call on the main thread. */
+    fun openChannel(channelId: String): Boolean =
+        route(
+            Proto.Writer()
+                .message(Endpoints.BROWSE, Proto.Writer().string(Endpoints.BROWSE_ID, channelId))
+        )
+
     private fun route(endpoint: Proto.Writer): Boolean {
         val current = router.get() ?: return false
         return try {
