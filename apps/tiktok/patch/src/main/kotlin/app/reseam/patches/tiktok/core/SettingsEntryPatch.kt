@@ -3,20 +3,21 @@
 
 package app.reseam.patches.tiktok.core
 
+import app.reseam.patch.Type
 import app.reseam.patch.after
+import app.reseam.patch.before
+import app.reseam.patch.classTarget
+import app.reseam.patch.dex.AccessFlags
 import app.reseam.patch.dex.Opcode
 import app.reseam.patch.dex.literal
+import app.reseam.patch.dex.ref
+import app.reseam.patch.fieldOfType
+import app.reseam.patch.fieldTarget
 import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.point
 import app.reseam.tiktok.entry.bindings.ProfileGear
-
-private const val NAVBAR =
-    "com.ss.android.ugc.profile.platform.business.navbar.base.NavbarBaseUIComponent"
-private const val NAVBAR_ITEM =
-    "com.ss.android.ugc.profile.platform.standard.protocol.component.NavbarPlatformProtocol"
-private const val ICON_VIEW = "com.bytedance.tux.icon.TuxIconView"
 
 private val signedOutProfile = klass("com.ss.android.ugc.aweme.unlogin.UnloginSignUpFragment")
 
@@ -45,12 +46,29 @@ val settingsGear =
                         )
                 call(ProfileGear.attach, button, int(gear))
             }
-            navbarIconSetup.after {
-                val navbar = thisObject.fieldOfType(NAVBAR)
+            ProfileGear.actionKey.implement {
+                returnValue(param(0).cast(navAction.descriptor).field(navActionKey))
+            }
+            ProfileGear.actionView.implement {
+                whenInstanceOf(param(0), viewAction.descriptor) {
+                    returnValue(param(0).cast(viewAction.descriptor).field(viewActionView))
+                }
+                returnNull()
+            }
+            ProfileGear.viewAction.implement {
+                val action = newInstance(viewAction.descriptor)
+                action.cast(navAction.descriptor).set(navActionKey, param(0))
+                action.set(viewActionView, param(1))
+                action.set(viewActionKeepsParams, bool(true))
+                returnValue(action)
+            }
+            setNavActions.before {
+                val actions = param(0)
                 call(
-                    ProfileGear.attachToMenu,
-                    navbar.call(navbarItem),
-                    navbar.call(navbarIcon),
+                    ProfileGear.addToNavActions,
+                    thisObject,
+                    actions.field(navActionList(0)),
+                    actions.field(navActionList(1)),
                     int(gear),
                 )
             }
@@ -65,19 +83,45 @@ private val signedOutMenuId =
         .point { string("//setting") }
         .previous { opcode(Opcode.CONST) }
 
-private val navbarIconSetup =
-    method("navbarIconSetup") { strings("updateComponentUIAndData v3: updateNavActionByStandard") }
+private val navBar = klass("com.bytedance.tux.navigation.TuxNavBar")
 
-private val navbarItem =
-    method("navbarItem") {
-        inClass(klass(NAVBAR))
-        paramCount(0)
-        returns(NAVBAR_ITEM)
+private val setNavActions = navBar.method("setNavActions")
+
+private val navActions =
+    classTarget("navActions") {
+        bytecode.findClass(setNavActions.method.parameterTypes.single())
+            ?: error("The nav bar's actions class is missing")
     }
 
-private val navbarIcon =
-    method("navbarIcon") {
-        inClass(klass(NAVBAR))
-        paramCount(0)
-        returns(ICON_VIEW)
+// Which list is the start and which the end does not matter: ≡ is found by its key in either.
+private fun navActionList(index: Int) =
+    fieldTarget("navActionList$index") {
+        val lists = navActions.classDef.instanceFields.filter { it.fieldType == Type.List }
+        check(lists.size == 2) { "The nav bar's actions have ${lists.size} lists" }
+        lists[index].ref
     }
+
+// Where the nav bar turns a view action into its child; it takes the view action class.
+private val viewActionChild =
+    method("viewActionChild") {
+        inClass(navBar)
+        flags(AccessFlags.STATIC)
+        paramCount(1)
+        returns(Type.View)
+    }
+
+private val viewAction =
+    classTarget("viewAction") {
+        bytecode.findClass(viewActionChild.method.parameterTypes.single())
+            ?: error("The nav bar's view action class is missing")
+    }
+
+private val navAction =
+    classTarget("navAction") {
+        viewAction.classDef.superclass?.let(bytecode::findClass)
+            ?: error("The nav bar's action class is missing")
+    }
+
+private val navActionKey = navAction.fieldOfType(Type.Object)
+private val viewActionView = viewAction.fieldOfType(Type.View)
+private val viewActionKeepsParams = viewAction.fieldOfType(Type.Boolean)

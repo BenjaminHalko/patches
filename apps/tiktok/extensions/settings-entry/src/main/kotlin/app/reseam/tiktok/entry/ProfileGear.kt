@@ -13,9 +13,14 @@ import android.widget.LinearLayout
 import app.reseam.bundle.ReseamPatches
 import app.reseam.runtime.Export
 import com.bytedance.tux.icon.TuxIconView
+import java.util.WeakHashMap
 
-private const val TAG = "reseam_settings_gear"
-private const val MENU = "com.ss.android.ugc.profile.business.profile.ProfileNavbarMenuProtocol"
+private const val KEY = "reseam_settings_gear"
+
+// TikTok's server picks which of the two ≡ actions the signed-in profile shows.
+private val MENU_KEYS = setOf("nav_bar_end_settings", "nav_bar_end_profile_menu")
+
+private val navBarGears = WeakHashMap<View, View>()
 
 /**
  * Puts TikTok's own gear [icon], opening Reseam settings, right before [anchor], once per parent.
@@ -23,37 +28,45 @@ private const val MENU = "com.ss.android.ugc.profile.business.profile.ProfileNav
 @Export
 fun attach(anchor: View?, icon: Int) {
     val parent = anchor?.parent as? ViewGroup ?: return
-    if (parent.findViewWithTag<View>(TAG) != null) return
-    val gear =
-        TuxIconView(anchor.context).apply {
-            tag = TAG
-            contentDescription = "Reseam Settings"
-            setIconRes(icon)
-            // TikTok's icons draw at the size they are given, so match the anchor's icon.
-            (anchor as? ImageView)?.drawable?.let {
-                setIconWidth(it.intrinsicWidth)
-                setIconHeight(it.intrinsicHeight)
-            }
-            setTintColor((anchor as? ImageView)?.imageTintList?.defaultColor ?: textColor(anchor))
-            setPadding(
-                anchor.paddingLeft,
-                anchor.paddingTop,
-                anchor.paddingRight,
-                anchor.paddingBottom,
-            )
-            setOnClickListener { ReseamPatches.bundle().openSettings() }
-        }
-    parent.addView(gear, parent.indexOfChild(anchor), copy(anchor.layoutParams))
+    if (parent.findViewWithTag<View>(KEY) != null) return
+    parent.addView(gear(anchor, icon), parent.indexOfChild(anchor))
 }
 
 /**
- * [attach] for the signed-in profile's nav bar, where every item reports here and only ≡ gets the
- * gear.
+ * Adds the gear before ≡ as one of [navBar]'s own actions. The nav bar pairs its children with its
+ * actions by position, so the gear has to be an action for TikTok to lay it out and update it.
  */
 @Export
-fun attachToMenu(item: Any?, anchor: View?, icon: Int) {
-    if (item?.javaClass?.name == MENU) attach(anchor, icon)
+fun addToNavActions(navBar: View, start: MutableList<Any?>, end: MutableList<Any?>, icon: Int) {
+    for (actions in listOf(start, end)) {
+        val menu = actions.indexOfFirst { actionKey(it) in MENU_KEYS }
+        if (menu < 0 || actions.any { actionKey(it) == KEY }) continue
+        val anchor = actionView(actions[menu]) ?: continue
+        actions.add(menu, viewAction(KEY, navBarGears.getOrPut(navBar) { gear(anchor, icon) }))
+    }
 }
+
+@Export fun actionKey(action: Any?): Any? = null
+
+@Export fun actionView(action: Any?): View? = null
+
+@Export fun viewAction(key: String, view: View): Any? = null
+
+private fun gear(anchor: View, icon: Int) =
+    TuxIconView(anchor.context).apply {
+        tag = KEY
+        contentDescription = "Reseam Settings"
+        setIconRes(icon)
+        // TikTok's icons draw at the size they are given, so match the anchor's icon.
+        (anchor as? ImageView)?.drawable?.let {
+            setIconWidth(it.intrinsicWidth)
+            setIconHeight(it.intrinsicHeight)
+        }
+        setTintColor((anchor as? ImageView)?.imageTintList?.defaultColor ?: textColor(anchor))
+        setPadding(anchor.paddingLeft, anchor.paddingTop, anchor.paddingRight, anchor.paddingBottom)
+        layoutParams = copy(anchor.layoutParams)
+        setOnClickListener { ReseamPatches.bundle().openSettings() }
+    }
 
 private fun copy(params: ViewGroup.LayoutParams) =
     when (params) {
