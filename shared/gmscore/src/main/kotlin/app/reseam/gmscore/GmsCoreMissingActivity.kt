@@ -27,7 +27,7 @@ class GmsCoreMissingActivity : Activity() {
                 openScreen(
                     Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://github.com/revanced/gmscore/releases/latest"),
+                        Uri.parse("https://reseam.app/download/#gmscore"),
                     )
                 )
             }

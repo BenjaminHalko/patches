@@ -5,6 +5,7 @@ package app.reseam.patches.gmscore
 
 import app.reseam.patch.Type
 import app.reseam.patch.method
+import app.reseam.patch.methods
 import app.reseam.patch.point
 import app.reseam.patch.points
 
@@ -13,11 +14,6 @@ internal val playServicesCheck = method("playServicesCheck") {
     strings("Google Play Services not available")
     returns(Type.Void)
     params(Type.Context, Type.Int)
-}
-
-internal val castContextFetch = method("castContextFetch") {
-    strings("Error fetching CastContext.")
-    returns(Type.Void)
 }
 
 // GooglePlayServicesUtilLight.isGooglePlayServicesAvailable: a ConnectionResult status code where
@@ -48,3 +44,14 @@ internal val gservicesCacheFill = method("gservicesPrefixQuery") {
     params("android.content.ContentResolver", "java.lang.String[]")
 }.point("gservicesCacheFill") { invokeInterface { name("putAll"); params(Type.Map) } }
     .captureArgumentAs("rows", 1, Type.Map)
+
+internal val castProviderQueries = methods("castProviderDiscovery") {
+    strings("android.media.MediaRouteProviderService")
+}.points("castProviderQueries") {
+    invokeVirtual {
+        owner("android.content.pm.PackageManager")
+        name("queryIntentServices")
+        params("android.content.Intent", Type.Int)
+        returns(Type.List)
+    }
+}

@@ -40,7 +40,7 @@ fun gmsCoreSupportFor(
         "gmsCoreVendorGroupId",
         title = "GmsCore vendor group ID",
         description = "The group ID the installed GmsCore build was published under",
-        default = "app.revanced",
+        default = "app.reseam",
         required = true,
     )
     val packageName = stringOption(
@@ -102,7 +102,6 @@ fun gmsCoreSupportFor(
 
         // Play Services is not installed, so every check for it has to stop reporting that.
         playServicesCheck.alwaysReturn()
-        castContextFetch.alwaysReturn()
         playServicesAvailability.alwaysReturn(0)
 
         // Primes only initializes in an app it recognizes as Google's, judged by the installed
@@ -114,6 +113,13 @@ fun gmsCoreSupportFor(
 
         GmsCoreSupport.vendorGroupId.implement { returnValue(string(vendor)) }
         GmsCoreSupport.originalPackageName.implement { returnValue(string(originalPackage)) }
+
+        castProviderQueries.all.also { check(it.isNotEmpty()) { "No Cast provider discovery queries" } }
+            .forEach { query ->
+                query.captureArgumentAs("intent", 1, "android.content.Intent").before {
+                    GmsCoreSupport.restrictCastDiscovery(capture("intent"))
+                }
+            }
 
         // GmsCore can serve a Gservices key with no value, and the cache the rows land in rejects
         // nulls, which crashes the app at launch and on every background refresh.

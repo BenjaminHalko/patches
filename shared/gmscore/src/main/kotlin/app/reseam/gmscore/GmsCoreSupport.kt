@@ -27,6 +27,12 @@ import app.reseam.runtime.Export
 
 internal fun gmsCorePackageName(): String = "${vendorGroupId()}.android.gms"
 
+/** Restricts a media-route discovery intent to the GmsCore package chosen at patch time. */
+@Export
+fun restrictCastDiscovery(intent: Intent) {
+    intent.setPackage(gmsCorePackageName())
+}
+
 @Export
 fun check(activity: Activity) {
     val gmsCore = gmsCorePackageName()
