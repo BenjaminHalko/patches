@@ -591,6 +591,8 @@
     <string name="external_downloader_action_button_summary">Uses the external downloader for YouTube\'s in-app Download action.</string>
     <string name="unlock_queue">Unlock queue</string>
     <string name="unlock_queue_summary">Unlocks the video queue.</string>
+    <string name="restore_cast_queue">Restore Cast Play/Queue dialog</string>
+    <string name="restore_cast_queue_summary">Keeps the Cast session active and shows Play and Queue choices when selecting another video. Restart YouTube after changing this setting.</string>
     <string name="unlock_downloads">Unlock downloads</string>
     <string name="unlock_downloads_summary">Unlocks downloads in every quality.</string>
     <string name="external_downloader_package_name">External downloader package</string>

@@ -10,7 +10,7 @@ import app.reseam.patch.settings.toggle
 object PlayerOverlaySettings : SettingsGroup(YouTubeStrings, YOUTUBE_KEYS) {
     val hideAutoplayButton by toggle(default = true)
     val hideCaptionsButton by toggle(default = false)
-    val hideCastButton by toggle(default = true)
+    val hideCastButton by toggle(default = false)
     val hideCollapseButton by toggle(default = false)
     val hideFullscreenButton by toggle(default = false)
     val hidePlayerControlButtonsBackground by toggle(default = false)
