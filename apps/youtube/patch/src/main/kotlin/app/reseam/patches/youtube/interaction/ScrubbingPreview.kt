@@ -37,7 +37,9 @@ val scrubbingPreview = patch {
             // while it is unavailable; only its own overlay stays hidden.
             fullPreviewAvailable.alwaysReturn(false)
             fullPreviewScrub.before { ScrubbingPreview.onScrub(param(0), param(1)) }
-            fullPreviewFrame.before { ScrubbingPreview.onFrame(param(0).fieldOfType("android.graphics.Bitmap")) }
+            fullPreviewFrame.before {
+                whenNotNull(param(0)) { ScrubbingPreview.onFrame(param(0).fieldOfType("android.graphics.Bitmap")) }
+            }
             seekbarOnDraw.before { ScrubbingPreview.setSeekbar(thisObject) }
             filmStripStateChange.point { opcode(Opcode.IPUT_OBJECT) }
                 .before { ScrubbingPreview.setFilmStripState(param(0)) }
