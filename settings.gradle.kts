@@ -15,7 +15,7 @@ pluginManagement {
 }
 
 plugins {
-    id("app.reseam.workspace") version "0.26.3"
+    id("app.reseam.workspace") version "0.27.0"
 }
 
 rootProject.name = "reseam-patches"
