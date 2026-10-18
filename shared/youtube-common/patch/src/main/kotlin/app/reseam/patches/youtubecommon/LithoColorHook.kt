@@ -4,6 +4,7 @@
 package app.reseam.patches.youtubecommon
 
 import app.reseam.patch.ExtMethod
+import app.reseam.patch.RunList
 import app.reseam.patch.Type
 import app.reseam.patch.before
 import app.reseam.patch.dex.AccessFlags
@@ -13,17 +14,16 @@ import app.reseam.patch.point
 
 private const val PAINT = "android.graphics.Paint"
 
-private val colorHooks = mutableListOf<ExtMethod>()
+private val colorHooks = RunList<ExtMethod>()
 
 /** Lets theme patches share the one Paint.setColor seam used by Litho components. */
 fun registerLithoColorHook(hook: ExtMethod) {
-    colorHooks += hook
+    colorHooks.add(hook)
 }
 
 val lithoColorHook = patch {
     afterDependents {
-        val hooks = colorHooks.toList()
-        colorHooks.clear()
+        val hooks = colorHooks.values
         if (hooks.isEmpty()) return@afterDependents
 
         lithoOnBoundsChange

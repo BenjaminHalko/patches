@@ -4,6 +4,7 @@
 package app.reseam.patches.youtube.internal
 
 import app.reseam.patch.ExtMethod
+import app.reseam.patch.RunList
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.dex.AccessFlags
@@ -14,15 +15,15 @@ import app.reseam.patches.youtube.core.YOUTUBE
 import app.reseam.patches.youtubecommon.videoIdGetter
 import app.reseam.patches.youtubecommon.videoIdMethod
 
-private val videoIdHooks = mutableListOf<ExtMethod>()
-private val backgroundPlayVideoIdHooks = mutableListOf<ExtMethod>()
+private val videoIdHooks = RunList<ExtMethod>()
+private val backgroundPlayVideoIdHooks = RunList<ExtMethod>()
 
 /** Runs after YouTube obtains the ID of a newly opened regular or Shorts video. */
 fun hookVideoId(hook: ExtMethod) {
     require(hook.isStatic && hook.proto == "(Ljava/lang/String;)V") {
         "A video-id hook must be static (String) -> Unit: $hook"
     }
-    videoIdHooks += hook
+    videoIdHooks.add(hook)
 }
 
 /** Runs after YouTube obtains an ID while preparing background playback. */
@@ -30,7 +31,7 @@ fun hookBackgroundPlayVideoId(hook: ExtMethod) {
     require(hook.isStatic && hook.proto == "(Ljava/lang/String;)V") {
         "A background video-id hook must be static (String) -> Unit: $hook"
     }
-    backgroundPlayVideoIdHooks += hook
+    backgroundPlayVideoIdHooks.add(hook)
 }
 
 /** Runs after the player-response parser obtains its video ID. */
@@ -49,7 +50,7 @@ val videoIdHook = patch {
         }.next { resultOf(Type.String) }
             .captureAs("videoId", Type.String)
             .after {
-                videoIdHooks.forEach { call(it, capture("videoId")) }
+                videoIdHooks.values.forEach { call(it, capture("videoId")) }
             }
 
         backgroundPlayVideoIdMethod.point {
@@ -57,11 +58,8 @@ val videoIdHook = patch {
         }.next { resultOf(Type.String) }
             .captureAs("backgroundVideoId", Type.String)
             .after {
-                backgroundPlayVideoIdHooks.forEach { call(it, capture("backgroundVideoId")) }
+                backgroundPlayVideoIdHooks.values.forEach { call(it, capture("backgroundVideoId")) }
             }
-
-        videoIdHooks.clear()
-        backgroundPlayVideoIdHooks.clear()
     }
 }
 

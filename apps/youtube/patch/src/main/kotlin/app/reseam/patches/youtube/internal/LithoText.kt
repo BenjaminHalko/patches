@@ -5,6 +5,7 @@
 package app.reseam.patches.youtube.internal
 
 import app.reseam.patch.ExtMethod
+import app.reseam.patch.RunList
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.before
@@ -21,7 +22,7 @@ import app.reseam.patches.youtube.core.YOUTUBE
 import app.reseam.patches.youtubecommon.conversionContext
 import app.reseam.patches.youtubecommon.conversionContextPath
 
-private val lithoTextHooks = mutableListOf<ExtMethod>()
+private val lithoTextHooks = RunList<ExtMethod>()
 
 /**
  * Rewrites the text a Litho text component shows. The hook is static
@@ -31,16 +32,15 @@ fun hookLithoText(hook: ExtMethod) {
     require(hook.isStatic && hook.proto == "(Ljava/lang/StringBuilder;Ljava/lang/CharSequence;)Ljava/lang/CharSequence;") {
         "A Litho text hook must be static (StringBuilder, CharSequence) -> CharSequence: $hook"
     }
-    lithoTextHooks += hook
+    lithoTextHooks.add(hook)
 }
 
 val lithoTextHook = patch {
     compatibleWith(YOUTUBE)
 
     afterDependents {
-        if (lithoTextHooks.isEmpty()) return@afterDependents
-        val hooks = lithoTextHooks.toList()
-        lithoTextHooks.clear()
+        if (lithoTextHooks.values.isEmpty()) return@afterDependents
+        val hooks = lithoTextHooks.values
 
         val contextTypes = setOf(conversionContext.descriptor, conversionContext.classDef.info.superclass)
         val contextField = fieldTarget("text conversion context") {

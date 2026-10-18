@@ -8,6 +8,7 @@ import app.reseam.patch.CodeScope
 import app.reseam.patch.ValueRef
 import app.reseam.patch.ExtMethod
 import app.reseam.patch.MethodTarget
+import app.reseam.patch.RunList
 import app.reseam.patch.Type
 import app.reseam.patch.after
 import app.reseam.patch.classTarget
@@ -35,7 +36,9 @@ private const val HELPER = "patch_setClientContext"
 /** The request families whose client context a patch can rewrite. */
 enum class ClientContextEndpoint { BROWSE, SEARCH, REEL, GUIDE }
 
-private val clientInfoHooks = linkedMapOf<ClientContextEndpoint, MutableList<CodeScope.(ValueRef) -> Unit>>()
+private class ClientInfoHook(val endpoint: ClientContextEndpoint, val emit: CodeScope.(ValueRef) -> Unit)
+
+private val clientInfoHooks = RunList<ClientInfoHook>()
 
 /**
  * Passes the OS name the app reports on [endpoint] requests through [hook], a static
@@ -43,16 +46,16 @@ private val clientInfoHooks = linkedMapOf<ClientContextEndpoint, MutableList<Cod
  * hooks are emitted once every dependent has registered.
  */
 fun hookClientContextOsName(endpoint: ClientContextEndpoint, hook: ExtMethod) {
-    clientInfoHooks.getOrPut(endpoint) { mutableListOf() } += { clientInfo ->
+    clientInfoHooks.add(ClientInfoHook(endpoint) { clientInfo ->
         clientInfo.set(osNameField, call(hook, clientInfo.field(osNameField)))
-    }
+    })
 }
 
 /** A settings-gated constant override, emitted directly into the endpoint helper. */
 fun overrideClientContextOsName(endpoint: ClientContextEndpoint, setting: ToggleSetting, value: String) {
-    clientInfoHooks.getOrPut(endpoint) { mutableListOf() } += { clientInfo ->
+    clientInfoHooks.add(ClientInfoHook(endpoint) { clientInfo ->
         whenEnabled(setting) { clientInfo.set(osNameField, string(value)) }
-    }
+    })
 }
 
 /**
@@ -64,10 +67,7 @@ val clientContextHook = patch {
     compatibleWith(YOUTUBE)
 
     afterDependents {
-        if (clientInfoHooks.isEmpty()) return@afterDependents
-
-        val registeredHooks = clientInfoHooks.mapValues { it.value.toList() }
-        clientInfoHooks.clear()
+        val registeredHooks = clientInfoHooks.values.groupBy(ClientInfoHook::endpoint, ClientInfoHook::emit)
         for ((endpoint, hooks) in registeredHooks) {
             val sources = endpointSources(endpoint).distinctBy { it.owner }
             check(sources.isNotEmpty()) { "No $endpoint request constructors found" }

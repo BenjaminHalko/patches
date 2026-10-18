@@ -5,8 +5,8 @@
 package app.reseam.patches.youtube.internal
 
 import app.reseam.patch.ExtMethod
-import app.reseam.patch.MethodTarget
 import app.reseam.patch.ResourceScope
+import app.reseam.patch.RunList
 import app.reseam.patch.Type
 import app.reseam.patch.XmlDocument
 import app.reseam.patch.XmlElement
@@ -32,21 +32,20 @@ private fun ResourceScope.id(name: String): Long = id("id", name)?.toLong()
 
 private class BottomLayout(val resourcePath: String, val idName: String, val position: Int)
 
-private val bottomLayouts = mutableListOf<BottomLayout>()
-private val bottomInitializers = mutableListOf<ExtMethod>()
-private var bottomControlsInflateTarget: MethodTarget? = null
+private val bottomLayouts = RunList<BottomLayout>()
+private val bottomInitializers = RunList<ExtMethod>()
 
 /**
  * Registers an XML fragment and its ids before the shared seam grafts all controls.
  * [position] orders the buttons outward from the fullscreen button, lowest nearest.
  */
 fun registerPlayerControlLayout(resourcePath: String, idName: String, position: Int) {
-    bottomLayouts += BottomLayout(resourcePath, idName, position)
+    bottomLayouts.add(BottomLayout(resourcePath, idName, position))
 }
 
 /** Registers the extension initializer corresponding to a previously registered XML fragment. */
 fun registerPlayerControlInitializer(initializer: ExtMethod) {
-    bottomInitializers += initializer
+    bottomInitializers.add(initializer)
 }
 
 private val visibilityEntityMethod = method("player controls visibility entity") {
@@ -77,22 +76,22 @@ private val visibilityFactory = visibilityEntityMethod
     .point("player controls visibility factory") { invokeStatic { } }
     .callee()
 
+private fun bottomControlsInflate(bottomStub: Long) = method("bottom player controls inflate") {
+    params()
+    returns(Type.Object)
+    literals(bottomStub)
+    calls { params(); returns(Type.View) }
+}
+
 val playerControls = patch {
     compatibleWith(YOUTUBE)
 
     execute {
-        // Resource-seeded targets are intentionally created inside execute so the ids come from
-        // this YouTube APK rather than from a copied resource table.
-        val bottomStub = resources.id("bottom_ui_container_stub")
+        // Resource-seeded targets are intentionally created where they are used so the ids come
+        // from this YouTube APK rather than from a copied resource table.
         val heatseeker = resources.id("heatseeker_viewstub")
         val fullscreen = resources.id("fullscreen_button")
-        val bottomControlsInflate = method("bottom player controls inflate") {
-            params()
-            returns(Type.Object)
-            literals(bottomStub)
-            calls { params(); returns(Type.View) }
-        }
-        bottomControlsInflateTarget = bottomControlsInflate
+        val bottomControlsInflate = bottomControlsInflate(resources.id("bottom_ui_container_stub"))
         val overlayInflate = method("player controls overlay inflate") {
             flags(AccessFlags.PUBLIC or AccessFlags.FINAL)
             hasParam(Type.View)
@@ -140,16 +139,10 @@ val playerControls = patch {
     }
 
     afterDependents {
-        val initializers = bottomInitializers.toList()
-        val layouts = bottomLayouts.sortedBy { it.position }
-        val inflateTarget = bottomControlsInflateTarget
-        bottomInitializers.clear()
-        bottomLayouts.clear()
-        bottomControlsInflateTarget = null
+        val initializers = bottomInitializers.values
+        val layouts = bottomLayouts.values.sortedBy { it.position }
         if (initializers.isNotEmpty()) {
-            val inflate = inflateTarget
-                ?: error("bottom player controls inflate target is missing")
-            inflate
+            bottomControlsInflate(resources.id("bottom_ui_container_stub"))
                 .point("bottom controls inflate result") {
                     invoke { params(); returns(Type.View) }
                 }

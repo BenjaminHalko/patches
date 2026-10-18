@@ -95,36 +95,31 @@ val videoInformationHook = patch {
     }
 
     afterDependents {
-        if (onCreateHooks.isNotEmpty()) {
+        if (onCreateHooks.values.isNotEmpty()) {
             playerConstructor.after {
-                onCreateHooks.forEach { call(it, thisObject) }
+                onCreateHooks.values.forEach { call(it, thisObject) }
             }
         }
 
-        if (videoTimeHooks.isNotEmpty()) {
+        if (videoTimeHooks.values.isNotEmpty()) {
             playerTimeMethod.before {
-                videoTimeHooks.forEach { call(it, param(0)) }
+                videoTimeHooks.values.forEach { call(it, param(0)) }
             }
         }
 
-        if (videoSpeedChangedHooks.isNotEmpty()) {
+        if (videoSpeedChangedHooks.values.isNotEmpty()) {
             setPlaybackSpeedMethod.before {
-                videoSpeedChangedHooks.forEach { call(it, param(0)) }
+                videoSpeedChangedHooks.values.forEach { call(it, param(0)) }
             }
         }
 
-        if (userSelectedPlaybackSpeedHooks.isNotEmpty()) {
+        if (userSelectedPlaybackSpeedHooks.values.isNotEmpty()) {
             legacySpeedSelection.after {
-                userSelectedPlaybackSpeedHooks.forEach { call(it, capture("selectedSpeed")) }
+                userSelectedPlaybackSpeedHooks.values.forEach { call(it, capture("selectedSpeed")) }
             }
             speedChangedValue.before {
-                userSelectedPlaybackSpeedHooks.forEach { call(it, capture("playbackSpeed")) }
+                userSelectedPlaybackSpeedHooks.values.forEach { call(it, capture("playbackSpeed")) }
             }
         }
-
-        onCreateHooks.clear()
-        videoTimeHooks.clear()
-        videoSpeedChangedHooks.clear()
-        userSelectedPlaybackSpeedHooks.clear()
     }
 }
