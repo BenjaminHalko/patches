@@ -32,8 +32,8 @@ internal data class ServerToken(val poToken: String, val expiresAt: Long)
 internal fun tokenServerSelected(): Boolean =
     SpoofSettings.spoofVideoStreamsTokenSource.value == "server"
 
-internal fun mintServerToken(videoId: String, deadline: Long): ServerToken {
-    val body = JSONObject().put("videoId", videoId).toString()
+internal fun mintServerToken(binding: String, deadline: Long): ServerToken {
+    val body = JSONObject().put("binding", binding).toString()
     val initial = post("tokens", body, credential(deadline), deadline)
     val response =
         if (initial.status == HttpURLConnection.HTTP_UNAUTHORIZED) {

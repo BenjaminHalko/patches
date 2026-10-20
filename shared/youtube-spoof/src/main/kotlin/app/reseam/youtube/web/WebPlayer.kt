@@ -93,16 +93,15 @@ object WebPlayer {
             val profile = JSONObject(call("web.profile", JSONArray()))
             val client = JSONObject(profile.getJSONObject("client").toString())
             val sessionId = UUID.randomUUID().toString()
-            return when (profile.getString("binding")) {
-                "none" -> Attestation(client, "", Long.MAX_VALUE, sessionId)
-                "content" ->
-                    mintServerToken(videoId, deadline).let {
-                        Attestation(client, it.poToken, it.expiresAt, sessionId)
-                    }
-                else ->
-                    throw IllegalStateException(
-                        "The page requests a session-bound PoToken, which the token server cannot mint"
-                    )
+            val binding =
+                when (profile.getString("binding")) {
+                    "none" -> return Attestation(client, "", Long.MAX_VALUE, sessionId)
+                    "content" -> videoId
+                    "session" -> profile.getString("sessionBinding")
+                    else -> throw IllegalStateException("Unknown PoToken binding")
+                }
+            return mintServerToken(binding, deadline).let {
+                Attestation(client, it.poToken, it.expiresAt, sessionId)
             }
         }
 

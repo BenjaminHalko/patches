@@ -98,7 +98,7 @@ const page = (() => {
     };
 
     let profiled = null;
-    const profile = () => profiled ??= load().then(({ client, binding }) => ({ client, binding }), error => {
+    const profile = () => profiled ??= load().then(({ client, binding, sessionBinding }) => ({ client, binding, sessionBinding }), error => {
         profiled = null;
         throw error;
     });
