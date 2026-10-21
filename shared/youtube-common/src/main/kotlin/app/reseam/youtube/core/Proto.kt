@@ -10,6 +10,8 @@ object Proto {
     const val WIRE_VARINT = 0
     const val WIRE_FIXED64 = 1
     const val WIRE_LENGTH = 2
+    const val WIRE_START_GROUP = 3
+    const val WIRE_END_GROUP = 4
     const val WIRE_FIXED32 = 5
 
     class Field
@@ -26,7 +28,8 @@ object Proto {
     }
 
     /**
-     * Decodes fields in wire order; rejects malformed tags, unsupported wire types and truncation.
+     * Decodes fields in wire order; a group's bytes are its fields. Rejects malformed tags,
+     * unbalanced groups and truncation.
      */
     fun fields(message: ByteArray): List<Field> =
         ProtoReader(message).run { buildList { while (hasMore) add(field()) } }

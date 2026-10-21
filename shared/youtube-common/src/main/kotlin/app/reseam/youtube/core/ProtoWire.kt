@@ -4,9 +4,11 @@
 package app.reseam.youtube.core
 
 import app.reseam.youtube.core.Proto.Field
+import app.reseam.youtube.core.Proto.WIRE_END_GROUP
 import app.reseam.youtube.core.Proto.WIRE_FIXED32
 import app.reseam.youtube.core.Proto.WIRE_FIXED64
 import app.reseam.youtube.core.Proto.WIRE_LENGTH
+import app.reseam.youtube.core.Proto.WIRE_START_GROUP
 import app.reseam.youtube.core.Proto.WIRE_VARINT
 import java.io.ByteArrayOutputStream
 
@@ -18,20 +20,44 @@ internal class ProtoReader(private val message: ByteArray) {
 
     fun field(): Field {
         val start = position
+        val (number, wireType) = tag()
+        require(wireType != WIRE_END_GROUP) { "Unbalanced protobuf group" }
+        var varint = 0L
+        val bytes =
+            if (wireType == WIRE_VARINT) {
+                varint = varint()
+                null
+            } else value(number, wireType)
+        return Field(number, wireType, varint, bytes, start, position)
+    }
+
+    private fun tag(): Pair<Int, Int> {
         val tag = varint()
         val number = tag ushr 3
         require(number in 1..0x1FFFFFFFL) { "Invalid protobuf tag" }
-        val wireType = (tag and 7).toInt()
-        var varint = 0L
-        var bytes: ByteArray? = null
+        return number.toInt() to (tag and 7).toInt()
+    }
+
+    private fun value(number: Int, wireType: Int): ByteArray =
         when (wireType) {
-            WIRE_VARINT -> varint = varint()
-            WIRE_FIXED64 -> skip(8)
-            WIRE_LENGTH -> bytes = lengthDelimited()
-            WIRE_FIXED32 -> skip(4)
+            WIRE_FIXED64 -> take(8L)
+            WIRE_LENGTH -> lengthDelimited()
+            WIRE_START_GROUP -> group(number)
+            WIRE_FIXED32 -> take(4L)
             else -> throw IllegalArgumentException("Unsupported protobuf wire type $wireType")
         }
-        return Field(number.toInt(), wireType, varint, bytes, start, position)
+
+    private fun group(number: Int): ByteArray {
+        val start = position
+        while (true) {
+            val end = position
+            val (field, wireType) = tag()
+            if (wireType == WIRE_END_GROUP) {
+                require(field == number) { "Unbalanced protobuf group" }
+                return message.copyOfRange(start, end)
+            }
+            if (wireType == WIRE_VARINT) varint() else value(field, wireType)
+        }
     }
 
     fun varint(): Long {
@@ -46,15 +72,11 @@ internal class ProtoReader(private val message: ByteArray) {
         throw IllegalArgumentException("Malformed protobuf varint")
     }
 
-    private fun lengthDelimited(): ByteArray {
-        val length = varint()
-        require(length in 0..message.size - position) { "Truncated protobuf field" }
-        return message.copyOfRange(position, position + length.toInt()).also { skip(it.size) }
-    }
+    private fun lengthDelimited(): ByteArray = take(varint())
 
-    private fun skip(count: Int) {
-        position += count
-        require(position <= message.size) { "Truncated protobuf message" }
+    private fun take(count: Long): ByteArray {
+        require(count in 0..message.size - position) { "Truncated protobuf field" }
+        return message.copyOfRange(position, position + count.toInt()).also { position += it.size }
     }
 }
 
