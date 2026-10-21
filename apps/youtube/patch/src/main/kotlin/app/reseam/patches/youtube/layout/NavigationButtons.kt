@@ -114,13 +114,14 @@ val navigationButtons = patch("Navigation bar") {
         overrideBooleanFeature(TRANSLUCENT_NAVIGATION_BUTTONS, NavigationButtons.useTranslucentNavigationButtons)
         overrideBooleanFeature(TRANSLUCENT_SYSTEM_BUTTONS, NavigationButtons.useTranslucentNavigationButtons)
 
-        // Feeds whose response asks for it hide the bar through the scroll listener's (show, animate) call.
+        // The feed scroll listeners hide the bar through (show, animate) calls: the pivot bar controller's,
+        // and with experiment 45649805 on, the bottom bar container's as well.
         methods("feedScrolled") {
             params(RECYCLER_VIEW, Type.Int, Type.Int)
             returns(Type.Void)
             literals(SCROLL_HIDES_HEADER)
         }.points("navigationBarScrollVisibility") {
-            invokeInterface { params(Type.Boolean, Type.Boolean); returns(Type.Void) }
+            invoke { params(Type.Boolean, Type.Boolean); returns(Type.Void) }
         }.all.also { check(it.isNotEmpty()) { "No feed scroll listener toggles the navigation bar" } }
             .forEach { it.skipWhen { valueOf(AppearanceSettings.keepNavigationBarVisible) } }
 
