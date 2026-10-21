@@ -17,6 +17,7 @@ import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.point
 import app.reseam.patches.youtubecommon.videoIdGetter
+import app.reseam.youtube.spoof.bindings.AndroidPoToken
 import app.reseam.youtube.spoof.bindings.SabrPlayback
 import app.reseam.youtube.spoof.bindings.SpoofVideoStreams
 import app.reseam.youtubespoof.settings.SpoofSettings
@@ -46,6 +47,7 @@ fun PatchRuntime.spoofStreams(activityOnCreate: MethodTarget) {
     }
 
     hookSabrPlayback()
+    hookNativePoToken()
 
     activityOnCreate.before { SpoofVideoStreams.setClientOrderToUse() }
 
@@ -103,6 +105,39 @@ fun PatchRuntime.spoofStreams(activityOnCreate: MethodTarget) {
             SpoofVideoStreams.rewriteVideoPlaybackMethod(thisObject.field(mediaUriField), thisObject.field(mediaMethodField)),
         )
     }
+}
+
+/**
+ * Supplies the native client's integrity token from the server for a native-mode video, instead of
+ * the local Play Services the patched app cannot genuinely run. The extension returns null for every
+ * other request, so the app's own path is left untouched.
+ */
+private fun PatchRuntime.hookNativePoToken() {
+    integrityTokenGenerate.before {
+        val token = AndroidPoToken.mintNativePoToken(param(0), param(1))
+        whenNotNull(token) { returnValue(newInstance(integrityResult.descriptor, "([B)V", token)) }
+    }
+}
+
+private val integrityTokenManager = klass("integrity token manager") {
+    strings(
+        "Generating PO Token failed.",
+        "Invalid mode",
+        "Unable to generate a new integrity token.",
+    )
+}
+
+// The inner mint call, below the manager's availability precheck and its result caching; replacing
+// it leaves the native attestation handshake intact while only the token itself comes from us.
+private val integrityTokenGenerate = method("integrity token generate") {
+    inClass(integrityTokenManager)
+    paramCount(6)
+    param(0, "[B")
+    param(1, Type.Int)
+}
+
+private val integrityResult = classTarget("integrity token result") {
+    bytecode.findClass(integrityTokenGenerate.returnType) ?: error("The integrity token result is missing")
 }
 
 private val buildRequest = method("Cronet request builder") {

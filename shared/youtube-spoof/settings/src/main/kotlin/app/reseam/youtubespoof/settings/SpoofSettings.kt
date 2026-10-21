@@ -22,18 +22,10 @@ object SpoofSettings : SettingsGroup(SpoofStrings, "you_tube_settings") {
             choices =
                 listOf(
                     Choice("tv", SpoofStrings.spoofVideoStreamsClientTv),
+                    Choice("android", SpoofStrings.spoofVideoStreamsClientAndroid),
                     Choice("web", SpoofStrings.spoofVideoStreamsClientWeb),
                     Choice("visionos", SpoofStrings.spoofVideoStreamsClientVisionos),
                     Choice("tv_simply", SpoofStrings.spoofVideoStreamsClientTvSimply),
-                ),
-        )
-    val spoofVideoStreamsTokenSource by
-        choice(
-            default = "device",
-            choices =
-                listOf(
-                    Choice("device", SpoofStrings.spoofVideoStreamsTokenSourceDevice),
-                    Choice("server", SpoofStrings.spoofVideoStreamsTokenSourceServer),
                 ),
         )
     val userAgentClientSpoof by toggle(default = true)

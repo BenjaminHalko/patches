@@ -26,12 +26,20 @@ internal object InstalledStreams {
 
     @Synchronized
     fun nativeInstalled(videoId: String?) {
-        clients.remove(videoId)
+        // An Android install keeps the app's own streams, so the native wrapper runs for it too;
+        // its mark must survive that call so the token path knows to supply the mint token.
+        if (clients[videoId]?.client?.native != true) clients.remove(videoId)
     }
 
     @Synchronized
     fun videoChanged(videoId: String?) {
         currentVideoId = videoId
+    }
+
+    @Synchronized
+    fun currentIsNative(): Boolean {
+        prune()
+        return clients[currentVideoId]?.client?.native == true
     }
 
     @Synchronized

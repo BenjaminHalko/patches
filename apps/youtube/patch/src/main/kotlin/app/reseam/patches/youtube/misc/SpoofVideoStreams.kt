@@ -24,8 +24,8 @@ import app.reseam.youtube.settings.YouTubeStrings
 import app.reseam.youtube.spoof.bindings.SpoofVideoStreams
 import app.reseam.youtubespoof.settings.SpoofSettings
 
-val spoofVideoStreams = patch("Spoof video streams") {
-    description("Requests and installs playback streams from a compatible YouTube client.")
+val spoofVideoStreams = patch("Fix playback") {
+    description("Makes videos play when YouTube blocks the app.")
     compatibleWith(YOUTUBE)
     dependsOn(videoIdHook, clientContextHook)
     settings(
@@ -35,7 +35,6 @@ val spoofVideoStreams = patch("Spoof video streams") {
             YouTubeStrings.sectionStreamCompatibility,
             SpoofSettings.spoofVideoStreams,
             SpoofSettings.spoofVideoStreamsClient,
-            SpoofSettings.spoofVideoStreamsTokenSource,
             SpoofSettings.spoofVideoStreamsStatsForNerds,
         ),
     )

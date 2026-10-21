@@ -16,7 +16,12 @@ private constructor(
     internal val expiresAt: Long,
     internal val sabr: SabrData?,
     internal val playerResponse: ByteArray?,
+    internal val native: Boolean = false,
 ) {
+    internal constructor(
+        client: ClientType,
+    ) : this(ByteArray(0), client, Long.MAX_VALUE, null, null, native = true)
+
     internal constructor(
         streamingData: ByteArray,
         client: ClientType,

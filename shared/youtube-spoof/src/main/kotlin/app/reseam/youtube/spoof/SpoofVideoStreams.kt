@@ -64,9 +64,18 @@ fun fetchStreams(url: String?, requestHeaders: Map<String?, String?>?, requestBo
 @Export
 fun getStreamingData(videoId: String?): StreamingData? {
     if (!isSpoofingEnabled() || videoId == null) return null
-    val response = awaitStreams(videoId)
-    if (response != null) Logger.debug { "Overriding video stream: $videoId" }
-    else Logger.debug { "Not overriding streaming data (video stream is null): $videoId" }
+    val response =
+        awaitStreams(videoId)
+            ?: run {
+                Logger.debug { "Not overriding streaming data (video stream is null): $videoId" }
+                return null
+            }
+    if (response.native) {
+        InstalledStreams.installed(videoId, response)
+        Logger.debug { "Keeping native streams for $videoId with a server integrity token" }
+        return null
+    }
+    Logger.debug { "Overriding video stream: $videoId" }
     return response
 }
 

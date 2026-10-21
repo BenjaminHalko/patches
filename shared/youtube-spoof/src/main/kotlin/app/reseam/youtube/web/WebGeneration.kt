@@ -12,9 +12,7 @@ internal class WebGeneration {
     val createdAt = SystemClock.elapsedRealtime()
     val runtime = WebRuntime(YouTubeContext.applicationContext)
     val prepared =
-        runtime.call("web.prepare", JSONArray().put(!tokenServerSelected())).thenApply {
-            it.toInt()
-        }
+        runtime.call("web.prepare", JSONArray().put(true)).thenApply { it.toInt() }
     var users = 0
     var retired = false
 

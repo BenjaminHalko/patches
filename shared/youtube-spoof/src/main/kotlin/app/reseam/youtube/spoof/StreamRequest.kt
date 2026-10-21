@@ -57,6 +57,10 @@ internal class StreamRequest(
                     continue
                 }
             }
+            if (client.native) {
+                Logger.debug { "Native playback with a server integrity token for $videoId" }
+                return StreamingData(client)
+            }
             val attemptDeadline =
                 SystemClock.elapsedRealtime() + remaining(deadline) / (config.clients.size - index)
             try {

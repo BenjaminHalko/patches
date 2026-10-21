@@ -13,8 +13,8 @@ import app.reseam.youtubespoof.settings.SpoofSettings
 import app.reseam.patches.youtubespoof.spoofStreams
 import app.reseam.youtubemusic.settings.YouTubeMusicStrings
 
-val spoofVideoStreams = patch("Spoof video streams") {
-    description("Requests and installs playback streams from a compatible YouTube client.")
+val spoofVideoStreams = patch("Fix playback") {
+    description("Makes videos play when YouTube Music blocks the app.")
     compatibleWith(YOUTUBE_MUSIC)
     settings(
         youTubeMusicSettings,
@@ -23,7 +23,6 @@ val spoofVideoStreams = patch("Spoof video streams") {
             YouTubeMusicStrings.sectionStreamCompatibility,
             SpoofSettings.spoofVideoStreams,
             SpoofSettings.spoofVideoStreamsClient,
-            SpoofSettings.spoofVideoStreamsTokenSource,
         ),
     )
 

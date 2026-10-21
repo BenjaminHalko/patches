@@ -6,6 +6,7 @@
 package app.reseam.youtube.web
 
 import android.os.SystemClock
+import android.util.Base64
 import app.reseam.bundle.openHttp
 import app.reseam.bundle.send
 import app.reseam.youtube.core.TextResponse
@@ -29,8 +30,18 @@ private const val MAX_RESPONSE_BYTES = 64 * 1024
 
 internal data class ServerToken(val poToken: String, val expiresAt: Long)
 
-internal fun tokenServerSelected(): Boolean =
-    SpoofSettings.spoofVideoStreamsTokenSource.value == "server"
+// The native integrity binding is an arbitrary byte string, so it is sent base64url-encoded.
+internal fun mintAndroidToken(binding: ByteArray, deadline: Long): String {
+    val encoded = Base64.encodeToString(binding, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
+    val body = JSONObject().put("binding", encoded).put("vm", "droidguard").toString()
+    val initial = post("tokens", body, credential(deadline), deadline)
+    val response =
+        if (initial.status == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            SpoofSettings.tokenServerCredential.reset()
+            post("tokens", body, credential(deadline), deadline)
+        } else initial
+    return success(response).getString("poToken")
+}
 
 internal fun mintServerToken(binding: String, deadline: Long): ServerToken {
     val body = JSONObject().put("binding", binding).toString()

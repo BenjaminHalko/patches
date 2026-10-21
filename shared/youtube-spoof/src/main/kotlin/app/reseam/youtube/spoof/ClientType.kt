@@ -21,6 +21,9 @@ internal enum class ClientType(
     val deviceModel: String? = null,
     val osName: String? = null,
     val osVersion: String? = null,
+    // Keeps the app's own streams and supplies the integrity token the native client cannot mint,
+    // rather than requesting streams from an alternate client.
+    val native: Boolean = false,
 ) {
     TV(
         "tv",
@@ -31,6 +34,17 @@ internal enum class ClientType(
         true,
         true,
         { SpoofStrings.spoofClientTv },
+    ),
+    ANDROID(
+        "android",
+        "ANDROID",
+        3,
+        "com.google.android.youtube/21.40.166 (Linux; U; Android 15) gzip",
+        "Android",
+        false,
+        true,
+        { SpoofStrings.spoofClientAndroid },
+        native = true,
     ),
     WEB(
         "web",

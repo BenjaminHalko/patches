@@ -5,6 +5,7 @@ package app.reseam.youtube.web
 
 import android.os.SystemClock
 import android.util.Base64
+import app.reseam.bundle.Logger
 import app.reseam.bundle.isMainThread
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
@@ -77,16 +78,24 @@ object WebPlayer {
         private var closed = false
         val signatureTimestamp = await(generation.prepared)
 
+        // The device mints its own token; the Reseam server is the fallback when that fails.
         fun attest(videoId: String): Attestation {
             checkAwaitable()
-            if (tokenServerSelected()) return attestOnServer(videoId)
-            val result = JSONObject(call("web.attest", JSONArray().put(videoId)))
-            return Attestation(
-                result.getJSONObject("client"),
-                result.getString("poToken"),
-                result.getLong("expiresAt"),
-                result.getString("sessionId"),
-            )
+            return try {
+                val result = JSONObject(call("web.attest", JSONArray().put(videoId)))
+                Attestation(
+                    result.getJSONObject("client"),
+                    result.getString("poToken"),
+                    result.getLong("expiresAt"),
+                    result.getString("sessionId"),
+                )
+            } catch (interrupted: InterruptedException) {
+                Thread.currentThread().interrupt()
+                throw interrupted
+            } catch (exception: Exception) {
+                Logger.info(exception) { "Device Web attestation failed; using the Reseam server" }
+                attestOnServer(videoId)
+            }
         }
 
         private fun attestOnServer(videoId: String): Attestation {
