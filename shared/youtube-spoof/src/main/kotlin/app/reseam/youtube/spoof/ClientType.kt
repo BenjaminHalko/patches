@@ -24,6 +24,8 @@ internal enum class ClientType(
     // Keeps the app's own streams and supplies the integrity token the native client cannot mint,
     // rather than requesting streams from an alternate client.
     val native: Boolean = false,
+    // Returns every audio track whatever the request language; otherwise only the track matching it.
+    val multiAudioTracks: Boolean = false,
 ) {
     TV(
         "tv",
@@ -34,6 +36,7 @@ internal enum class ClientType(
         true,
         true,
         { SpoofStrings.spoofClientTv },
+        multiAudioTracks = true,
     ),
     ANDROID(
         "android",
@@ -45,6 +48,7 @@ internal enum class ClientType(
         true,
         { SpoofStrings.spoofClientAndroid },
         native = true,
+        multiAudioTracks = true,
     ),
     WEB(
         "web",
@@ -55,6 +59,7 @@ internal enum class ClientType(
         true,
         true,
         { SpoofStrings.spoofClientWeb },
+        multiAudioTracks = true,
     ),
     VISIONOS(
         "visionos",

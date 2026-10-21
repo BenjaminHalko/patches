@@ -21,6 +21,7 @@ internal object StreamingDataRequest {
     const val VISITOR_ID_HEADER = "X-Goog-Visitor-Id"
     const val REQUEST_TIMEOUT_MILLISECONDS = 30_000L
     private const val MAX_CACHED_REQUESTS = 50
+    // Not auto-dubbed, so a client that returns one audio track returns the original.
     private val originalAudioLocale = Locale.forLanguageTag("nb")
     val executor =
         ThreadPoolExecutor(

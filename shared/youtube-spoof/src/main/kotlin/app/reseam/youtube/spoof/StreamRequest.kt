@@ -21,7 +21,6 @@ internal class StreamRequest(
     val reloadToken: String?,
     private val offline: Boolean,
 ) {
-    private val locale = config.locale ?: Locale.getDefault()
     val deadline = SystemClock.elapsedRealtime() + StreamingDataRequest.REQUEST_TIMEOUT_MILLISECONDS
     @Volatile private var completed: StreamingData? = null
     private val http = StreamRequestHttp(headers, offline)
@@ -96,6 +95,7 @@ internal class StreamRequest(
                         )
                     else -> null
                 }
+            val locale = localeFor(client)
             attestation?.client?.apply {
                 put("hl", locale.language)
                 if (locale.country.isNotEmpty()) put("gl", locale.country)
@@ -135,6 +135,9 @@ internal class StreamRequest(
         }
     }
 
+    private fun localeFor(client: ClientType): Locale =
+        config.locale.takeUnless { client.multiAudioTracks } ?: Locale.getDefault()
+
     private fun send(
         client: ClientType,
         visitor: String?,
@@ -142,7 +145,7 @@ internal class StreamRequest(
         attestation: WebPlayer.Attestation?,
         attemptDeadline: Long,
     ): ByteArray {
-        val json = innertubeBody(client, videoId, visitor, locale, web, attestation, reloadToken)
+        val json = innertubeBody(client, videoId, visitor, localeFor(client), web, attestation, reloadToken)
         if (client == ClientType.WEB) {
             val response = checkNotNull(web).player(json, checkNotNull(attestation).client)
             if (response.size > MAX_RESPONSE_BYTES)
