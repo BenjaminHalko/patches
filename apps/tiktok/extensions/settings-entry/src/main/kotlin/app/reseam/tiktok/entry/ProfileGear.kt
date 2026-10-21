@@ -5,9 +5,11 @@
 
 package app.reseam.tiktok.entry
 
+import android.content.Context
 import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.LinearLayout
 import app.reseam.bundle.ReseamPatches
@@ -52,6 +54,8 @@ fun addToNavActions(navBar: View, start: MutableList<Any?>, end: MutableList<Any
 
 @Export fun viewAction(key: String, view: View): Any? = null
 
+@Export fun isDarkMode(context: Context): Boolean = false
+
 private fun gear(anchor: View, icon: Int) =
     TuxIconView(anchor.context).apply {
         tag = KEY
@@ -62,11 +66,36 @@ private fun gear(anchor: View, icon: Int) =
             setIconWidth(it.intrinsicWidth)
             setIconHeight(it.intrinsicHeight)
         }
-        setTintColor((anchor as? ImageView)?.imageTintList?.defaultColor ?: textColor(anchor))
+        followTheme()
         setPadding(anchor.paddingLeft, anchor.paddingTop, anchor.paddingRight, anchor.paddingBottom)
         layoutParams = copy(anchor.layoutParams)
         setOnClickListener { ReseamPatches.bundle().openSettings() }
     }
+
+private fun TuxIconView.followTheme() {
+    var previousDarkMode: Boolean? = null
+    val update = ViewTreeObserver.OnPreDrawListener {
+        val darkMode = isDarkMode(context)
+
+        if (darkMode != previousDarkMode) {
+            previousDarkMode = darkMode
+            setTintColor(if (darkMode) Color.WHITE else Color.BLACK)
+        }
+
+        true
+    }
+
+    // Use the activity's TikTok theme, including changes while the gear is attached.
+    addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+        override fun onViewAttachedToWindow(view: View) {
+            view.viewTreeObserver.addOnPreDrawListener(update)
+        }
+
+        override fun onViewDetachedFromWindow(view: View) {
+            view.viewTreeObserver.removeOnPreDrawListener(update)
+        }
+    })
+}
 
 private fun copy(params: ViewGroup.LayoutParams) =
     when (params) {
@@ -74,9 +103,3 @@ private fun copy(params: ViewGroup.LayoutParams) =
         is ViewGroup.MarginLayoutParams -> ViewGroup.MarginLayoutParams(params)
         else -> ViewGroup.LayoutParams(params)
     }
-
-private fun textColor(view: View): Int {
-    val attributes =
-        view.context.obtainStyledAttributes(intArrayOf(android.R.attr.textColorPrimary))
-    return attributes.getColor(0, Color.WHITE).also { attributes.recycle() }
-}
