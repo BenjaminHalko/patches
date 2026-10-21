@@ -29,6 +29,7 @@ object RedditSettings : SettingsGroup(RedditStrings) {
     val disableScreenshotBanner by toggle(default = true, icon = lucide("camera"))
     val skipNsfwWarning by toggle(default = false, icon = lucide("triangle-alert"))
     val blockAnalytics by toggle(default = true, icon = lucide("eye-off"))
+    val blockPostViews by toggle(default = false, icon = lucide("eye"))
     val blockAppsFlyer by toggle(default = true, icon = lucide("radar"))
     val disableAppRatePrompt by toggle(default = true, icon = lucide("star-off"))
     val hideAnswers by toggle(default = true, icon = lucide("message-circle-question"))

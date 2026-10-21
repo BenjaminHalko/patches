@@ -4,10 +4,12 @@
 package app.reseam.patches.reddit.privacy
 
 import app.reseam.patch.Type
+import app.reseam.patch.before
 import app.reseam.patch.klass
 import app.reseam.patch.method
 import app.reseam.patch.patch
 import app.reseam.patch.settings.gate
+import app.reseam.patch.settings.valueOf
 import app.reseam.patch.settings.section
 import app.reseam.patches.reddit.core.REDDIT
 import app.reseam.reddit.settings.RedditSettings
@@ -19,13 +21,21 @@ private const val TRACKING_LEVEL = "com.reddit.mmp.TrackingAndAttributionLevel"
 val blockAnalytics = patch("Block analytics") {
     description("Stops Reddit's event and metric logging and turns off AppsFlyer tracking.")
     compatibleWith(REDDIT)
-    settings(redditSettings, section(RedditStrings.sectionPrivacy, RedditSettings.blockAnalytics, RedditSettings.blockAppsFlyer))
+    settings(
+        redditSettings,
+        section(RedditStrings.sectionPrivacy, RedditSettings.blockAnalytics, RedditSettings.blockPostViews, RedditSettings.blockAppsFlyer),
+    )
 
     execute {
-        gate(RedditSettings.blockAnalytics) {
-            eventLogger.alwaysReturn()
-            metricLogger.alwaysReturn()
+        // Reddit's server skips posts it has view events for when it builds Home.
+        eventLogger.before {
+            whenInstanceOf(param(0), postViewEvent.descriptor) {
+                whenTrue(valueOf(RedditSettings.blockPostViews)) { returnVoid() }
+            } otherwise {
+                whenTrue(valueOf(RedditSettings.blockAnalytics)) { returnVoid() }
+            }
         }
+        gate(RedditSettings.blockAnalytics) { metricLogger.alwaysReturn() }
         gate(RedditSettings.blockAppsFlyer) {
             appsFlyerLevel.before { param(0).assign(enumValue(TRACKING_LEVEL, "NONE")) }
         }
@@ -38,6 +48,8 @@ private fun logger(sendLambda: String) = method(sendLambda) {
 }
 
 private val eventLogger = logger("com.reddit.eventkit.EventLoggerImpl\$send\$1")
+
+private val postViewEvent = klass("postViewEvent") { strings("PostViewPost(correlationId=") }
 
 private val metricLogger = logger("com.reddit.eventkit.MetricLoggerImpl\$send\$1")
 

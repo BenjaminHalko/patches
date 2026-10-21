@@ -41,7 +41,9 @@
     <string name="skip_nsfw_warning">Skip NSFW community warning</string>
     <string name="skip_nsfw_warning_summary">Opens mature communities without the confirmation dialog.</string>
     <string name="block_analytics">Block Reddit analytics</string>
-    <string name="block_analytics_summary">Stops Reddit\'s event and metric logging.</string>
+    <string name="block_analytics_summary">Stops Reddit\'s event and metric logging, except the post views Home needs.</string>
+    <string name="block_post_views">Block post views</string>
+    <string name="block_post_views_summary">Stops reporting which posts you viewed. Home will keep showing posts you already saw.</string>
     <string name="block_apps_flyer">Block AppsFlyer tracking</string>
     <string name="block_apps_flyer_summary">Turns off the AppsFlyer install and attribution tracker.</string>
     <string name="disable_app_rate_prompt">Disable rate-the-app prompt</string>
