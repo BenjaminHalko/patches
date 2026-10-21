@@ -17,4 +17,8 @@ fun Resources.isNightMode(): Boolean =
 
 /** The app's own resource [name] of [type], or 0 when the app has none. */
 fun Context.identifier(name: String, type: String): Int =
-    resources.getIdentifier(name, type, packageName)
+    resources.getIdentifier(name, type, resourcePackage)
+
+// A renamed app keeps the package name its resources were compiled under.
+private val Context.resourcePackage: String
+    get() = applicationInfo.icon.takeIf { it != 0 }?.let(resources::getResourcePackageName) ?: packageName
