@@ -28,7 +28,15 @@ val followingFeed = patch("Following-only feed") {
             klass(feedRequestParams.owner).method("<init>").after {
                 thisObject.set(feedRequestParams, FollowingFeed.following(thisObject.field(feedRequestParams)))
             }
+            groupSetParser.after {
+                whenNotNull(result) {
+                    val groupSet = result.cast(activeGroup.owner)
+                    groupSet.set(groups, FollowingFeed.withoutSuggestedPosts(groupSet.field(groups)))
+                    groupSet.set(activeGroup, FollowingFeed.activeGroup(groupSet.field(activeGroup)))
+                }
+            }
         }
+        FollowingFeed.groupId.implement { returnValue(param(0).cast(groupId.owner).field(groupId)) }
     }
 }
 
@@ -40,3 +48,29 @@ private val feedRequestParams = method("feedTimelineRequest") {
 }.point { string("pagination_source") }
     .previous { field { type(Type.Map) } }
     .field("feedRequestParams")
+
+// The group set after the last followed post: suggested posts and older posts, one of them open.
+private val groupSetParser = method("groupSetParser") {
+    strings("XDTGroupSet", "connected_group_id")
+    returns(Type.Object)
+}
+
+private val groupSetFields = method("groupSetFields") {
+    strings("active_group_id", "connected_group_id", "remember_group_choice")
+    returns(Type.Map)
+}
+
+private val activeGroup = groupSetFields.point { string("active_group_id") }
+    .next { field { type(Type.String) } }
+    .field("activeGroup")
+
+private val groups = groupSetFields.point { string("groups") }
+    .next { field { type(Type.List) } }
+    .field("groups")
+
+private val groupId = method("groupFields") {
+    strings("feed_items", "next_max_id", "show_group_text")
+    returns(Type.Map)
+}.point { string("id") }
+    .next { field { type(Type.String) } }
+    .field("groupId")

@@ -65,6 +65,7 @@ object FeedSettings : SettingsGroup(InstagramStrings) {
     val hideSuggestedAccounts by toggle(default = true, icon = lucide("user-plus"))
     val hideThreadsUnits by toggle(default = true, icon = lucide("list-x"))
     val hideShoppingUnits by toggle(default = true, icon = lucide("shopping-bag"))
+    val hideSuggestedReels by toggle(default = true, icon = lucide("clapperboard"))
 }
 
 object DownloadSettings : SettingsGroup(InstagramStrings) {

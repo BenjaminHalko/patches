@@ -45,13 +45,15 @@
     <string name="hide_ads">Hide ads</string>
     <string name="hide_ads_summary">Stops sponsored posts in feed, stories, explore, reels and search.</string>
     <string name="following_only">Following-only feed</string>
-    <string name="following_only_summary">Home shows posts from accounts you follow, in time order.</string>
+    <string name="following_only_summary">Home shows posts from accounts you follow, in time order, then older posts instead of suggestions.</string>
     <string name="hide_suggested_accounts">Hide suggested accounts</string>
     <string name="hide_suggested_accounts_summary">Removes suggested-account carousels from Home.</string>
     <string name="hide_threads_units">Hide Threads units</string>
     <string name="hide_threads_units_summary">Removes Threads units from Home. May leave an empty gap.</string>
     <string name="hide_shopping_units">Hide shopping units</string>
     <string name="hide_shopping_units_summary">Removes shopping units from Home. May leave an empty gap.</string>
+    <string name="hide_suggested_reels">Hide suggested Reels</string>
+    <string name="hide_suggested_reels_summary">Removes suggested Reels carousels from Home.</string>
     <string name="folder">Download folder</string>
     <string name="show_toast">Show download toast</string>
     <string name="show_toast_summary">Shows a message when a download starts.</string>

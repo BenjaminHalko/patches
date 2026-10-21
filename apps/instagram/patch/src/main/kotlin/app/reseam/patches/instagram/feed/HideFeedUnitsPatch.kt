@@ -45,15 +45,22 @@ private val UNIT_KEYS: Map<ToggleSetting, List<String>> = mapOf(
         "product_pivots",
         "non_sponsored_product",
     ),
+    FeedSettings.hideSuggestedReels to listOf("clips_netego"),
 )
 
 val hideFeedUnits = patch("Hide suggested feed units") {
-    description("Drops suggested-account, Threads and shopping units from the feed as it is parsed.")
+    description("Drops suggested-account, Threads, shopping and suggested Reels units from the feed as it is parsed.")
     compatibleWith(INSTAGRAM)
     dependsOn(signatureCheck)
     settings(
         instagramSettings,
-        section(InstagramStrings.sectionFeed, FeedSettings.hideSuggestedAccounts, FeedSettings.hideThreadsUnits, FeedSettings.hideShoppingUnits),
+        section(
+            InstagramStrings.sectionFeed,
+            FeedSettings.hideSuggestedAccounts,
+            FeedSettings.hideThreadsUnits,
+            FeedSettings.hideShoppingUnits,
+            FeedSettings.hideSuggestedReels,
+        ),
     )
 
     execute {

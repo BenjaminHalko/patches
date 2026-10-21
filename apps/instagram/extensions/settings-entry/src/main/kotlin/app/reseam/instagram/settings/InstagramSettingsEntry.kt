@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import app.reseam.bundle.ReseamPatches
 import app.reseam.bundle.identifier
 import app.reseam.runtime.Export
-import java.util.Locale
 
 private const val RESEAM_VIEW_TAG = 0x7f5151cc
 private const val RESEAM_DECOR_TAG = 0x7f5151cd
@@ -27,14 +26,19 @@ private val repostViewNames =
         "row_feed_button_repost",
         "tisu_ufi_repost_button",
     )
-private val menuDescriptions = listOf("menu", "options", "more", "hamburger")
 private var hookInstalled = false
 private var repostViewIds = intArrayOf()
+private var profileActionBarId = 0
+private var actionBarButtonsId = 0
+private var profileButton: ProfileSettingsButton? = null
 
 @Export
 fun init(ctx: Context?) {
     val app = ctx?.applicationContext as? Application ?: return
     repostViewIds = repostViewNames.map { app.identifier(it, "id") }.toIntArray()
+    profileActionBarId = app.identifier("profile_action_bar", "id")
+    actionBarButtonsId = app.identifier("right_action_bar_buttons", "id")
+    profileButton = ProfileSettingsButton(app)
     if (hookInstalled) return
     hookInstalled = true
     app.registerActivityLifecycleCallbacks(
@@ -74,21 +78,25 @@ private fun walk(view: View?, hideRepost: Boolean) {
     if (id != View.NO_ID && repostViewIds.any { it != 0 && it == id }) {
         view.updateRepostVisibility(hideRepost)
     }
-    val description = view.contentDescription?.toString()?.lowercase(Locale.getDefault())
-    if (
-        description != null &&
-            menuDescriptions.any { it in description } &&
-            view.getTag(RESEAM_VIEW_TAG) == null
-    ) {
-        view.setTag(RESEAM_VIEW_TAG, true)
-        view.isLongClickable = true
-        view.setOnLongClickListener {
-            ReseamPatches.bundle().openSettings()
-            true
-        }
+    if (profileActionBarId != 0 && id == profileActionBarId) {
+        // The profile menu button: the last action button, identified by layout since it has no id
+        // and its description is localized.
+        val buttons = view.findViewById<ViewGroup>(actionBarButtonsId)
+        buttons?.getChildAt(buttons.childCount - 1)?.openSettingsOnLongClick()
     }
+    profileButton?.attachTo(view)
     if (view is ViewGroup) {
         for (index in 0 until view.childCount) walk(view.getChildAt(index), hideRepost)
+    }
+}
+
+private fun View.openSettingsOnLongClick() {
+    if (getTag(RESEAM_VIEW_TAG) != null) return
+    setTag(RESEAM_VIEW_TAG, true)
+    isLongClickable = true
+    setOnLongClickListener {
+        ReseamPatches.bundle().openSettings()
+        true
     }
 }
 
