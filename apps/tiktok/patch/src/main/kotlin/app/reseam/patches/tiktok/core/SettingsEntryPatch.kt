@@ -62,6 +62,9 @@ val settingsGear =
                 action.set(viewActionKeepsParams, bool(true))
                 returnValue(action)
             }
+            ProfileGear.isDarkMode.implement {
+                returnValue(call(isDarkMode, param(0)))
+            }
             setNavActions.before {
                 val actions = param(0)
                 call(
@@ -74,6 +77,10 @@ val settingsGear =
             }
         }
     }
+
+private val isDarkMode = method("isDarkMode") {
+    stringsStartingWith("Do not use application get them Settings")
+}
 
 // The signed-out profile's ≡ opens Settings and privacy; its id is the one compared just before
 // that route.
