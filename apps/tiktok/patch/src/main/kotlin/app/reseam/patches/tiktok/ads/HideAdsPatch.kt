@@ -22,7 +22,7 @@ import app.reseam.tiktok.settings.TikTokStrings
 val hideAds =
     patch("Hide ads") {
         description(
-            "Removes ads and promoted posts from TikTok's feeds, and the full-screen ad at app start."
+            "Removes ads and promoted posts from TikTok's feeds, including a profile's videos, and the full-screen ad at app start."
         )
         compatibleWith(TIKTOK)
         dependsOn(feedFilter)
@@ -35,6 +35,7 @@ val hideAds =
             hidePosts(FeedSettings.hideAds, "ADS")
             gate(FeedSettings.hideAds) {
                 midFeedAd.alwaysReturnNull()
+                profileFeedAdFetch.alwaysReturn()
                 splashAdsEnabled.alwaysReturn(false)
             }
         }
@@ -45,6 +46,15 @@ private val midFeedAd =
         "getAweme"
     ) {
         returns(AWEME)
+    }
+
+// Launches every request for ads inserted between a profile's videos, on opening the feed and on
+// loading more.
+private val profileFeedAdFetch =
+    method("profileFeedAdFetch") {
+        inClass(klass("profileFeedAds") { strings("don't insert: author is empty.") })
+        params(Type.Int, Type.String, Type.String, Type.Int, Type.List)
+        returns(Type.Void)
     }
 
 // TikTok's own switch for the full-screen ad at app start, which then continues as the first post.
