@@ -7,9 +7,6 @@ package app.reseam.x.settings
 
 import app.reseam.runtime.Export
 
-// Built from X's own row models, so the body is emitted by the settings entry patch.
-@Export fun section(): Any = error("Replaced by the settings entry patch")
-
 @Export fun single(item: Any): List<Any> = listOf(item)
 
 @Export
