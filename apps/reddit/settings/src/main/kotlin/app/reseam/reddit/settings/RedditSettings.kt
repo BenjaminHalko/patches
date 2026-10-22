@@ -4,6 +4,7 @@
 package app.reseam.reddit.settings
 
 import app.reseam.patch.settings.SettingsGroup
+import app.reseam.patch.settings.text
 import app.reseam.patch.settings.toggle
 import app.reseam.patches.bundle.lucide
 
@@ -22,8 +23,15 @@ object RedditSettings : SettingsGroup(RedditStrings) {
     val hideRecommendedCommunities by toggle(default = true, icon = lucide("users"))
     val hideTrendingSearches by toggle(default = true, icon = lucide("search-x"))
     val ignoreSuggestedSort by toggle(default = false, icon = lucide("arrow-down-wide-narrow"))
+    val colorThreadLines by toggle(default = false, icon = lucide("palette"))
+    val threadLineColors by text(default = "#73D98C8C, #73D9A86C, #73C9C26B, #737FBF8A, #736FA8D9, #73A890D9")
     val hideCreateTab by toggle(default = false, icon = lucide("square-plus"))
     val hideInboxTab by toggle(default = false, icon = lucide("inbox"))
+    val hideDrawerPopular by toggle(default = false, icon = lucide("trending-up"))
+    val hideDrawerNews by toggle(default = false, icon = lucide("text"))
+    val hideDrawerLatest by toggle(default = false, icon = lucide("clock"))
+    val hideDrawerRedditPro by toggle(default = false, icon = lucide("store"))
+    val hideDrawerResources by toggle(default = false, icon = lucide("layout-list"))
     val hidePremiumSettings by toggle(default = true, icon = lucide("settings"))
     val blockForcedUpdates by toggle(default = true, icon = lucide("shield-check"))
     val disableScreenshotBanner by toggle(default = true, icon = lucide("camera"))
