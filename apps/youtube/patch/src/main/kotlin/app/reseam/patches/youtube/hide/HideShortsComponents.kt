@@ -125,9 +125,10 @@ val hideShortsComponents = patch("Hide Shorts components") {
             }
         }
 
-        // The current player combines both experimental controls in one predicate.
+        // The current player combines both experimental controls in one predicate. Older releases
+        // read the second through its own accessor.
         method("shortsNativeControls") {
-            literals(45677719L, 45649743L)
+            literals(45649743L)
             returns(Type.Boolean)
         }.alwaysReturn(false)
     }
